@@ -1,0 +1,190 @@
+# Local paths settings
+log.dir: ".\\logs\\"                            # folder write dump log files to. Will be created if it does not exist.
+log.dir.file_retention_seconds: 432000          # retain log files for default of 5 days
+log.level: DEBUG                                # level of log verbosity
+schedule.state.dir: ".\\ops\\"                  # file written to keep the last run state for schedules
+temp.dir: ".\\temp\\"                           # folder to write temporary files to (csv, png for viz exports). Will be created if it does not exist.
+temp.dir.file_retention_seconds: 86400          # retain temp files for default of 24 hours, mostly for debugging
+
+# Email settings
+smtp.serv: localhost                            # name of the smtp mail server (change for production use; default is only set to "localhost" for ease of testing with PaperCut: https://papercut.codeplex.com/)
+smtp.address.from: vizalerts@yourdomain.com     # default sender for all alerts mail
+smtp.address.to: serveradmin@yourdomain.com     # email address of admin to send failures to
+smtp.notify_subscriber_on_failure: true         # send a failure email to alert subscriber if it fails
+smtp.alloweddomains: [yourdomain,yourotherdomain]   # list of domains vizalerts can send email to. Must be enclosed in brackets.
+                                                    # Example: [mycompany.com] or [mycompany.com,gmail.com,yahoo.com]
+smtp.subject: 'ALERT: VizAlerts failed to execute properly'  # subject line in exception emails sent to admin
+smtp.ssl: false                                 # use encryption when connecting to SMTP server
+smtp.user: null                                 # username for account used to connect to SMTP server (null for no authentication)
+smtp.password: null                             # password for account used to connect to SMTP server (null for no authentication)
+                                                    # This can either be a plaintext password enclosed in single quotes, e.g. 'myp@ssw0rd'
+                                                    # OR it can be a valid path to a .txt file containing the password, e.g. 'c:\users\mcoles\password.txt'
+# Tableau Server settings
+server: localhost                               # the Tableau Server instance your alerts will reside on. Recommend using the fully-qualified name, e.g. "myserver.mydomain.com"
+server.version: 9                               # the major version of Tableau Server that this is running against (just ensures correct URLs in email footers)
+server.user: SomeTableauServerUser              # this is ANY user licensed in Tableau Server--it does not need to be an Admin. It is only used to test whether Trusted Tickets work.
+                                                    # If you are using Local Authentication, do not prepend domain name to this entry. (e.g., mcoles)
+                                                    # If you are using Active Directory Authentication, specify the user as domain\username (e.g., tableau.com\mcoles)
+server.ssl: false                               # use HTTPS for Server connections
+trusted.useclientip: false                      # use clientip for trusted tickets verification
+                                                    # This is optional. Please see http://onlinehelp.tableausoftware.com/current/server/en-us/trusted_auth_optional.htm
+trusted.clientip: null                          # IP address of THIS host. Only needed if trusted.useclientip is set to true. Otherwise, just leave it null.
+viz.data.maxrows: 1000                          # maximum number of data rows to support for all alerts
+viz.data.timeout:                               # viz timeouts relative to scheduled frequency
+    - [0, 3600, 30]                                 # if viz was run between 0 and 3600 seconds ago, allow it a 30s timeout
+    - [3601, 7200, 60]                              # if viz was run between 3600 and 7200 seconds ago, allow it a 60s / 1 min timeout
+    - [7201, 14400, 120]                            # if viz was run between 7200 and 14400 seconds ago, allow it a 120s / 2 min timeout
+    - [14401, 315360000, 300]                       # if viz was run between 14400 seconds and 10 years ago, allow it a 300s / 5 min timeout
+viz.data.retrieval_tries:                       # number of attempts to download viz data, relative to scheduled frequency
+    - [0, 3600, 1]                                  # if viz was run between 0 and 3600 seconds ago, allow it 1 attempt
+    - [3601, 7200, 2]                               # if viz was run between 3600 and 7200 seconds ago, allow it 2 attempts
+    - [7201, 14400, 2]                              # if viz was run between 7200 and 14400 seconds ago, allow it 2 attempts
+    - [14401, 315360000, 3]                         # if viz was run between 14400 seconds and 10 years ago, allow it 3 attempts
+viz.png.width: 1500                             # width of viz png attached to Simple Alerts
+viz.png.height: 1500                            # height of viz png attached to Simple Alerts
+
+# Tableau Server PostgreSQL Repository settings
+#
+#   These settings pertain to the Tableau Server internal database. These define the connection VizAlerts
+#   uses to obtain the list of views that are to be considered alerts to check.
+#
+#   If you wish to restrict your alerting to specific Users, Projects, Sites, you may edit the WHERE clause
+#   near the bottom of the db.query entry (look for the comment). It is NOT RECOMMENDED to futz with any
+#   other parts of the query! Also, be sure not to use TAB characters, as YAML doesn't like them.
+#
+db.host: localhost                                  # hostname of the computer running the Repository process on Tableau Server (secondary is preferred, but it doesn't matter much)
+db.database: workgroup                              # name of the database to connect to (leave this alone)
+db.user: readonly                                   # username to connect to the database with (recommend leaving this alone as well)
+db.pw: 'YourTableauServerReadOnlyPassword'          # password for db.user. Quotes are required.
+                                                        # This can either be a plaintext password enclosed in single quotes, e.g. 'myp@ssw0rd'
+                                                        # OR it can be a valid path to a .txt file containing the password, e.g. 'c:\users\mcoles\password.txt'
+db.port: 8060                                       # this is the default port for Tableau Server's postgreSQL server
+db.query: |
+    SELECT
+         s.id                    AS subscription_id ,
+         v.id                    AS view_id ,
+         cv.id                   AS customized_view_id ,
+         COALESCE(v.name || '/' || cv.url_id ,
+        v.name)              AS view_name ,
+         COALESCE(w.repository_url || '/' || v.sheet_id || '/' || su_cust.name || '@' || d.name || '/' || cv.url_id ,
+             w.repository_url || '/' || v.sheet_id)         -- determine URL for a customized view
+                                 AS view_url_suffix ,
+         w.id                    AS workbook_id ,
+         w.repository_url        AS workbook_repository_url ,
+         p.id                    AS project_id ,
+         p.name                  AS project_name ,
+         st.id                   AS site_id ,
+         CASE
+             WHEN st.url_namespace IS NULL THEN 'Default'
+             WHEN st.url_namespace = '' THEN 'Default'
+             ELSE st.url_namespace
+         END                     AS site_name ,
+         v.owner_id              AS view_owner_id ,
+         s.user_id               AS subscriber_user_id ,
+         su_sub.name             AS subscriber_sysname ,
+         dom_sub.name            AS subscriber_domain ,
+         su_sub.email            AS subscriber_email ,
+         su.email                AS owner_email ,
+         su.name                 AS owner_sysname ,
+         su.friendly_name        AS owner_friendly_name ,
+         s.schedule_id           AS schedule_id ,
+         true                    AS force_refresh ,
+         s.is_test ,
+         COALESCE(date_trunc('second', s.test_alert_timestamp), sch.run_next_at)
+                                 AS run_next_at ,
+         COALESCE(sch.run_next_at,
+             date_trunc('second', (s.test_alert_timestamp - interval '30 minutes')))
+                                 AS ran_last_at ,           -- placeholder, ignore this
+         60                      AS timeout_s ,             -- placeholder, ignore this
+         1                       AS data_retrieval_tries ,  -- placeholder, ignore this
+         'simple'                AS alert_type              -- placeholder, ignore this
+    FROM (
+        SELECT
+            s.id ,
+            s.user_id ,
+            s.subject ,
+            false           is_test ,
+            sv.repository_url ,
+            s.schedule_id ,
+            NULL            test_alert_timestamp
+        FROM subscriptions s
+            LEFT JOIN subscriptions_views sv
+                   ON s.id = sv.subscription_id
+        UNION
+        SELECT
+            MIN((-1 * c.id))
+                            id ,
+            c.user_id ,
+            v.name          subject ,
+            true            is_test ,
+            v.repository_url ,
+            -1              schedule_id ,
+            MAX(c.updated_at)
+                            test_alert_timestamp
+        FROM comments c
+            INNER JOIN views v
+            ON c.commentable_id = v.id
+                AND c.commentable_type = 'View'
+                AND c.user_id = v.owner_id
+                AND LOWER(c.comment) = 'test_alert'
+            WHERE c.updated_at > current_timestamp - interval '5 minutes'
+        GROUP BY c.user_id ,
+            v.name ,
+            v.repository_url
+        ) s
+        INNER JOIN users u_sub
+            ON s.user_id = u_sub.id
+        INNER JOIN system_users su_sub
+            ON u_sub.system_user_id = su_sub.id
+        INNER JOIN domains dom_sub
+            ON su_sub.domain_id = dom_sub.id
+        LEFT JOIN subscriptions_customized_views scv
+            ON s.id = scv.subscription_id
+        LEFT JOIN customized_views cv
+            ON scv.customized_view_id = cv.id
+        LEFT JOIN users u_cust
+            ON cv.creator_id = u_cust.id
+        LEFT JOIN system_users su_cust
+            ON u_cust.system_user_id = su_cust.id
+        LEFT JOIN schedules sch
+           ON s.schedule_id = sch.id
+        INNER JOIN views v
+           ON s.repository_url = v.repository_url
+               AND u_sub.site_id = v.site_id
+        INNER JOIN workbooks w
+           ON v.workbook_id = w.id
+        INNER JOIN sites st
+           ON v.site_id = st.id
+        INNER JOIN projects p
+           ON w.project_id = p.id
+        INNER JOIN users u
+            ON v.owner_id = u.id
+        INNER JOIN system_users su
+            ON u.system_user_id = su.id
+        INNER JOIN domains d
+            ON su.domain_id = d.id
+    WHERE 1 = 1
+        AND (
+                (s.is_test = true)
+            OR
+                -- ######################################################
+                -- ########           Editable Filters          #########
+                -- ######################################################
+                (
+                LOWER(sch.name) LIKE '_lerts%'                    -- only Alerts schedules ("_" single-character wildcard allows you to substitute Cyrillic capital A, U+0410 for sorting purposes)
+
+                --AND st.name IN ('Default','TestSite')           -- allowed Sites
+                --AND p.name  IN ('Sales')                        -- allowed Projects
+                --AND su_sub.name  IN ('mcoles', 'nkamkolkar')    -- allowed Users
+                --AND st.name = 'administration'
+                --
+                -- ######################################################
+                -- ######## DO NOT EDIT FILTERS BELOW THIS LINE #########
+                -- ######################################################
+                AND sch.active = 'f'                              -- only disabled schedules
+                )
+            )
+        AND coalesce(su_sub.email, '') <> ''              -- only accounts with valid emails (no service accts)
+    ORDER BY
+        sch.run_next_at ,
+        sch.priority DESC
