@@ -1,0 +1,73 @@
+===============
+VERSION HISTORY
+===============
+
+Version 1.0.8
+=================================
+-Documentation improvements
+-Confusing copyright restrictions removed, LICENSE file contains license for all files
+-Default configuration values altered to simplify testing
+=================================
+
+Version 1.0.7
+=================================
+-Fixed a regression in which caused alerts to fail on Tableau Server instances using local authentication
+=================================
+
+Version 1.0.6
+=================================
+-By default, Subscribers of alerts that fail for any reason will be notified via email (can be disabled in config)
+-Failure emails are improved, with additional details added
+-Advanced Alerts can now override the default VizAlerts footer
+=================================
+
+Version 1.0.5
+=================================
+-Fixed bug with handling HTTP errors during data exports: "'NoneType' object has no attribute 'status_code'"
+-Fixed formatting bug with HTTP errors being reported in emails
+-Fixed issue with viz.data.retrieval_tries setting in vizalerts.yaml file not working
+-Fixed bug where Site support breaks if the site's Name differs from the ID
+-Fixed bug where Subscribing to a view on a Site having a duplicate version on a separate Site causes logs and state file to rapidly increase in size.
+-Added ability for Alert owners to manually trigger them on a one-off basis without scheduling
+-Fixed the Title heading in the User Guide
+=================================
+
+Version 1.0.4
+=================================
+-Added support for Unicode
+-Removed need to add comment to Advanced Alert views
+-Improved Advanced Alert efficiency by rendering viz image only if needed
+-Fixed bug in Advanced Alerts where duplicate alerts would be sent if "duplicate" rows were present in exported view data
+-"Force refresh" logic now determined by query in vizalerts.yaml (no change in functionality, just adds flexibility for future changes)
+-A few improvements in error handling
+=================================
+
+Version 1.0.3
+=================================
+-Fixed bug where To addresses are not validated
+-Fixed bug where Advanced alerts with lines over 1000 characters are truncated
+-Added max length check for Advanced Alert addresses
+-Improved some error handling
+=================================
+
+Version 1.0.2
+=================================
+-Fixed bug where CC and BCC addresses never have email sent to them for Advanced Alerts
+-Fixed bug where Advanced alerts with email consolidation behave unpredictably due to unsorted CSV export
+-Advanced alerts are now atomic, e.g., all emails will be sent, or none will if an issue is found
+-Added offline installation instructions for Python packages to install guide
+=================================
+
+Version 1.0.1
+=================================
+-Users from multiple domains now supported
+-Servers using Local Authentication now supported
+-Fixed bug with subscription footers
+-Improved error handling and reporting
+-Passwords can now be specified as filepaths rather than plaintext in vizalerts.yaml
+-Clarified expected formats for several config values
+=================================
+
+Version 1.0.0
+=================================
+=================================
