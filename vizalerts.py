@@ -195,6 +195,7 @@ def process_views(views):
         sitename = unicode(view["site_name"]).replace('Default', '')
         viewurlsuffix = view['view_url_suffix']
         viewname = unicode(view['view_name'])
+        logger.debug(viewurlsuffix)
         timeout_s = view['timeout_s']
         subscribersysname = unicode(view['subscriber_sysname'].decode('utf-8'))
         subscriberemail = view['subscriber_email']
@@ -615,18 +616,38 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
             data = get_unique_vizdata(data, has_consolidate_email, has_email_from, has_email_cc, has_email_bcc, has_email_header, has_email_footer)
             rowcount_unique = len(data)
 
-            # determine whether we need to render the viz image--if so, render it to file
-            vizimagerefs = find_vizimages_in_body(data, has_email_header, has_email_footer)
-            if vizimagerefs:
+            
+            # could be multiple viz images for a single row in the CSV
+            # return a list of all found VIZ_IMAGE() strings including any custom views w/ or w/out URL parameters
+            # leaving them as VIZ_IMAGE() strings because it makes the search & replace easier for the body & attachments
+            vizimagerefs = []
+            vizimagerefs = find_vizimages_in_body(data, viewurlsuffix, has_email_header, has_email_footer)
+
+            # storing view in original value because we'll be rewriting it in order to call
+            # tabhttp.export_view
+            origviewsuffix = view['view_url_suffix']
+
+            
+            # creating a dictionary of imagepaths with vizimageref as the key
+            imagepaths = dict()
+            for vizimageref in vizimagerefs:
+                if vizimageref == IMAGE_PLACEHOLDER:
+                    view['view_url_suffix'] = origviewsuffix
+                else:
+                    view['view_url_suffix'] = re.match(u'.*?\(\'(.*?)\'\)', vizimageref).group(1)
+                    logger.debug('~tmp ' + view['view_url_suffix'])
+                    
                 try:
-                    # export the viz to a PNG file
-                    imagepath = tabhttp.export_view(configs, view, tabhttp.Format.PNG, logger)
+                    # export the viz to a PNG file, store path as value with vizimageref as key
+                    imagepaths[vizimageref] = tabhttp.export_view(configs, view, tabhttp.Format.PNG, logger)
                 except Exception as e:
                     errormessage = u'Alert was triggered, but encountered a failure rendering data/image: {}'.format(e.message)
                     logger.error(errormessage)
                     view_failure(view, errormessage)
                     raise e
-
+            #setting view_url_suffix back to original
+            view['view_url_suffix'] = origviewsuffix
+            
             # iterate through the rows and send emails accordingly
             consolidate_email_ctr = 0
             body = []
@@ -687,16 +708,9 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                                         # no footer specified, add the default footer
                                         body.append(bodyfooter.format(subscriberemail, vizurl, viewname))
 
-                                    # Add the viz image if needed
-                                    replaceresult = replace_in_list(body, IMAGE_PLACEHOLDER,
-                                                                        u'<img src="cid:{}">'.format(basename(imagepath))
-                                                            )
-
-                                    if replaceresult['foundstring'] == True:
-                                        body = replaceresult['outlist']
-                                        if imagepath not in attachments:
-                                            attachments.append(imagepath)
-
+                                    #add vizimages if needed in the list and attachments
+                                    body, attachments = add_images_to_body_and_attachments(body, attachments, imagepaths)
+                                    
                                     # send the email
                                     send_email(email_from, row[' Email To *'], row[' Email Subject *'],
                                                u''.join(body), email_cc, email_bcc, attachments)
@@ -753,16 +767,9 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                                         # no footer specified, add the default footer
                                         body.append(bodyfooter.format(subscriberemail, vizurl, viewname))
 
-                                    # Add the viz image if needed
-                                    replaceresult = replace_in_list(body, IMAGE_PLACEHOLDER,
-                                                                        u'<img src="cid:{}">'.format(basename(imagepath))
-                                                            )
-                                    if replaceresult['foundstring'] == True:
-                                        logger.debug(u'Found viz image string, adding attachments')
-                                        body = replaceresult['outlist']
-                                        if imagepath not in attachments:
-                                            attachments.append(imagepath)
-
+                                    #add vizimages if needed in the list and attachments
+                                    body, attachments = add_images_to_body_and_attachments(body, attachments, imagepaths)
+                                    
                                     # send the email
                                     try:
                                         send_email(email_from, row[' Email To *'], row[' Email Subject *'],
@@ -787,7 +794,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                             body.append(row[' Email Header ~'])
 
                         body.append(row[' Email Body *'])
-
+                        
                         # add the footer if needed
                         if has_email_footer:
                             body.append(row[' Email Footer ~'].replace(DEFAULT_FOOTER,
@@ -795,17 +802,9 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                         else:
                             # no footer specified, add the default footer
                             body.append(bodyfooter.format(subscriberemail, vizurl, viewname))
-
-                        # Add the viz image if needed
-                        replaceresult = replace_in_list(body, IMAGE_PLACEHOLDER,
-                                                            u'<img src="cid:{}">'.format(basename(imagepath))
-                                                )
-                        if replaceresult['foundstring'] == True:
-                            logger.debug(u'Found viz image string, adding attachments')
-                            body = replaceresult['outlist']
-                            if imagepath not in attachments:
-                                attachments.append(imagepath)
-
+                   
+                        body, attachments = add_images_to_body_and_attachments(body, attachments, imagepaths)
+                                    
                         try:
                             send_email(email_from, row[' Email To *'], row[' Email Subject *'], u''.join(body), email_cc,
                                     email_bcc, attachments)
@@ -1045,28 +1044,40 @@ def get_password_from_file(password):
         sys.exit(1)
 
 
-def find_vizimages_in_body(data, has_email_header, has_email_footer):
-    """Returns list of all found occurences of VIZ_IMAGE() in email body text"""
+
+def find_vizimages_in_body(data, viewurlsuffix, has_email_header, has_email_footer):
+    # updated 20160223 Jonathan Drummey
+    # function call now includes viewurlsuffix, return is now a list of viewnam
+    """ Return a list of all viewnames to be downloaded for the """
+    """ body, header, and/or footer. The list is a distinct list """
+    """ to prevent unnecessary downloading. """
+	
     vizimagerefs = []
 
+	# data is the CSV that has been downloaded for a given view
     for item in data:
-        # use regex once we start supporting arbitrary vizzes
-        result = re.search(u'VIZ[_]IMAGE()', item[' Email Body *'])
-        if result and result.group(0) not in vizimagerefs:
-            vizimagerefs.append(result.group(0))
-        if has_email_header:
-            # Use regex once we start supporting arbitrary vizzes
-            headerresult = re.search('VIZ[_]IMAGE()', item[' Email Header ~'])
-            if headerresult and headerresult.group(0) not in vizimagerefs:
-                vizimagerefs.append(headerresult.group(0))
-        if has_email_footer:
-            # Use regex once we start supporting arbitrary vizzes
-            footerresult = re.search('VIZ[_]IMAGE()', item[' Email Footer ~'])
-            if footerresult and footerresult.group(0) not in vizimagerefs:
-                vizimagerefs.append(footerresult.group(0))
+        # this might be able to be more efficient code
+        logger.debug('~body ' + item[' Email Body *'])
+        result = re.findall(u"VIZ[_]IMAGE\(.*?\)|VIZ[_]IMAGE\(\)", item[' Email Body *'])
+		# findall() returns a list to be iterated through
+        
+        for found in result:
+            if found not in vizimagerefs:
+                vizimagerefs.append(found)
+
+		if has_email_header:
+			headerresult = re.findall(u"VIZ[_]IMAGE\(.*?\)|VIZ[_]IMAGE\(\)", item[' Email Header ~'])
+			for found in headerresult:
+				if found not in vizimagerefs:
+					vizimagerefs.append(found)
+		if has_email_footer:
+			# Use regex once we start supporting arbitrary vizzes
+			footerresult = re.findall(u"VIZ[_]IMAGE\(.*?\)|VIZ[_]IMAGE\(\)", item[' Email Footer ~'])
+			for found in footerresult:
+				if found not in vizimagerefs:
+					vizimagerefs.append(found)
 
     return vizimagerefs
-
 
 def get_unique_vizdata(data, has_consolidate_email, has_email_from, has_email_cc, has_email_bcc, has_email_header, has_email_footer):
     """Returns a unique list of all relevant email fields in data. Also sorts data in proper order."""
@@ -1182,6 +1193,20 @@ def get_footer(subscriberemail, subscribersysname, subscriberdomain, vizurl, vie
 
     return footer
 
+def add_images_to_body_and_attachments(body, attachments, imagepaths):
+    """Adds images to both the body and attachments"""
+    """returns a tuple of body, attachments"""
+  
+    for workbookview, imagepath in imagepaths.iteritems():
+        replaceresult = replace_in_list(body, workbookview,
+                                        u'<img src="cid:{}">'.format(basename(imagepath))
+                                )
+        if replaceresult['foundstring'] == True:
+            body = replaceresult['outlist']
+            if imagepath not in attachments:
+                attachments.append(imagepath)
+
+    return body, attachments
 
 def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None, attachments=None):
     """Generic function to send an email"""
