@@ -100,9 +100,6 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=N
 
 # Export a view to a file in the specified format based on a trusted ticket
 def export_view(configs, view, format, logger):
-
-    logger.debug('~view ' + view['view_url_suffix'])
-    logger.debug('~fomat ' + format)
     
     # assign variables (clean this up later)
     viewname = unicode(view['view_name'])
@@ -150,9 +147,9 @@ def export_view(configs, view, format, logger):
         extraurlparameter = '?'
 
     # set up format
-    # future - make pngwidth and pngheight user-configurable    
-    if format == Format.PNG:
-        formatparam = u'&:format=' + format + u'&:size={},{}'.format(str(pngwidth), str(pngheight))
+    # if user hasn't overriden PNG with size setting then use the default  
+    if format == Format.PNG and ':size=' not in extraurlparameter:
+            formatparam = u'&:format=' + format + u'&:size={},{}'.format(str(pngwidth), str(pngheight))
     else:
         formatparam = u'&:format=' + format
 
