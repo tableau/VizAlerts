@@ -638,10 +638,11 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                                                                                                                 adderror['Value'],
                                                                                                                 adderror['Error'],)
                 addresslist = addresslist + u'</table>'
+                appendattachments = [{'imagepath' : csvpath}]
                 view_failure(view, u'VizAlerts was unable to process this view due to the following error: ' + \
                                 u'Errors found in recipients:<br><br>{}'.format(addresslist) + \
                                 u'<br><br>See row numbers in attached CSV file.' ,
-                                [csvpath])
+                                appendattachments)
                 return
 
             # eliminate duplicate rows and ensure proper sorting
@@ -902,7 +903,7 @@ def view_failure(view, message, attachments=None):
 
     try:
         send_email(configs['smtp.address.from'], toaddrs, subject,
-                   body, ccaddrs, None, attachments)
+                   body, ccaddrs, None, None, attachments)
     except Exception as e:
         logger.error(u'Unknown error sending exception alert email: {}'.format(e.message))
 
@@ -1064,8 +1065,9 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
         formatstring = the format of the destination file, based on the VIZ_* reference
         imagepath = the full path to the temp tile for the downloaded viz 
         filename = the filename to use for appended attachments as well as exported files
-        exportfilepath = the path to use for an exported file (~~~not yet supported)
+        exportfilepath = the path to use for an exported file
         mergepdf = used for merging pdfs
+        noattach = used with exportfilepath, makes the attachment not used
         
     """
 
@@ -1093,33 +1095,33 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
             results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_CSV\(.*?\)|VIZ_PDF\(.*?\)|VIZ_TWB\(.*?\)", item[' Email Attachment ~']))
     
     # loop through each found viz reference, i.e. everything in the VIZ_*(*).
-    for result in results:
-        if result not in vizcompleterefs:
+    for vizref in results:
+        if vizref not in vizcompleterefs:
             # create a dictionary to hold the necessary values for this viz reference
-            vizcompleterefs[result] = dict()
+            vizcompleterefs[vizref] = dict()
             
             # store the vizref itself as a value in the dict, will need later
-            vizcompleterefs[result]['vizref'] = result
+            vizcompleterefs[vizref]['vizref'] = vizref
             
             # identifying the format for the output file
-            vizrefformat = re.match(u'VIZ_(.*?)\(', result)
+            vizrefformat = re.match(u'VIZ_(.*?)\(', vizref)
             if vizrefformat.group(1) == 'IMAGE':
-                vizcompleterefs[result]['formatstring'] = 'PNG'
+                vizcompleterefs[vizref]['formatstring'] = 'PNG'
             else:
-                vizcompleterefs[result]['formatstring'] = vizrefformat.group(1)
+                vizcompleterefs[vizref]['formatstring'] = vizrefformat.group(1)
                 
             # this section parses out the vizref into 1-3 parts:
             #   view_url_suffix - always present
             #   filename - optional custom filename for appended attachments
             #   exportfilepath - optional custom path not yet supported)
             
-            # if the result is one of the placeholders i.e. just a VIZ_CSV() 
+            # if the vizref is one of the placeholders i.e. just a VIZ_CSV() 
             # then we will be pulling down the calling viz
-            if result in [IMAGE_PLACEHOLDER, PDF_PLACEHOLDER, CSV_PLACEHOLDER, TWB_PLACEHOLDER, VIZLINK_PLACEHOLDER]:
-                vizcompleterefs[result]['view_url_suffix'] = viewurlsuffix
+            if vizref in [IMAGE_PLACEHOLDER, PDF_PLACEHOLDER, CSV_PLACEHOLDER, TWB_PLACEHOLDER, VIZLINK_PLACEHOLDER]:
+                vizcompleterefs[vizref]['view_url_suffix'] = viewurlsuffix
             else:
                 # vizstring contains everything inside the VIZ_*() parentheses
-                vizstring = re.match(u'VIZ_.*?\((.*?)\)', result)
+                vizstring = re.match(u'VIZ_.*?\((.*?)\)', vizref)
                 
                 # vizstring may contain reference to the viz plus advanced alert parameters like
                 # a filename or exportpathname.
@@ -1130,9 +1132,9 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                     # if the first character is ? then the content reference is something like
                     # VIZ_IMAGE(?Region=East) so we need to use the trigger viz
                     if vizstring.group(1)[0] == '?':
-                        vizcompleterefs[result]['view_url_suffix'] = viewurlsuffix + vizstring.group(1)
+                        vizcompleterefs[vizref]['view_url_suffix'] = viewurlsuffix + vizstring.group(1)
                     else:
-                        vizcompleterefs[result]['view_url_suffix'] = vizstring.group(1)
+                        vizcompleterefs[vizref]['view_url_suffix'] = vizstring.group(1)
                 # there are one or more arguments
                 else:
 
@@ -1143,20 +1145,21 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                     # first argument could be empty, such as VIZ_IMAGE(|filename=someFileName)
                     # in that case we'll use the calling viz
                     if vizstringlist[0] == '':
-                        vizcompleterefs[result]['view_url_suffix'] = viewurlsuffix
+                        vizcompleterefs[vizref]['view_url_suffix'] = viewurlsuffix
                     # first argument could also be a URL parameter such as
                     # VIZ_IMAGE(?Region=East|filename=someFileName)
                     elif vizstringlist[0][0] == '?':
-                        vizcompleterefs[result]['view_url_suffix'] = viewurlsuffix + vizstringlist[0]
+                        vizcompleterefs[vizref]['view_url_suffix'] = viewurlsuffix + vizstringlist[0]
+                    # there are no arguments, so return only the entire view URL suffix
                     else:
-                        # return only the view
-                        vizcompleterefs[result]['view_url_suffix'] = vizstringlist[0]
+                        vizcompleterefs[vizref]['view_url_suffix'] = vizstringlist[0]
                     
                     # if there is more than one element in the vizstring list then we
                     # know there are arguments to parse out
                     # this code could probably be simpler
                     if len(vizstringlist) > 1:
                         try:
+                            # 0th element is the whole vizstring
                             for element in vizstringlist[1:]:
                             
                                 # looking for filenames
@@ -1167,16 +1170,24 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                                     filename = posixpath.normpath(filename)
                                     for sep in _os_alt_seps:
                                         if sep in filename:
-                                            raise ValueError(u'Found an invalid or non-allowed separator in filename: {} for content reference {}'.format(filename, result))
+                                            raise ValueError(u'Found an invalid or non-allowed separator in filename: {} for content reference {}'.format(filename, vizref))
 
-                                    if os.path.isabs(filename) or filename.startswith('../') or filename.startswith('..\\'):
-                                        raise ValueError(u'Found an invalid or non-allowed filename: {} for content reference {}'.format(filename, result))
+                                    if os.path.isabs(filename) or '../' in filename or '..\\' in filename:
+                                        raise ValueError(u'Found non-allowed path when expecting filename: {} for content reference {}'.format(filename, vizref))
+                                    
+                                    # check for non-allowed characters
+                                    # check for non-allowed characters
+                                    # code based on https://mail.python.org/pipermail/tutor/2010-December/080883.html
+                                    # using ($L) option to set locale to handle accented characters
+                                    nonallowedchars = re.findall(u'(?L)[^\w \-._+]', filename)
+                                    if len(nonallowedchars) > 0:
+                                        raise ValueError(u'Found non-allowed character(s): {} in filename {} for content reference {}, only allowed characters are alphanumeric, space, hyphen, underscore, period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref))
                                     
                                     # if the output is anything but LINK then append the formatstring to the output filename
-                                    if vizcompleterefs[result]['formatstring'] != 'LINK':
-                                        vizcompleterefs[result]['filename'] = filename + '.' + vizcompleterefs[result]['formatstring'].lower()
+                                    if vizcompleterefs[vizref]['formatstring'] != 'LINK':
+                                        vizcompleterefs[vizref]['filename'] = filename + '.' + vizcompleterefs[vizref]['formatstring'].lower()
                                     else:
-                                        vizcompleterefs[result]['filename'] = filename
+                                        vizcompleterefs[vizref]['filename'] = filename
 
                                 # just getting the export filepath for now, will use it in a later update
                                 if element.startswith(EXPORTFILEPATH_ARGUMENT):
@@ -1184,18 +1195,18 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                                     exportfilepath = posixpath.normpath(exportfilepath)
                                     
                                     if ospath.isabs(filename) or '../' in exportfilepath or '..\\' in exportfilepath:
-                                        raise ValueError(u'Found an invalid or non-allowed export file path: {} for content reference {}'.format(exportfilepath, result))
-                                    vizcompleterefs[result]['exportfilepath'] = exportfilepath
+                                        raise ValueError(u'Found an invalid or non-allowed export file path: {} for content reference {}'.format(exportfilepath, vizref))
+                                    vizcompleterefs[vizref]['exportfilepath'] = exportfilepath
                                     
                                 # looking for mergepdf
-                                if element.startswith(MERGEPDF_ARGUMENT) and vizcompleterefs[result]['formatstring'].lower() == 'pdf':
-                                    vizcompleterefs[result][MERGEPDF_ARGUMENT] = 'y'
+                                if element.startswith(MERGEPDF_ARGUMENT) and vizcompleterefs[vizref]['formatstring'].lower() == 'pdf':
+                                    vizcompleterefs[vizref][MERGEPDF_ARGUMENT] = 'y'
                                 
                                 if element.startswith(VIZLINK_ARGUMENT):
-                                    vizcompleterefs[result][VIZLINK_ARGUMENT] = 'y'
+                                    vizcompleterefs[vizref][VIZLINK_ARGUMENT] = 'y'
                                 
                                 if element.startswith(RAWLINK_ARGUMENT):
-                                    vizcompleterefs[result][RAWLINK_ARGUMENT] = 'y'
+                                    vizcompleterefs[vizref][RAWLINK_ARGUMENT] = 'y'
 
                         except Exception as e:
                             errormessage = u'Alert was triggered, but unable to process arguments to a content reference with error {}'.format(e.message)
@@ -1206,10 +1217,10 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                             
             # creating distinct list of images to download
             # this is a dict so we have both the workbook/viewname aka view_url_suffix as well as the formatstring
-            if result not in vizdistinctrefs and vizcompleterefs[result]['formatstring'] != 'LINK':
-                vizdistinctrefs[result] = vizcompleterefs[result]
-        #end if result not in vizcompleterefs
-    #end for result in results
+            if vizref not in vizdistinctrefs and vizcompleterefs[vizref]['formatstring'] != 'LINK':
+                vizdistinctrefs[vizref] = vizcompleterefs[vizref]
+        #end if vizref not in vizcompleterefs
+    #end for vizref in results
 
     #loop over vizdistinctrefs to download images, PDFs, etc. from Tableau
     for vizref in vizdistinctrefs:
@@ -1230,9 +1241,9 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
     
     
     #now match vizdistinctrefs to original references to store the correct imagepaths
-    for result in vizcompleterefs:
-        if vizcompleterefs[result]['formatstring'] != 'LINK':
-            vizcompleterefs[result]['imagepath'] = vizdistinctrefs[result]['imagepath']
+    for vizref in vizcompleterefs:
+        if vizcompleterefs[vizref]['formatstring'] != 'LINK':
+            vizcompleterefs[vizref]['imagepath'] = vizdistinctrefs[vizref]['imagepath']
     
     if len(vizcompleterefs) > 0:
         logger.debug(u'Returning content references')
@@ -1382,6 +1393,7 @@ def append_attachments(appendattachments, row, vizcompleterefs, has_email_attach
         if len(attachmentrefs) > 0:
             logger.debug('Adding appended attachments to list')
         for attachmentref in attachmentrefs:
+            # only make appended attachments when they are needed
             if attachmentref not in appendattachments:
                 appendattachments.append(vizcompleterefs[attachmentref])
 
@@ -1520,8 +1532,22 @@ def merge_pdf_attachments(appendattachments):
  
             
 def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None, inlineattachments=None, appendattachments=None):
-    """Generic function to send an email"""
-
+    """Generic function to send an email. The presumption is that all arguments have been validated prior to the call to this function.
+    
+    Input arguments are:
+        fromaddr    single email address
+        toaddr      string of recipient email addresses separated by the list of separators in EMAIL_RECIP_SPLIT_REGEX
+        subject     string that is subject of email
+        content     body of email, may contain HTML
+        ccaddrs     cc recipients, see toaddr
+        bccaddrs    bcc recipients, see toaddr
+        inlineattachments   List of vizref dicts where each dict has one attachment. The minimum dict has an 
+                            imagepath key that points to the file to be attached.
+        appendattachments   Appended (non-inline attachments). See inlineattachments for details on structure.
+    
+    Nothing is returned by this function unless there is an exception.
+    
+    """
     try:
         logger.info(u'sending email: {},{},{},{},{},{},{}'.format(configs["smtp.serv"], fromaddr, toaddrs, ccaddrs, bccaddrs,
                                                               subject, inlineattachments, appendattachments))
@@ -1557,27 +1583,27 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
         
         # Add inline attachments
         if inlineattachments != None:
-            for vizresult in inlineattachments:
-                msgalternative.attach(mimify_file(vizresult['imagepath'], inline = True))
+            for vizref in inlineattachments:
+                msgalternative.attach(mimify_file(vizref['imagepath'], inline = True))
 
         # Add appended attachments from Email Attachments field and prevent dup custom filenames
         appendedfilenames = []
         if appendattachments != None:
             appendattachments = merge_pdf_attachments(appendattachments)
-            for vizresult in appendattachments:                
+            for vizref in appendattachments:                
                 # if there is no |filename= option set then use the exported imagepath
-                if 'filename' not in vizresult:
-                    msg.attach(mimify_file(vizresult['imagepath'], inline = False))
+                if 'filename' not in vizref:
+                    msg.attach(mimify_file(vizref['imagepath'], inline = False))
                 else:
                     # we need to make sure the custom filename is unique, if so then
                     # use the custom filename
-                    if vizresult['filename'] not in appendedfilenames:
-                        appendedfilenames.append(vizresult['filename'])
-                        msg.attach(mimify_file(vizresult['imagepath'], inline = False, overridename = vizresult['filename']))
+                    if vizref['filename'] not in appendedfilenames:
+                        appendedfilenames.append(vizref['filename'])
+                        msg.attach(mimify_file(vizref['imagepath'], inline = False, overridename = vizref['filename']))
                     # use the exported imagepath
                     else:
-                        msg.attach(mimify_file(vizresult['imagepath'], inline = False))
-                        logger.info(u'Warning: attempted to attach duplicate filename ' + vizresult['filename'] + ', using unique auto-generated name instead.')
+                        msg.attach(mimify_file(vizref['imagepath'], inline = False))
+                        logger.info(u'Warning: attempted to attach duplicate filename ' + vizref['filename'] + ', using unique auto-generated name instead.')
 
         server = smtplib.SMTP(configs["smtp.serv"])
         if configs["smtp.ssl"]:

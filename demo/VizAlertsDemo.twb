@@ -30,7 +30,7 @@
       </column>
     </datasource>
     <datasource caption='Sample - Superstore' inline='true' name='dataengine.42019.618651678240' version='9.0'>
-      <connection class='dataengine' dbname='C:\Jonathan\Dropbox\Python\VizAlerts\demo\Sample - Superstore US.tde' schema='Extract' server-oauth='' tablename='Extract' workgroup-auth-mode='as-is'>
+      <connection class='dataengine' dbname='Sample - Superstore US.tde' schema='Extract' server-oauth='' tablename='Extract' workgroup-auth-mode='as-is'>
         <relation name='Extract' table='[Extract].[Extract]' type='table' />
         <calculations>
           <calculation column='[Number of Records]' formula='1' />
@@ -1024,7 +1024,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Simple Alerts (tests)' inline='true' name='excel-direct.42449.220166458334' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Jonathan\Dropbox\Python\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Simple Alerts$&apos;' table='[&apos;Simple Alerts$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='string' name='Text' ordinal='0' />
@@ -1210,7 +1210,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Other Tests (tests)' inline='true' name='excel-direct.42449.202206956019' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Jonathan\Dropbox\Python\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Other Tests$&apos;' table='[&apos;Other Tests$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='integer' name='Email Action *' ordinal='0' />
@@ -1359,7 +1359,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Advanced Alerts (tests)' inline='true' name='excel-direct.42445.462414479167' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Jonathan\Dropbox\Python\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Advanced Alerts$&apos;' table='[&apos;Advanced Alerts$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='integer' name='Email Action *' ordinal='0' />
@@ -1580,7 +1580,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Map Category to Manager (tests)' inline='true' name='excel-direct.42451.573722870373' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Jonathan\Dropbox\Python\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Map Category to Manager$&apos;' table='[&apos;Map Category to Manager$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='string' name='Category' ordinal='0' />
@@ -1701,245 +1701,6 @@
         <calculation class='tableau' formula='1' />
       </column>
       <layout dim-ordering='alphabetic' dim-percentage='0.5' measure-ordering='alphabetic' measure-percentage='0.4' show-structure='true' />
-      <semantic-values>
-        <semantic-value key='[Country].[Name]' value='&quot;United States&quot;' />
-      </semantic-values>
-    </datasource>
-    <datasource inline='true' name='VizAlerts' version='9.0'>
-      <connection class='textscan' directory='C:/Jonathan/Dropbox/Python/VizAlerts/demo' filename='VizAlerts.csv' password='' server='' server-oauth='' username='' workgroup-auth-mode='as-is'>
-        <relation name='VizAlerts#csv' table='[VizAlerts#csv]' type='table'>
-          <columns character-set='UTF-8' header='yes' locale='en_US' separator='_'>
-            <column datatype='integer' name='ID' ordinal='0' />
-          </columns>
-        </relation>
-        <refresh increment-key='' incremental-updates='false'>
-        </refresh>
-        <metadata-records>
-          <metadata-record class='column'>
-            <remote-name>ID</remote-name>
-            <remote-type>20</remote-type>
-            <local-name>[ID]</local-name>
-            <parent-name>[VizAlerts#csv]</parent-name>
-            <remote-alias>ID</remote-alias>
-            <ordinal>0</ordinal>
-            <local-type>integer</local-type>
-            <aggregation>Sum</aggregation>
-            <contains-null>true</contains-null>
-            <attributes>
-              <attribute datatype='integer' name='DebugRemoteMetadata (size)'>8</attribute>
-              <attribute datatype='string' name='DebugRemoteType'>&quot;sint64&quot;</attribute>
-            </attributes>
-          </metadata-record>
-          <metadata-record class='capability'>
-            <remote-name></remote-name>
-            <remote-type>0</remote-type>
-            <parent-name>[VizAlerts#csv]</parent-name>
-            <remote-alias></remote-alias>
-            <aggregation>Count</aggregation>
-            <contains-null>true</contains-null>
-            <attributes>
-              <attribute datatype='string' name='character-set'>&quot;UTF-8&quot;</attribute>
-              <attribute datatype='string' name='collation'>&quot;en_US&quot;</attribute>
-              <attribute datatype='string' name='field-delimiter'>&quot;_&quot;</attribute>
-              <attribute datatype='string' name='header-row'>&quot;true&quot;</attribute>
-              <attribute datatype='string' name='locale'>&quot;en_US&quot;</attribute>
-              <attribute datatype='string' name='single-char'>&quot;&quot;</attribute>
-            </attributes>
-          </metadata-record>
-        </metadata-records>
-      </connection>
-      <aliases enabled='yes' />
-      <column caption=' Email BCC ~' datatype='string' name='[ Email CC ~ (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Email addresses to be BCC&apos;d on the email, delimited by comma, semicolon, or space</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Sort Order ~' datatype='integer' name='[ Email Consolidate ~ (copy)]' role='dimension' type='ordinal'>
-        <calculation class='tableau' formula='1' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>This is used with the Email Consolidate option to sort the consolidated emails. If present the rows for a given consolidated email are sorted alphanumerically by the value of the Email Sort Order field.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Footer ~' datatype='string' name='[ Email Header ~ (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos; + // add your desired footer between the two quotes&#13;&#10;&#13;&#10;&apos;VIZALERTS_FOOTER()&apos; // placeholder text for the standard VizAlerts footer. can be removed if desired' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Text that will be inserted one time at the end of the email body.&#10;&#10;Intended for use with &quot; Email Consolidate ~&quot;.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Body *' datatype='string' name='[ Email To * (copy) (copy) (copy) (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Text to use as the Body field of the email. The field is required but can have empty/Null values.&#10;</run>
-            <run bold='true'>&#10;Required</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Subject *' datatype='string' name='[ Email To * (copy) (copy) (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Subject of the email.</run>
-            <run bold='true'>&#10;&#10;Required</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email CC ~' datatype='string' name='[ Email To * (copy) (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Email addresses to be CC&apos;d on the email, delimited by comma, semicolon, or space</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Header ~' datatype='string' name='[Calculation_0810330152812729]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Text that will be inserted one time at the beginning of the email body.&#10;&#10;Intended for use with &quot; Email Consolidate ~&quot;.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column aggregation='Sum' caption=' Email Action *' datatype='integer' name='[Calculation_2500331092646743]' role='dimension' type='ordinal'>
-        <calculation class='tableau' formula='1' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>This field simply indicates that the action for this viz is to send emails (as opposed to other possible action types which may be built...hmmm!).&#10;&#10;In the current implementation it does nothing but tell VizAlerts that this is to be processed as an Advanced alert rather than a Simple alert.&#10;</run>
-            <run bold='true'>&#10;Required</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email From ~' datatype='string' name='[Calculation_5020330152519186 1]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Email address that the email will be sent from. If not provided, the default email address set by the Admin will be used.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email To *' datatype='string' name='[Calculation_5020330152519186]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Email addresses that the email will be sent to, delimited by comma, semicolon, or space</run>
-            <run bold='true'>&#10;&#10;Required</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Consolidate ~' datatype='integer' name='[Calculation_6280330152753824]' role='dimension' type='ordinal'>
-        <calculation class='tableau' formula='1' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>When this field is present in the viz data, multiple lines of Body data will be consolidated into one single email. If &quot; Email Header ~&quot; or &quot; Email Footer ~&quot; are present, these will be added only one time to the start and end of the final Body, respectively.&#10;&#10;This can be useful if multiple pieces of information need to be added to the same email, rather than being sent as separate emails. It can also be helpful for advanced formatting.&#10;&#10;To determine which lines belong to the same email, the recipients (To, From, CC, and BCC) and Subject are used. When those lines are the same for multiple rows, each subsequent Body is appended to the previous, and the email is sent.&#10;&#10;Note that the </run>
-            <run italic='true'>value</run>
-            <run> for this field is completely disregarded; its mere presence causes the viz to be processed with consolidation turned on.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption=' Email Attachment ~' datatype='string' name='[Calculation_8420401154520687 1]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// Attachments are appended to the end of the mail. &#13;&#10;// The following content references are supported:&#13;&#10;//    VIZ_IMAGE() - PNG&#13;&#10;//    VIZ_PDF() - PDF&#13;&#10;//    VIZ_CSV() - CSV&#13;&#10;&#13;&#10;&apos;&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Attachments are appended to the end of the mail. &#10;The following attachments are supported&#10;    VIZ_IMAGE() - PNG&#10;    VIZ_PDF() - PDF&#10;    VIZ_CSV() - CSV&#10;&#10;Multiple attachment references can be made in this field&#10;&#10;These can take an argument myWorkbook/myView and URL parameters as per http://kb.tableau.com/articles/knowledgebase/view-filters-url. For example VIZ_CSV(mySalesReport/myDashboard?SalesPerson=Johnna&#10;</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption='VIZ_IMAGE() Examples' datatype='string' name='[Calculation_8420401154520687]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// VIZ_IMAGE() - When used in header, body, or footer generates an inline PNG image. &#10;//              When used in Email Attachment ~ generates an attachment&#10;// VIZ_IMAGE() generates a PNG of the trigger viz&#10;// add workbookname/viewname argument for custom view&#10;//      for example VIZ_IMAGE(myWorkbook/myView) creates image of the given view&#10;// URL parameters are also supported as per http://kb.tableau.com/articles/knowledgebase/view-filters-url&#10;//      for example VIZ_IMAGE(SalesDashboard/Yesterday?State=Maine)&#10;// |filename=[filename] option for custom filename for appended attachments&#10;//      for example VIZ_IMAGE(SalesDashboard/Yesterday|filename=Yesterday&apos;s Sales)&#10;// |vizlink option for making inline images into hyperlinks&#10;//      for example VIZ_IMAGE(Productivity/Dashboard|vizlink)&#10;&apos;VIZ_IMAGE()&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>How you can use VIZ_IMAGE() content references.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column datatype='integer' hidden='true' name='[Number of Records]' role='measure' type='quantitative' user:auto-column='numrec'>
-        <calculation class='tableau' formula='1' />
-      </column>
-      <column caption='VIZ_PDF() Examples' datatype='string' name='[VIZ_CSV Examples (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// VIZ_PDF() - When used in Email Attachment ~ generates a PDF attachment&#10;//&#10;// VIZ_PDF() alone generates a PDF of the trigger viz.&#10;// add workbookname/viewname argument for custom view&#10;//      for example VIZ_PDF(myWorkbook/myView) creates PDF of the given view&#10;// URL parameters are also supported as per http://kb.tableau.com/articles/knowledgebase/view-filters-url&#10;//      for example VIZ_PDF(SalesDashboard/Yesterday?State=Maine)&#10;// |filename=[filename] option for custom filename for appended attachments&#10;//      for example VIZ_PDF(SalesDashboard/Yesterday|filename=Yesterday&apos;s Sales)&#10;// |mergepdf option for merging multiple VIZ_PDF() references into a single&#10;//      PDF in the same email, requires |filename option as well&#10;//      for example VIZ_PDF(myDash1/myView1|filename=Custom Report|mergepdf) and&#10;//              VIZ_PDF(myDash2/myView2|filename=Custom Report|mergepdf)&#10;&apos;VIZ_PDF()&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>How you can use VIZ_PDF() content references.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption='VIZ_LINK() Examples' datatype='string' name='[VIZ_IMAGE() Examples (copy 2)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// VIZ_LINK() - When used in header, body, or footer generates an HTML hyperlink&#10;// VIZ_LINK() generates a hyperlink to the trigger viz with the text of the &#10;//      workbook/viewname&#10;// add workbookname/viewname argument for custom view&#10;//      for example VIZ_LINK(myWorkbook/myView) creates hyperlink to given view&#10;// URL parameters are also supported as per http://kb.tableau.com/articles/knowledgebase/view-filters-url&#10;//      for example VIZ_LINK(SalesDashboard/Yesterday?State=Maine)&#10;// |filename=[filename] option for custom text&#10;//      for example VIZ_IMAGE(SalesDashboard/Yesterday|filename=Yesterday&apos;s Sales)&#10;//      would create &lt;a href=[link to viz]&gt;Yesterday&apos;s Sales&lt;/a&gt;&#10;// |raw option for making just a link&#10;&apos;VIZ_LINK()&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>How you can use VIZ_LINK() content references.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column caption='VIZ_CSV() Examples' datatype='string' name='[VIZ_IMAGE() Examples (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// VIZ_CSV() - When used in Email Attachment ~ generates a CSV attachment&#10;//      If the viz is a dashboard then the CSV is from the dashboard worksheet&#10;//      whose name comes first when alphanumerically sorted.&#10;// VIZ_CSV() alone generates a CSV of the trigger viz.&#10;// add workbookname/viewname argument for custom view&#10;//      for example VIZ_CSV(myWorkbook/myView) creates CSV of the given view&#10;// URL parameters are also supported as per http://kb.tableau.com/articles/knowledgebase/view-filters-url&#10;//      for example VIZ_CSV(SalesDashboard/Yesterday?State=Maine)&#10;// |filename=[filename] option for custom filename for appended attachments&#10;//      for example VIZ_CSV(SalesDashboard/Yesterday|filename=Yesterday&apos;s Sales)&#10;&#10;&apos;VIZ_CSV()&apos;' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>How you can use VIZ_CSV() content references.</run>
-          </formatted-text>
-        </desc>
-      </column>
-      <column aggregation='Sum' datatype='integer' hidden='true' name='[vizalerts_id]' role='dimension' type='ordinal'>
-      </column>
-      <folder name='Email' role='dimensions'>
-        <folder-item name='[ Email CC ~ (copy)]' type='field' />
-        <folder-item name='[ Email Consolidate ~ (copy)]' type='field' />
-        <folder-item name='[ Email Header ~ (copy)]' type='field' />
-        <folder-item name='[ Email To * (copy) (copy) (copy) (copy)]' type='field' />
-        <folder-item name='[ Email To * (copy) (copy) (copy)]' type='field' />
-        <folder-item name='[ Email To * (copy) (copy)]' type='field' />
-        <folder-item name='[Calculation_0810330152812729]' type='field' />
-        <folder-item name='[Calculation_2500331092646743]' type='field' />
-        <folder-item name='[Calculation_5020330152519186 1]' type='field' />
-        <folder-item name='[Calculation_5020330152519186]' type='field' />
-        <folder-item name='[Calculation_6280330152753824]' type='field' />
-        <folder-item name='[Calculation_8420401154520687 1]' type='field' />
-        <folder-item name='[Calculation_8420401154520687]' type='field' />
-        <folder-item name='[VIZ_CSV Examples (copy)]' type='field' />
-        <folder-item name='[VIZ_IMAGE() Examples (copy 2)]' type='field' />
-        <folder-item name='[VIZ_IMAGE() Examples (copy)]' type='field' />
-      </folder>
-      <extract count='-1' enabled='true' units='records'>
-        <connection class='dataengine' dbname='C:\Jonathan\Dropbox\Python\VizAlerts\demo\VizAlertsDemo.twb Files\Data/demo/_VizAlerts.tde' schema='Extract' tablename='Extract' update-time='03/22/2016 09:47:20 PM'>
-          <relation name='Extract' table='[Extract].[Extract]' type='table' />
-          <refresh>
-            <refresh-event add-from-file-path='' increment-value='%null%' refresh-type='create' rows-inserted='1' timestamp-start='2016-03-22 21:47:20.741' />
-          </refresh>
-          <metadata-records>
-            <metadata-record class='column'>
-              <remote-name>ID</remote-name>
-              <remote-type>16</remote-type>
-              <local-name>[ID]</local-name>
-              <parent-name>[Extract]</parent-name>
-              <remote-alias>ID</remote-alias>
-              <ordinal>0</ordinal>
-              <family>VizAlerts#csv</family>
-              <local-type>integer</local-type>
-              <aggregation>Sum</aggregation>
-              <approx-count>1</approx-count>
-              <contains-null>false</contains-null>
-              <statistics>
-                <statistic aggregation='Min' datatype='integer'>1</statistic>
-                <statistic aggregation='Max' datatype='integer'>1</statistic>
-              </statistics>
-              <attributes>
-                <attribute datatype='string' name='DebugRemoteMetadata (ordered)'>&quot;asc&quot;</attribute>
-                <attribute datatype='integer' name='DebugRemoteMetadata (size)'>1</attribute>
-                <attribute datatype='boolean' name='DebugRemoteMetadata (unique)'>true</attribute>
-                <attribute datatype='string' name='DebugRemoteType'>&quot;sint8&quot;</attribute>
-              </attributes>
-            </metadata-record>
-          </metadata-records>
-        </connection>
-      </extract>
-      <layout dim-ordering='alphabetic' dim-percentage='0.554983' measure-ordering='alphabetic' measure-percentage='0.19244' show-hidden-fields='true' show-structure='false' />
       <semantic-values>
         <semantic-value key='[Country].[Name]' value='&quot;United States&quot;' />
       </semantic-values>
@@ -5969,6 +5730,8 @@
           <field>[excel-direct.42445.462414479167].[none:Test:nk]</field>
         </color-one-way>
       </highlight>
+      <viewpoint>
+      </viewpoint>
     </window>
     <window auto-hidden='0' class='worksheet' maximized='0' name='Advanced Alerts Stress Tests'>
       <cards>
@@ -6671,99 +6434,61 @@
     </window>
   </windows>
   <thumbnails>
-    <thumbnail height='182' name='Low Margin Warning' width='192'>
-      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
-      f2jJmDwQeFiUAAAAAElFTkSuQmCC
+    <thumbnail height='122' name='Low Margin Warning' width='192'>
+      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
+      DzVIE6UYyORLAAAAAElFTkSuQmCC
     </thumbnail>
     <thumbnail height='124' name='Walkthrough #1 - 1' width='192'>
       iVBORw0KGgoAAAANSUhEUgAAAMAAAAB8CAIAAACwtiheAAAACXBIWXMAAA7DAAAOwwHHb6hk
