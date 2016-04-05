@@ -32,14 +32,14 @@ trusted.clientip: null                          # IP address of THIS host. Only 
 viz.data.maxrows: 1000                          # maximum number of data rows to support for all alerts
 viz.data.timeout:                               # viz timeouts relative to scheduled frequency
     - [0, 3600, 30]                                 # if viz was run between 0 and 3600 seconds ago, allow it a 30s timeout
-    - [3601, 7200, 60]                              # if viz was run between 3600 and 7200 seconds ago, allow it a 60s / 1 min timeout
-    - [7201, 14400, 120]                            # if viz was run between 7200 and 14400 seconds ago, allow it a 120s / 2 min timeout
-    - [14401, 315360000, 300]                       # if viz was run between 14400 seconds and 10 years ago, allow it a 300s / 5 min timeout
+    - [3600, 7200, 60]                              # if viz was run between 3600 and 7200 seconds ago, allow it a 60s / 1 min timeout
+    - [7200, 14400, 120]                            # if viz was run between 7200 and 14400 seconds ago, allow it a 120s / 2 min timeout
+    - [14400, 315360000, 300]                       # if viz was run between 14400 seconds and 10 years ago, allow it a 300s / 5 min timeout
 viz.data.retrieval_tries:                       # number of attempts to download viz data, relative to scheduled frequency
     - [0, 3600, 1]                                  # if viz was run between 0 and 3600 seconds ago, allow it 1 attempt
-    - [3601, 7200, 2]                               # if viz was run between 3600 and 7200 seconds ago, allow it 2 attempts
-    - [7201, 14400, 2]                              # if viz was run between 7200 and 14400 seconds ago, allow it 2 attempts
-    - [14401, 315360000, 3]                         # if viz was run between 14400 seconds and 10 years ago, allow it 3 attempts
+    - [3600, 7200, 2]                               # if viz was run between 3600 and 7200 seconds ago, allow it 2 attempts
+    - [7200, 14400, 2]                              # if viz was run between 7200 and 14400 seconds ago, allow it 2 attempts
+    - [14400, 315360000, 3]                         # if viz was run between 14400 seconds and 10 years ago, allow it 3 attempts
 viz.png.width: 1500                             # width of viz png attached to Simple Alerts
 viz.png.height: 1500                            # height of viz png attached to Simple Alerts
 
@@ -92,9 +92,20 @@ db.query: |
          s.is_test ,
          COALESCE(date_trunc('second', s.test_alert_timestamp), sch.run_next_at)
                                  AS run_next_at ,
-         COALESCE(sch.run_next_at,
-             date_trunc('second', (s.test_alert_timestamp - interval '30 minutes')))
-                                 AS ran_last_at ,           -- placeholder, ignore this
+         COALESCE(
+             /*
+              Give our best guess as to when a newly scheduled alert would have last run
+                We're basically making this up, but this is only used for timeout values on the first run
+             */
+             CASE
+                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL '1 minute'
+                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL '1 day'
+                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL '7 days'
+                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL '30 days'
+                 ELSE sch.run_next_at - INTERVAL '1 day' --default to a day ago
+             END ,
+             date_trunc('second', (s.test_alert_timestamp - interval '30 minutes'))
+             )                   AS ran_last_at ,           -- used for initial timeouts only
          60                      AS timeout_s ,             -- placeholder, ignore this
          1                       AS data_retrieval_tries ,  -- placeholder, ignore this
          'simple'                AS alert_type              -- placeholder, ignore this
