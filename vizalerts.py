@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Script to generate conditional automation against published views from a Tableau Server instance
 
-__author__ = 'mcoles'
+__author__ = 'Matt Coles'
 __credits__ = 'Jonathan Drummey'
 
 # generic modules
@@ -77,6 +77,7 @@ valid_conf_keys = \
         'smtp.alloweddomains',
         'smtp.serv',
         'server.ssl',
+        'server.certcheck',
         'smtp.subject',
         'temp.dir',
         'temp.dir.file_retention_seconds',
@@ -176,9 +177,10 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
     try:
         cleanup_dir(configs["temp.dir"], configs["temp.dir.file_retention_seconds"])
     except Exception as e:
+        # Send mail to the admin informing them of the problem, but don't quit
         errormessage = u'Unable to cleanup temp directory {}, error: {}'.format(configs["temp.dir"], e.message)
         logger.error(errormessage)
-        quit_script(errormessage)
+        send_email(configs["smtp.address.from"], configs["smtp.address.to"], configs["smtp.subject"], errormessage)
 
     # cleanup old log files
     try:
@@ -339,7 +341,7 @@ def trusted_ticket_test():
     sitename = ''    # this is just a test, use the default site
     test_ticket = None
     try:
-        test_ticket = tabhttp.get_trusted_ticket(configs["server"], sitename, configs["server.user"], configs["server.ssl"], logger, None, clientip)
+        test_ticket = tabhttp.get_trusted_ticket(configs["server"], sitename, configs["server.user"], configs["server.ssl"], configs["server.certcheck"], logger, None, clientip)
         logger.debug(u'Generated test trusted ticket. Value is: {}'.format(test_ticket))
     except Exception as e:
         errormessage = e.message

@@ -25,7 +25,8 @@ server.version: 9                               # the major version of Tableau S
 server.user: SomeTableauServerUser              # this is ANY user licensed in Tableau Server--it does not need to be an Admin. It is only used to test whether Trusted Tickets work.
                                                     # If you are using Local Authentication, do not prepend domain name to this entry. (e.g., mcoles)
                                                     # If you are using Active Directory Authentication, specify the user as domain\username (e.g., tableau.com\mcoles)
-server.ssl: false                               # use HTTPS for Server connections
+server.ssl: false                               # use HTTPS for Server connections (recommended, but left off by default for testing)
+server.certcheck: false                         # if using HTTPS, validate the certificate (recommended, but left off by default for testing)
 trusted.useclientip: false                      # use clientip for trusted tickets verification
                                                     # This is optional. Please see http://onlinehelp.tableausoftware.com/current/server/en-us/trusted_auth_optional.htm
 trusted.clientip: null                          # IP address of THIS host. Only needed if trusted.useclientip is set to true. Otherwise, just leave it null.
