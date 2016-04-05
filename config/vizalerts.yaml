@@ -8,6 +8,7 @@ temp.dir.file_retention_seconds: 86400          # retain temp files for default 
 
 # Email settings
 smtp.serv: localhost                            # name of the smtp mail server (change for production use; default is only set to "localhost" for ease of testing with PaperCut: https://papercut.codeplex.com/)
+smtp.port: 25                                   # port to user for SMTP server (default is 25)
 smtp.address.from: vizalerts@yourdomain.com     # default sender for all alerts mail
 smtp.address.to: serveradmin@yourdomain.com     # email address of admin to send failures to
 smtp.notify_subscriber_on_failure: true         # send a failure email to alert subscriber if it fails

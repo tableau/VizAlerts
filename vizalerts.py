@@ -1600,7 +1600,7 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
                         msg.attach(mimify_file(vizref['imagepath'], inline = False))
                         logger.info(u'Warning: attempted to attach duplicate filename ' + vizref['filename'] + ', using unique auto-generated name instead.')
 
-        server = smtplib.SMTP(configs["smtp.serv"])
+        server = smtplib.SMTP(configs["smtp.serv"], configs["smtp.port"])
         if configs["smtp.ssl"]:
             server.ehlo()
             server.starttls()
@@ -1614,6 +1614,18 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
 
         server.sendmail(fromaddr.encode('utf-8'), [addr.encode('utf-8') for addr in allrecips], io.getvalue())
         server.quit()
+    except smtplib.SMTPConnectError as e:
+        logger.error(u'Email failed to send; there was an issue connecting to the SMTP server: {}'.format(e))
+        raise e
+    except smtplib.SMTPHeloError as e:
+        logger.error(u'Email failed to send; the SMTP server refused our HELO message: {}'.format(e))
+        raise e
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(u'Email failed to send; there was an issue authenticating to SMTP server: {}'.format(e))
+        raise e
+    except smtplib.SMTPException as e:
+        logger.error(u'Email failed to send; there was an issue sending mail via SMTP server: {}'.format(e))
+        raise e
     except Exception as e:
         logger.error(u'Email failed to send: {}'.format(e))
         raise e
