@@ -341,7 +341,7 @@ def trusted_ticket_test():
     sitename = ''    # this is just a test, use the default site
     test_ticket = None
     try:
-        test_ticket = tabhttp.get_trusted_ticket(configs["server"], sitename, configs["server.user"], configs["server.ssl"], configs["server.certcheck"], logger, None, clientip)
+        test_ticket = tabhttp.get_trusted_ticket(configs["server"], sitename, configs["server.user"], configs["server.ssl"], logger, configs["server.certcheck"], None, clientip)
         logger.debug(u'Generated test trusted ticket. Value is: {}'.format(test_ticket))
     except Exception as e:
         errormessage = e.message
