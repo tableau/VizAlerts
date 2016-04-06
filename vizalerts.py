@@ -176,19 +176,28 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
     # cleanup old temp files
     try:
         cleanup_dir(configs["temp.dir"], configs["temp.dir.file_retention_seconds"])
-    except Exception as e:
+    except OSError as e:
         # Send mail to the admin informing them of the problem, but don't quit
-        errormessage = u'Unable to cleanup temp directory {}, error: {}'.format(configs["temp.dir"], e.message)
+        errormessage = u'OSError: Unable to cleanup temp directory {}, error: {}'.format(configs["temp.dir"], e)
+        logger.error(errormessage)
+        send_email(configs["smtp.address.from"], configs["smtp.address.to"], configs["smtp.subject"], errormessage)
+    except Exception as e:
+        errormessage = u'Unable to cleanup temp directory {}, error: {}'.format(configs["temp.dir"], e)
         logger.error(errormessage)
         send_email(configs["smtp.address.from"], configs["smtp.address.to"], configs["smtp.subject"], errormessage)
 
     # cleanup old log files
     try:
         cleanup_dir(configs["log.dir"], configs["log.dir.file_retention_seconds"])
-    except Exception as e:
-        errormessage = u'Unable to cleanup log directory {}, error: {}'.format(configs["log.dir"], e.message)
+    except OSError as e:
+        # Send mail to the admin informing them of the problem, but don't quit
+        errormessage = u'OSError: Unable to cleanup log directory {}, error: {}'.format(configs["temp.dir"], e)
         logger.error(errormessage)
-        quit_script(errormessage)
+        send_email(configs["smtp.address.from"], configs["smtp.address.to"], configs["smtp.subject"], errormessage)
+    except Exception as e:
+        errormessage = u'Unable to cleanup log directory {}, error: {}'.format(configs["temp.dir"], e)
+        logger.error(errormessage)
+        send_email(configs["smtp.address.from"], configs["smtp.address.to"], configs["smtp.subject"], errormessage)
 
     # test ability to connect to Tableau Server and obtain a trusted ticket
     trusted_ticket_test()
