@@ -239,9 +239,16 @@ def process_views(views):
         # check for invalid email domains
         subscriberemailerror = address_is_invalid(subscriberemail)
         if subscriberemailerror:
-            message = u'Unable to send email to address {} for view {}, view id {}: {}'.format(subscriberemail, viewname, view["view_id"], subscriberemailerror)
-            logger.error(message)
-            send_email(configs["smtp.address.from"], configs["smtp.address.to"], configs["smtp.subject"], message)
+            errormessage = u'VizAlerts was unable to process this alert, because it was unable to send email to address {}: {}'.format(subscriberemail, subscriberemailerror)
+            logger.error(errormessage)
+            view_failure(view, errormessage)
+            continue
+
+        # check for unlicensed user
+        if view['subscriber_license'] == 'Unlicensed':
+            errormessage = u'VizAlerts was unable to process this alert: User {} is unlicensed.'.format(subscribersysname)
+            logger.error(errormessage)
+            view_failure(view, errormessage)
             continue
 
         # set our clientip properly if Server is validating it

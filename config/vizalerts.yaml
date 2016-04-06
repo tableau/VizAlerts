@@ -86,6 +86,7 @@ db.query: |
          su_sub.name             AS subscriber_sysname ,
          dom_sub.name            AS subscriber_domain ,
          su_sub.email            AS subscriber_email ,
+         l_sub.name              AS subscriber_license ,
          su.email                AS owner_email ,
          su.name                 AS owner_sysname ,
          su.friendly_name        AS owner_friendly_name ,
@@ -149,6 +150,8 @@ db.query: |
             ON s.user_id = u_sub.id
         INNER JOIN system_users su_sub
             ON u_sub.system_user_id = su_sub.id
+        INNER JOIN licensing_roles l_sub
+            ON u_sub.licensing_role_id = l_sub.id
         INNER JOIN domains dom_sub
             ON su_sub.domain_id = dom_sub.id
         LEFT JOIN subscriptions_customized_views scv
