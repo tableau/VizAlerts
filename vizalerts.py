@@ -27,6 +27,10 @@ from collections import OrderedDict
 import tabUtil
 from tabUtil import tabhttp
 
+# SMS modules - this is the base load, included modules are loaded as necessary
+import smsAction
+from smsAction import smsaction
+
 # PostgreSQL module
 import psycopg2
 import psycopg2.extras
@@ -85,7 +89,12 @@ valid_conf_keys = \
         'viz.data.maxrows',
         'viz.data.timeout',
         'viz.png.height',
-        'viz.png.width']
+        'viz.png.width',
+        'smsaction.enable',
+        'smsaction.provider',
+        'smsaction.account_id',
+        'smsaction.auth_token',
+        'smsaction.from_number']
 
 required_email_fields =\
     [' Email To *',
@@ -103,6 +112,7 @@ unsubscribe_footer = u'<br><font size="2"><i><a href="{}">Manage my subscription
 
 # regular expression used to split recipient address strings into separate email addresses
 EMAIL_RECIP_SPLIT_REGEX = u'[; ,]*'
+SMS_RECIP_SPLIT_REGEX = u'[;,]*'
 
 # name of the file used for maintaining subscriptions state in schedule.state.dir
 SCHEDULE_STATE_FILENAME = u'vizalerts.state'
@@ -122,6 +132,13 @@ MERGEPDF_ARGUMENT = u'mergepdf'
 VIZLINK_ARGUMENT = u'vizlink'
 RAWLINK_ARGUMENT = u'rawlink'
 ARGUMENT_DELIMITER = u'|'
+
+# defined values for ' Email Action *' field
+EMAIL_ACTION = u'1'
+SMS_ACTION = u'2'
+
+# whether SMS action is available
+SMS_ACTION_AVAILABLE = False
 
 # code from https://github.com/mitsuhiko/flask/blob/50dc2403526c5c5c67577767b05eb81e8fab0877/flask/helpers.py#L80
 # what separators does this operating system provide that are not a slash?
@@ -172,6 +189,20 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
     # set the log level based on the config file
     logger.setLevel(configs["log.level"])
 
+    # check whether SMS Actions are enabled
+    if configs['smsaction.enable']:
+        try:
+            global smsclient
+            smsclient = smsaction.get_sms_client(configs, logger)
+            global SMS_ACTION_AVAILABLE
+            SMS_ACTION_AVAILABLE = True
+            logger.info(u'SMS Actions are enabled')
+            
+        except Exception as e:
+            errormessage = u'Unable to get SMS client, error: {}'.format(e.message)
+            logger.error(errormessage)
+            quit_script(errormessage)
+          
     # cleanup old temp files
     try:
         cleanup_dir(configs["temp.dir"], configs["temp.dir.file_retention_seconds"])
@@ -190,7 +221,6 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
 
     # test ability to connect to Tableau Server and obtain a trusted ticket
     trusted_ticket_test()
-
     # get the views to process
     try:
         views = get_views()
@@ -216,7 +246,7 @@ def process_views(views):
         sitename = unicode(view["site_name"]).replace('Default', '')
         viewurlsuffix = view['view_url_suffix']
         viewname = unicode(view['view_name'])
-        logger.debug(viewurlsuffix)
+
         timeout_s = view['timeout_s']
         subscribersysname = unicode(view['subscriber_sysname'].decode('utf-8'))
         subscriberemail = view['subscriber_email']
@@ -552,8 +582,6 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
             inlineattachments = [{'imagepath' : imagepath}]
             appendattachments = [{'imagepath' : csvpath}]
             
-            # embed the viz image
-            # inlineattachments = [csvpath, imagepath]
             logger.info(u'Sending simple alert email to user {}'.format(subscriberemail))
             body = u'<a href="{}"><img src="cid:{}"></a>'.format(vizurl, basename(imagepath)) +\
                    bodyfooter.format(subscriberemail, vizurl, viewname)
@@ -631,16 +659,17 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                 logger.error(errormessage)
 
                 # Need to send a custom email for this error
-                addresslist = u'<table border=1><tr><b><td>Row</td><td width="75">Field</td><td>Value</td><td>Error</td></b></tr>'
+                addresslist = u'<table border=1><tr><b><td>Row</td><td width="75">Email Action</td><td width="75">Field</td><td>Value</td><td>Error</td></b></tr>'
                 for adderror in addresserrors:
-                    addresslist = addresslist + u'<tr><td width="75">{}</td><td width="75">{}</td><td>{}</td><td>{}</td></tr>'.format(adderror['Row'],
+                    addresslist = addresslist + u'<tr><td width="75">{}</td><td width="75">{}</td><td width="75">{}</td><td>{}</td><td>{}</td></tr>'.format(adderror['Row'],
+                                                                                                                adderror['Action'],
                                                                                                                 adderror['Field'],
                                                                                                                 adderror['Value'],
                                                                                                                 adderror['Error'],)
                 addresslist = addresslist + u'</table>'
                 appendattachments = [{'imagepath' : csvpath}]
                 view_failure(view, u'VizAlerts was unable to process this view due to the following error: ' + \
-                                u'Errors found in recipients:<br><br>{}'.format(addresslist) + \
+                                u'Error(s) found in recipients:<br><br>{}'.format(addresslist) + \
                                 u'<br><br>See row numbers in attached CSV file.' ,
                                 appendattachments)
                 return
@@ -667,6 +696,9 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
             # iterate through the rows and send emails accordingly
             consolidate_email_ctr = 0
             body = []
+
+            # inline attachments and appendattachments will be a list of dicts
+            # where each dict is a content reference VIZ_PDF(), VIZ_IMAGE(), etc.
             inlineattachments = []
             appendattachments =[]
 
@@ -680,7 +712,10 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                 if has_email_from:
                     email_from = row[' Email From ~']
                 else:
-                    email_from = configs["smtp.address.from"]   # use default from config file
+                    if row[' Email Action *'] == EMAIL_ACTION:
+                        email_from = configs["smtp.address.from"]   # use default from config file
+                    elif row[' Email Action *'] == SMS_ACTION:
+                        email_from = configs["smsaction.from_number"] # use default from config file
 
                 # get the other recipient addresses
                 if has_email_cc:
@@ -693,7 +728,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                 else:
                     email_bcc = None
 
-                if row[' Email Action *'] == '1':
+                if row[' Email Action *'] == EMAIL_ACTION:
                     logger.debug(u'Starting email action')
 
                     # Append header row, if provided
@@ -814,6 +849,51 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                         inlineattachments = []
                         body = []
                         appendattachments=[]
+
+                # this is an SMS Action
+                elif row[' Email Action *'] == SMS_ACTION:
+                    
+                    # check that SMS actions are available
+                    if SMS_ACTION_AVAILABLE == False:
+                        errormessage = u'Trigger view {} was set up to send SMS but this VizAlerts install has not been configured for SMS Actions, please contact your Tableau Server admin.'.format(view["view_name"])
+                        logger.error(errormessage)
+                        view_failure(view, errormessage)
+                  
+                    logger.info(u'Sending SMS to {}, CC {}, BCC {}, Subject {}'.format(row[' Email To *'],
+                                                                            email_cc , email_bcc,
+                                                                            row[' Email Subject *']))
+                    consolidate_email_ctr = 0 # I think this is redundant now...
+                    body = []
+
+                    # add the header if needed
+                    if has_email_header:
+                        body.append(row[' Email Header ~'])
+
+                    body.append(row[' Email Body *'])
+
+                    # add the footer if needed, otherwise no footer
+                    if has_email_footer:
+                        body.append(row[' Email Footer ~'].replace(DEFAULT_FOOTER,
+                            bodyfooter.format(subscriberemail, vizurl, viewname)))
+                    
+                    body = sms_append_body(body, row, vizcompleterefs, subscriberemail, vizurl, viewname, view)
+                    
+                    # make list of all SMS addresses - they already went through 1st validation
+                    smsaddresses = re.split(SMS_RECIP_SPLIT_REGEX, row[' Email To *'].strip())
+
+                    if has_email_cc:
+                        smsaddresses.extend(re.split(SMS_RECIP_SPLIT_REGEX, email_cc.strip()))
+
+                    if has_email_bcc:
+                        smsaddresses.extend(re.split(SMS_RECIP_SPLIT_REGEX, email_bcc.strip()))
+
+                    # send the message
+                    for smsaddress in smsaddresses:
+                        errormessage = smsaction.send_sms(configs, logger, smsclient, email_from, smsaddress, row[' Email Subject *'], u' '.join(body))
+
+                        if errormessage != None:
+                            view_failure(view, u'VizAlerts was unable to process this view due to the following error: {}'.format(e))
+
         else:
             # missing any valid action
             logger.info(u'No valid actions specified in view data for {}, skipping'.format(viewurlsuffix))
@@ -916,43 +996,88 @@ def validate_addresses(vizdata, has_email_from, has_email_cc, has_email_bcc):
     rownum = 2 # account for field header in CSV
 
     for row in vizdata:
-        result = addresses_are_invalid(row[' Email To *'], False) # empty string not acceptable as a To address
+        result = addresses_are_invalid(row[' Email To *'], False, row[' Email Action *']) # empty string not acceptable as a To address
         if result:
-            errorlist.append({'Row': rownum, 'Field': ' Email To *', 'Value': result['address'], 'Error': result['errormessage']})
+            errorlist.append({'Row': rownum, 'Action':row[' Email Action *'], 'Field': ' Email To *', 'Value': result['address'], 'Error': result['errormessage']})
         if has_email_from:
-            result = addresses_are_invalid(row[' Email From ~'], False) # empty string not acceptable as a From address
+            result = addresses_are_invalid(row[' Email From ~'], False, row[' Email Action *']) # empty string not acceptable as a From address
             if result:
-                errorlist.append({'Row': rownum, 'Field': ' Email From ~', 'Value': result['address'], 'Error': result['errormessage']})
+                errorlist.append({'Row': rownum, 'Action':row[' Email Action *'], 'Field': ' Email From ~', 'Value': result['address'], 'Error': result['errormessage']})
         if has_email_cc:
-            result = addresses_are_invalid(row[' Email CC ~'], True)
+            result = addresses_are_invalid(row[' Email CC ~'], True, row[' Email Action *'])
             if result:
-                errorlist.append({'Row': rownum, 'Field': ' Email CC ~', 'Value': result['address'], 'Error': result['errormessage']})
+                errorlist.append({'Row': rownum, 'Action':row[' Email Action *'], 'Field': ' Email CC ~', 'Value': result['address'], 'Error': result['errormessage']})
         if has_email_bcc:
-            result = addresses_are_invalid(row[' Email BCC ~'], True)
+            result = addresses_are_invalid(row[' Email BCC ~'], True, row[' Email Action *'])
             if result:
-                errorlist.append({'Row': rownum, 'Field': ' Email BCC ~', 'Value': result['address'], 'Error': result['errormessage']})
+                errorlist.append({'Row': rownum, 'Action':row[' Email Action *'], 'Field': ' Email BCC ~', 'Value': result['address'], 'Error': result['errormessage']})
         rownum = rownum + 1
 
     return errorlist
 
     
-def addresses_are_invalid(emailaddresses, emptystringok):
-    """Validates all email addresses found in a given string"""
-    logger.debug(u'Validating email field value: {}'.format(emailaddresses))
-    address_list = re.split(EMAIL_RECIP_SPLIT_REGEX, emailaddresses.strip())
+def addresses_are_invalid(addresses, emptystringok, emailaction):
+    """Validates all email addresses and phone numbers found in a given string"""
+    logger.debug(u'Validating address field value: {}'.format(addresses))
+    
+    # split multiple values in a single trigger alert cell into a list
+    if emailaction == EMAIL_ACTION:
+        address_list = re.split(EMAIL_RECIP_SPLIT_REGEX, addresses.strip())
+    elif emailaction == SMS_ACTION:
+        address_list = re.split(SMS_RECIP_SPLIT_REGEX, addresses.strip())
+        
     for address in address_list:
-        logger.debug(u'Validating presumed email address: {}'.format(address))
+        logger.debug(u'Validating presumed address: {}'.format(address))
         if emptystringok and (address == '' or address is None):
             return None
         else:
-            errormessage = address_is_invalid(address)
+            # testing email address
+            if emailaction == EMAIL_ACTION:
+                errormessage = address_is_invalid(address)
+            elif emailaction == SMS_ACTION:
+                errormessage = smsnumber_is_invalid(address)
+                    
             if errormessage:
                 logger.debug(u'Address is invalid: {}, Error: {}'.format(address, errormessage))
                 if len(address) > 64:
                     address = address[:64] + '...' # truncate a too-long address for error formattting purposes
                 return {'address':address, 'errormessage':errormessage}
+
     return None
 
+def smsnumber_is_invalid(address):
+    """Checks for a syntactically invalid phone number, returns None for success or an error message"""
+    
+    # phone number must not be empty
+    if address is None or len(address) == 0 or address == '':
+        errormessage = u'Phone number is empty'
+        logger.error(errormessage )
+        return errormessage
+
+    # must be a phone number, not email address
+    if '@' in address:
+        errormessage = u'Found possible email address in phone number: {}'.format(address)
+        logger.error(errormessage)
+        return errormessage
+
+    # check for other non-usable characters
+    foundchars = re.findall(u'[^0-9 +.\-()]', address)
+    if len(foundchars) > 0:
+        errormessage = u'Found invalid characters {} in SMS number {}, only valid characters are numbers, space, hyphen, period, plus sign, and parentheses'.format(u''.join(foundchars), address)
+        logger.error(errormessage)
+        return errormessage
+    
+    # strip out everything but the numbers for these next checks
+    phonenumber = re.sub('[^0-9]','',address)
+    
+    # phone number must be at least 8 characters (the global shortest with country code & number)
+    if len(phonenumber) < 8:
+        errormessage = u'Phone number is too short: {}'.format(address)
+        logger.error(errormessage)
+        return errormessage        
+    
+    #could potentially add checks here for valid country codes
+    return None
 
 def address_is_invalid(address):
     """Checks for a syntactically invalid email address."""
@@ -1071,11 +1196,11 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
         
     """
 
-    vizcompleterefs = dict()        
-    vizrefs = []
-    vizdistinctrefs = dict()
+    vizcompleterefs = dict()    # dict of dicts where each child dict is a content reference      
+    vizrefs = []                # list of dicts where each dict is a content reference
+    vizdistinctrefs = dict()    # the distinct list of content references
 
-    results = []
+    results = []                # list of content references found by regex
     logger.debug(u'Identifying content references')
 
     # data is the CSV that has been downloaded for a given view
@@ -1170,10 +1295,14 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                                     filename = posixpath.normpath(filename)
                                     for sep in _os_alt_seps:
                                         if sep in filename:
-                                            raise ValueError(u'Found an invalid or non-allowed separator in filename: {} for content reference {}'.format(filename, vizref))
+                                            errormessage = u'Found an invalid or non-allowed separator in filename: {} for content reference {}'.format(filename, vizref)
+                                            logger.error(errormessage)
+                                            raise ValueError(errormessage)
 
                                     if os.path.isabs(filename) or '../' in filename or '..\\' in filename:
-                                        raise ValueError(u'Found non-allowed path when expecting filename: {} for content reference {}'.format(filename, vizref))
+                                        errormessage = u'Found non-allowed path when expecting filename: {} for content reference {}'.format(filename, vizref)
+                                        logger.error(errormessage)
+                                        raise ValueError(errormessage)
                                     
                                     # check for non-allowed characters
                                     # check for non-allowed characters
@@ -1181,7 +1310,9 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
                                     # using ($L) option to set locale to handle accented characters
                                     nonallowedchars = re.findall(u'(?L)[^\w \-._+]', filename)
                                     if len(nonallowedchars) > 0:
-                                        raise ValueError(u'Found non-allowed character(s): {} in filename {} for content reference {}, only allowed characters are alphanumeric, space, hyphen, underscore, period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref))
+                                        errormessage = u'Found non-allowed character(s): {} in filename {} for content reference {}, only allowed characters are alphanumeric, space, hyphen, underscore, period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref)
+                                        logger.error(errormessage)
+                                        raise ValueError(errormessage)
                                     
                                     # if the output is anything but LINK then append the formatstring to the output filename
                                     if vizcompleterefs[vizref]['formatstring'] != 'LINK':
@@ -1304,18 +1435,16 @@ def get_unique_vizdata(data, has_consolidate_email, has_email_from, has_email_cc
         # the download process from the original csv
         if has_email_sort_order:
             uniquelist = sorted(uniquelist, key=itemgetter(u' Email Sort Order ~'))
-        logger.debug(u'Sorting by BCC')
         if has_email_bcc:
             uniquelist = sorted(uniquelist, key=itemgetter(u' Email BCC ~'))
-        logger.debug(u'Sorting by CC')
         if has_email_cc:
             uniquelist = sorted(uniquelist, key=itemgetter(u' Email CC ~'))
-        logger.debug(u'Sorting by From')
         if has_email_from:
             uniquelist = sorted(uniquelist, key=itemgetter(u' Email From ~'))
-        logger.debug(u'Sorting by Subject, To')
-        # finally, sort by Subject and To
+        # sort by Subject and To
         uniquelist = sorted(uniquelist, key=itemgetter(u' Email Subject *', u' Email To *'))
+        # sort by Email Action to ensure consolidated emails don't get munged by SMS emails
+        uniquelist = sorted(uniquelist, key=itemgetter(u' Email Action *'))
         
     logger.debug(u'Done sorting, returning the list')
 
@@ -1462,6 +1591,32 @@ def append_body_and_inlineattachments(body, inlineattachments, row, vizcompleter
                     body = replaceresult['outlist']    
                 
     return body, inlineattachments
+
+def sms_append_body(body, row, vizcompleterefs, subscriberemail, vizurl, viewname, view):
+    """Generic function for filling SMS body text with hyperlink references"""
+    """for inline attachments and hyperlink text"""
+
+    logger.debug('Replacing SMS text with exact content references for hyperlinks')
+
+    # find all distinct content references in the email body list 
+    # so we can replace each with an inline image or hyperlink text
+    foundcontent = re.findall(u"VIZ_LINK\(.*?\)", ' '.join(body))
+    foundcontentset = set(foundcontent)
+    vizrefs = list(foundcontentset)
+    
+    if len(vizrefs) > 0:
+        for vizref in vizrefs:
+            # we're replacing #VIZ_LINK text
+            if vizcompleterefs[vizref]['formatstring'] == 'LINK':
+
+                # always use raw link, ignore presence or absence of RAWLINK argument
+                replacestring = get_view_url(view, vizcompleterefs[vizref]['view_url_suffix'])
+                replaceresult = replace_in_list(body, vizref, replacestring)
+                
+                if replaceresult['foundstring'] == True:
+                    body = replaceresult['outlist']    
+                
+    return body
 
 
 def merge_pdf_attachments(appendattachments):
@@ -1635,3 +1790,4 @@ if __name__ == "__main__":
         exitcode = 1
     finally:
         sys.exit(exitcode)
+
