@@ -2,6 +2,13 @@
 VERSION HISTORY
 ===============
 
+Version 1.2.1
+=================================
+-Added support for |exportfilepath and |noattach options for exporting views to local folders
+-Added ExportDemo.twb to demo\ folder with demos and tests
+-Updated documentation with additional troubleshooting tips and new export file option
+-Updated documentation with corrections from Matt
+
 Version 1.2.0
 =================================
 -Added support for new SMS Action via Twilio as an SMS provider
