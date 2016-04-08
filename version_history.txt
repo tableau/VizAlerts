@@ -2,6 +2,20 @@
 VERSION HISTORY
 ===============
 
+Version 1.2.1
+=================================
+-Added support for |exportfilepath and |noattach options for exporting views to local folders
+-Added ExportDemo.twb to demo\ folder with demos and tests
+-Updated documentation with additional troubleshooting tips and new export file option
+-Updated documentation with corrections from Matt
+
+Version 1.2.0
+=================================
+-Added support for new SMS Action via Twilio as an SMS provider
+-Added SMSDemo.twb to demo\ folder with demos and tests
+-Updated documentation with additional troubleshooting tips and new SMS Action
+-Added comments to the code to make the lists of dicts and dicts of dicts more clear
+
 Version 1.1.0
 =================================
 -Added VIZ_CSV() and VIZ_PDF() content reference for appended (non-inline) CSV and PDF attachments using Email Attachment ~ field (Issue #11)

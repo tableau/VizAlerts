@@ -43,6 +43,13 @@ viz.data.retrieval_tries:                       # number of attempts to download
 viz.png.width: 1500                             # width of viz png attached to Simple Alerts
 viz.png.height: 1500                            # height of viz png attached to Simple Alerts
 
+# SMS Action Settings
+smsaction.enable: False                             # default false, set to True to enable SMS Action
+smsaction.provider: null                            # default null, allowed providers are: "twilio"
+smsaction.account_id: ""                            # Account ID, for Twilio this is from http://twilio.com/user/account
+smsaction.auth_token: ""                            # Auth token, for Twilio http://twilio.com/user/account
+smsaction.from_number: ""                           # Default outbound phone number for SMS alerts with country code, area code, and number
+
 # Tableau Server PostgreSQL Repository settings
 #
 #   These settings pertain to the Tableau Server internal database. These define the connection VizAlerts
