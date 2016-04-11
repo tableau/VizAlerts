@@ -2,6 +2,31 @@
 VERSION HISTORY
 ===============
 
+Version 1.1.0
+=================================
+-Added VIZ_CSV() and VIZ_PDF() content reference for appended (non-inline) CSV and PDF attachments using Email Attachment ~ field (Issue #11)
+-Support for custom view references in content references e.g. myViz/myView (Issue #6)
+-URL parameter support for custom view references e.g. myViz/myView?Region=East (Issue #6)
+-Support for custom hyperlinks to views with VIZ_LINK() content reference
+-Merged PDF support with |mergpdf option in content references via integration with PyPDF2 
+-Custom filenames for appended attachments with |filename option
+-Enabled user-defined sort for consolidated emails using Email Sort Order ~ field
+-Inline images can be hyperlinks with |vizlink option
+-Now including demo\ folder with VizAlertsDemo.twb that includes a number of scenarios for both demo & test purposes
+-Documentation for all of the above
+-Removed edge condition where consolidated emails would not consolidate.
+-Added initial code for support of TWB/TWBX downloads
+-Added initial code for support of export to local filesystem
+-VizAlerts.tdsx moved to demo\ folder
+-Added config option for SMTP server port (Issue #15)
+-Added config option to ignore certificate check for SSL (Issue #5)
+-Fixed issue with trusted ticket failures error handling (Issue #4)
+-Fixed issue with default config values for timeouts and retries not applying as expected (Issue #2)
+-Fixed issue with alert tests using a 30s timeout rather than the correct value (Issue #3)
+-Fixed issue with alerts being processed for unlicesed users (Issue #13)
+-Fixed issue with file cleanup failures halting all alert processing (Issue #16)
+=================================
+
 Version 1.0.8
 =================================
 -Documentation improvements

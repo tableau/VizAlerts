@@ -10,6 +10,8 @@ import time
 import datetime
 import cgi
 import codecs
+import re
+import ssl
 from requests_ntlm import HttpNtlmAuth
 
 
@@ -17,10 +19,11 @@ class Format(object):
     CSV = 'csv'
     PNG = 'png'
     PDF = 'pdf'
+    TWB = 'twb'
 
 
 # Generate a trusted ticket
-def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=None, clientip=None, tries=1):
+def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=True, userdomain=None, clientip=None, tries=1):
 
     protocol = u'http'
 
@@ -56,8 +59,16 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=N
         try:
             tries -= 1
 
-            request = urllib2.Request(trustedurl, data)
-            response = urllib2.urlopen(request)
+            # If we're using SSL, and config says to validate the certificate, then do so
+            if encrypt and certcheck:
+                context = ssl._create_unverified_context()
+                request = urllib2.Request(trustedurl, data)
+                response = urllib2.urlopen(request, context=context)
+            else:
+                # We're either not using SSL, or just not validating the certificate
+                request = urllib2.Request(trustedurl, data)
+                response = urllib2.urlopen(request)
+
             ticket = response.read()
             logger.debug(u'Got ticket: {}'.format(ticket))
 
@@ -67,14 +78,14 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=N
                 raise UserWarning(errormessage)
 
         except urllib2.HTTPError as e:
-            errormessage = cgi.escape(u'HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.code), requestdetails))
+            errormessage = cgi.escape(u'HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)
             else:
                 continue
         except urllib2.URLError as e:
-            errormessage = cgi.escape(u'URLError generating trusted ticket: {}  Request details: {}'.format(str(e.message), requestdetails))
+            errormessage = cgi.escape(u'URLError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)
@@ -101,7 +112,7 @@ def export_view(configs, view, format, logger):
 
     # assign variables (clean this up later)
     viewname = unicode(view['view_name'])
-    viewurlsuffix = view['view_url_suffix']
+
     username = view['subscriber_sysname']
     sitename = unicode(view["site_name"]).replace('Default', '')
     if view['subscriber_domain'] != 'local': # leave it as None if Server uses local authentication
@@ -132,10 +143,24 @@ def export_view(configs, view, format, logger):
     else:
         protocol = u'http'
 
-    if format == Format.PNG:
-        formatparam = u'?:format=' + format + u'&:size={},{}'.format(str(pngwidth), str(pngheight))
+    #viewurlsuffix may be of form workbook/view
+    #or workbook/view?param1=value1&param2=value2
+    #in the latter case separate it out
+    search = re.search(u'(.*?)\?(.*)', view['view_url_suffix'])
+    if search:
+        viewurlsuffix = search.group(1)
+        extraurlparameter = '?' + search.group(2)
     else:
-        formatparam = u'?:format=' + format
+        viewurlsuffix = view['view_url_suffix']
+        # always need a ? to add in the formatparam and potentially refresh URL parameters
+        extraurlparameter = '?'
+
+    # set up format
+    # if user hasn't overriden PNG with size setting then use the default  
+    if format == Format.PNG and ':size=' not in extraurlparameter:
+            formatparam = u'&:format=' + format + u'&:size={},{}'.format(str(pngwidth), str(pngheight))
+    else:
+        formatparam = u'&:format=' + format
 
     if sitename != '':
         sitepart = u'/t/' + sitename
@@ -143,7 +168,7 @@ def export_view(configs, view, format, logger):
         sitepart = sitename
 
     # get the full URL (minus the ticket) for logging and error reporting
-    displayurl = protocol + u'://' + server + sitepart + u'/views/' + viewurlsuffix + formatparam
+    displayurl = protocol + u'://' + server + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
     if refresh:
         displayurl = displayurl + u'&:refresh=y'   # show admin/users that we forced a refresh
 
@@ -155,7 +180,7 @@ def export_view(configs, view, format, logger):
             ticket = get_trusted_ticket(server, sitename, username, encrypt, logger, subscriberdomain, clientip)
 
             # build final URL
-            url = protocol + u'://' + server + u'/trusted/' + ticket + sitepart + u'/views/' + viewurlsuffix + formatparam
+            url = protocol + u'://' + server + u'/trusted/' + ticket + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
             if refresh:
                 url = url + u'&:refresh=y'   # force a refresh of the data--we don't want alerts based on cached (stale) data
 
@@ -172,9 +197,10 @@ def export_view(configs, view, format, logger):
             if not response.ok:
                 raise requests.RequestException
 
-            # Create the temporary file
-            timestamp = time.time()
-            datestring = datetime.datetime.fromtimestamp(timestamp).strftime('%Y%m%d%H%M%S')
+            # Create the temporary file, datestring is down to microsecond to prevent dups since
+            # we are excluding any extraurl parameters for space & security reasons
+            # (users might obfuscate results by hiding URL parameters)
+            datestring = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
             filename = datestring + '_' + viewurlsuffix.replace('/', '-') + '.' + format
             filepath = tempdir + filename
 
