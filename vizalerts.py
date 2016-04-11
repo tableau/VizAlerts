@@ -266,6 +266,9 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
 def process_views(views):
     """Iterate through the list of applicable views, and process each"""
     for view in views:
+        logger.debug('~view')
+        for key in view:
+            logger.debug('{}'.format(key))
         logger.debug(u'Processing subscription_id {}, view_id {}, site_name {}, customized view id {}, '
                      'view_name {}'.format(
                                         view["subscription_id"],
@@ -296,6 +299,7 @@ def process_views(views):
             continue
 
         # check for unlicensed user
+            
         if view['subscriber_license'] == 'Unlicensed':
             errormessage = u'VizAlerts was unable to process this alert: User {} is unlicensed.'.format(subscribersysname)
             logger.error(errormessage)
@@ -1261,7 +1265,7 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
     # loop through each found viz reference, i.e. everything in the VIZ_*(*).
     for vizref in results:
         if vizref not in vizcompleterefs:
-            loggger.debug(u'Parsing content reference {}'.format(vizref))
+            logger.debug(u'Parsing content reference {}'.format(vizref))
             # create a dictionary to hold the necessary values for this viz reference
             vizcompleterefs[vizref] = dict()
             

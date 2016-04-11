@@ -6,19 +6,8 @@ schedule.state.dir: ".\\ops\\"                  # file written to keep the last 
 temp.dir: ".\\temp\\"                           # folder to write temporary files to (csv, png for viz exports). Will be created if it does not exist.
 temp.dir.file_retention_seconds: 86400          # retain temp files for default of 24 hours, mostly for debugging
 
-# Export File Settings
-exportfile.mode: 0                              # Determines what kind of file export for Advanced Alerts is supported:
-                                                # 0 = off, no file export is allowed (default)
-                                                # 1 = files can only be exported to one or more UNC paths (and subfolders) as defined
-                                                #       by exportfile.allowedpaths
-                                                # 2 = files can be exported to any user-defined UNC path
-
-exportfile.allowedpaths: []                      # only used for exportfile.mode == 1, this is the UNC path to a folder that
-                                                # is writeable by the Tableau Server run-as user.
-                                                # For example [\\fileserver\shared$\Tableau Exports\, \\archiveserver\DailyViewBackup\]
 # Email settings
 smtp.serv: localhost                            # name of the smtp mail server (change for production use; default is only set to "localhost" for ease of testing with PaperCut: https://papercut.codeplex.com/)
-smtp.port: 25                                   # port to user for SMTP server (default is 25)
 smtp.address.from: vizalerts@yourdomain.com     # default sender for all alerts mail
 smtp.address.to: serveradmin@yourdomain.com     # email address of admin to send failures to
 smtp.notify_subscriber_on_failure: true         # send a failure email to alert subscriber if it fails
@@ -37,8 +26,6 @@ server.user: SomeTableauServerUser              # this is ANY user licensed in T
                                                     # If you are using Local Authentication, do not prepend domain name to this entry. (e.g., mcoles)
                                                     # If you are using Active Directory Authentication, specify the user as domain\username (e.g., tableau.com\mcoles)
 server.ssl: false                               # use HTTPS for Server connections
-server.certcheck: null
-
 trusted.useclientip: false                      # use clientip for trusted tickets verification
                                                     # This is optional. Please see http://onlinehelp.tableausoftware.com/current/server/en-us/trusted_auth_optional.htm
 trusted.clientip: null                          # IP address of THIS host. Only needed if trusted.useclientip is set to true. Otherwise, just leave it null.
@@ -104,7 +91,6 @@ db.query: |
          su_sub.name             AS subscriber_sysname ,
          dom_sub.name            AS subscriber_domain ,
          su_sub.email            AS subscriber_email ,
-         l_sub.name              AS subscriber_license ,
          su.email                AS owner_email ,
          su.name                 AS owner_sysname ,
          su.friendly_name        AS owner_friendly_name ,
@@ -113,22 +99,9 @@ db.query: |
          s.is_test ,
          COALESCE(date_trunc('second', s.test_alert_timestamp), sch.run_next_at)
                                  AS run_next_at ,
-         COALESCE(
-             /*
-              Give our best guess as to when a newly scheduled alert would have last run
-                We're basically making this up, but this is only used for timeout values on the first run
-             */
-             CASE
-                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL '1 minute'
-                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL '1 day'
-                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL '7 days'
-                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL '30 days'
-                 ELSE sch.run_next_at - INTERVAL '1 day' --default to a day ago
-             END ,
-
-             date_trunc('second', (s.test_alert_timestamp - interval '30 minutes'))
-
-             )                   AS ran_last_at ,           -- used for initial timeouts only
+         COALESCE(sch.run_next_at,
+             date_trunc('second', (s.test_alert_timestamp - interval '30 minutes')))
+                                 AS ran_last_at ,           -- placeholder, ignore this
          60                      AS timeout_s ,             -- placeholder, ignore this
          1                       AS data_retrieval_tries ,  -- placeholder, ignore this
          'simple'                AS alert_type              -- placeholder, ignore this
@@ -170,8 +143,6 @@ db.query: |
             ON s.user_id = u_sub.id
         INNER JOIN system_users su_sub
             ON u_sub.system_user_id = su_sub.id
-        INNER JOIN licensing_roles l_sub
-            ON u_sub.licensing_role_id = l_sub.id
         INNER JOIN domains dom_sub
             ON su_sub.domain_id = dom_sub.id
         LEFT JOIN subscriptions_customized_views scv

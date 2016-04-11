@@ -11,6 +11,7 @@ import datetime
 import cgi
 import codecs
 import re
+import ssl
 from requests_ntlm import HttpNtlmAuth
 
 
@@ -22,7 +23,7 @@ class Format(object):
 
 
 # Generate a trusted ticket
-def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=None, clientip=None, tries=1):
+def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=True, userdomain=None, clientip=None, tries=1):
 
     protocol = u'http'
 
@@ -58,8 +59,16 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=N
         try:
             tries -= 1
 
-            request = urllib2.Request(trustedurl, data)
-            response = urllib2.urlopen(request)
+            # If we're using SSL, and config says to validate the certificate, then do so
+            if encrypt and certcheck:
+                context = ssl._create_unverified_context()
+                request = urllib2.Request(trustedurl, data)
+                response = urllib2.urlopen(request, context=context)
+            else:
+                # We're either not using SSL, or just not validating the certificate
+                request = urllib2.Request(trustedurl, data)
+                response = urllib2.urlopen(request)
+
             ticket = response.read()
             logger.debug(u'Got ticket: {}'.format(ticket))
 
@@ -69,14 +78,14 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=N
                 raise UserWarning(errormessage)
 
         except urllib2.HTTPError as e:
-            errormessage = cgi.escape(u'HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.code), requestdetails))
+            errormessage = cgi.escape(u'HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)
             else:
                 continue
         except urllib2.URLError as e:
-            errormessage = cgi.escape(u'URLError generating trusted ticket: {}  Request details: {}'.format(str(e.message), requestdetails))
+            errormessage = cgi.escape(u'URLError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)
@@ -100,7 +109,7 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, userdomain=N
 
 # Export a view to a file in the specified format based on a trusted ticket
 def export_view(configs, view, format, logger):
-    
+
     # assign variables (clean this up later)
     viewname = unicode(view['view_name'])
 
@@ -133,7 +142,7 @@ def export_view(configs, view, format, logger):
         protocol = u'https'
     else:
         protocol = u'http'
-        
+
     #viewurlsuffix may be of form workbook/view
     #or workbook/view?param1=value1&param2=value2
     #in the latter case separate it out
