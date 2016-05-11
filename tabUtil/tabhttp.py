@@ -208,7 +208,7 @@ def export_view(configs, view, format, logger):
 
             if format == Format.CSV:
                 f = open(filepath, 'w')
-                f.write(response.content.replace('\r\n', '\r'))  # remove extra carriage returns
+                f.write(response.content.replace('\r\n', '\n')) # remove extra carriage returns
             else:
                 f = open(filepath, 'wb')
                 for block in response.iter_content(1024):

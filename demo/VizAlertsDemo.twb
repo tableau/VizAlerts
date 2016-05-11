@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8' ?>
 
 <workbook source-platform='win' version='9.0' xml:base='http://smmc-as04' xmlns:user='http://www.tableausoftware.com/xml/user'>
-  <!-- build 9000.16.0302.1801                                -->
+  <!-- build 9000.16.0208.1250                                -->
   <repository-location id='VizAlertsDemo' path='/workbooks' revision='5.9' />
   <preferences>
     <preference name='datagrid.autoupdate.max.filesize' value='100000000000' />
@@ -30,7 +30,7 @@
       </column>
     </datasource>
     <datasource caption='Sample - Superstore' inline='true' name='dataengine.42019.618651678240' version='9.0'>
-      <connection class='dataengine' dbname='Sample - Superstore US.tde' schema='Extract' server-oauth='' tablename='Extract' workgroup-auth-mode='as-is'>
+      <connection class='dataengine' dbname='C:\Users\mcoles\Documents\GitHub\VizAlerts\demo\Sample - Superstore US.tde' schema='Extract' server-oauth='' tablename='Extract' workgroup-auth-mode='as-is'>
         <relation name='Extract' table='[Extract].[Extract]' type='table' />
         <calculations>
           <calculation column='[Number of Records]' formula='1' />
@@ -943,7 +943,7 @@
         <folder-item name='[Ship Date]' type='field' />
         <folder-item name='[Ship Mode]' type='field' />
       </folder>
-      <layout dim-ordering='alphabetic' dim-percentage='0.417827' measure-ordering='alphabetic' measure-percentage='0.266017' show-structure='false' />
+      <layout dim-ordering='alphabetic' dim-percentage='0.283019' measure-ordering='alphabetic' measure-percentage='0.245283' show-structure='false' />
       <style>
         <style-rule element='mark'>
           <encoding attr='color' field='[Calculation_9921103144103743]' max='0.5' min='-0.5' palette='tableau-orange-blue' type='interpolated' />
@@ -1024,7 +1024,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Simple Alerts (tests)' inline='true' name='excel-direct.42449.220166458334' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Users\mcoles\Documents\GitHub\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Simple Alerts$&apos;' table='[&apos;Simple Alerts$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='string' name='Text' ordinal='0' />
@@ -1210,7 +1210,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Other Tests (tests)' inline='true' name='excel-direct.42449.202206956019' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Users\mcoles\Documents\GitHub\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Other Tests$&apos;' table='[&apos;Other Tests$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='integer' name='Email Action *' ordinal='0' />
@@ -1329,7 +1329,7 @@
       <column caption=' Email To *' datatype='string' name='[ Email From * (copy)]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='[Parameters].[VizAlerts From Email (copy)]' />
       </column>
-      <column caption=' Email From *' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
+      <column caption=' Email From ~' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='[Parameters].[Parameter 3]' />
       </column>
       <column aggregation='Sum' caption=' Email Action *' datatype='integer' name='[Email Action *]' role='dimension' type='ordinal'>
@@ -1359,7 +1359,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Advanced Alerts (tests)' inline='true' name='excel-direct.42445.462414479167' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Users\mcoles\Documents\GitHub\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Advanced Alerts$&apos;' table='[&apos;Advanced Alerts$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='integer' name='Email Action *' ordinal='0' />
@@ -1541,7 +1541,7 @@
       <column caption=' Email To *' datatype='string' name='[ Email From * (copy)]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='[Parameters].[VizAlerts From Email (copy)]' />
       </column>
-      <column caption=' Email From *' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
+      <column caption=' Email From ~' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='[Parameters].[Parameter 3]' />
       </column>
       <column aggregation='Sum' caption=' Email Sort Order ~' datatype='integer' name='[Calculation_6330320044959008]' role='dimension' type='ordinal'>
@@ -1580,7 +1580,7 @@
       </datasource-dependencies>
     </datasource>
     <datasource caption='Map Category to Manager (tests)' inline='true' name='excel-direct.42451.573722870373' version='9.0'>
-      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
+      <connection class='excel-direct' cleaning='no' compat='no' dataRefreshTime='' filename='C:\Users\mcoles\Documents\GitHub\VizAlerts\demo\tests.xlsx' password='' server='' server-oauth='' username='' validate='no' workgroup-auth-mode='as-is'>
         <relation name='&apos;Map Category to Manager$&apos;' table='[&apos;Map Category to Manager$&apos;]' type='table'>
           <columns header='yes' outcome='6'>
             <column datatype='string' name='Category' ordinal='0' />
@@ -2040,7 +2040,7 @@
             <column caption=' Email To *' datatype='string' name='[ Email From * (copy)]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='[Parameters].[VizAlerts From Email (copy)]' />
             </column>
-            <column caption=' Email From *' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
+            <column caption=' Email From ~' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='[Parameters].[Parameter 3]' />
             </column>
             <column aggregation='Sum' caption=' Email Sort Order ~' datatype='integer' name='[Calculation_6330320044959008]' role='dimension' type='ordinal'>
@@ -2120,7 +2120,7 @@
             <column caption=' Email To *' datatype='string' name='[ Email From * (copy)]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='[Parameters].[VizAlerts From Email (copy)]' />
             </column>
-            <column caption=' Email From *' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
+            <column caption=' Email From ~' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='[Parameters].[Parameter 3]' />
             </column>
             <column aggregation='Sum' caption=' Email Action *' datatype='integer' name='[Email Action *]' role='dimension' type='ordinal'>
@@ -2185,7 +2185,7 @@
             <column caption=' Email To *' datatype='string' name='[ Email From * (copy)]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='[Parameters].[VizAlerts From Email (copy)]' />
             </column>
-            <column caption=' Email From *' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
+            <column caption=' Email From ~' datatype='string' name='[Calculation_3170316110743019]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='[Parameters].[Parameter 3]' />
             </column>
             <column aggregation='Sum' caption=' Email Sort Order ~' datatype='integer' name='[Calculation_6330320044959008]' role='dimension' type='ordinal'>
@@ -5353,7 +5353,7 @@
     </dashboard>
   </dashboards>
   <windows>
-    <window class='schema' source-height='-1' />
+    <window class='schema' source-height='108' />
     <window auto-hidden='0' class='worksheet' maximized='1' name='Low Margin Warning'>
       <cards>
         <edge name='left'>
@@ -6434,61 +6434,93 @@
     </window>
   </windows>
   <thumbnails>
-    <thumbnail height='122' name='Low Margin Warning' width='192'>
-      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
-      DzVIE6UYyORLAAAAAElFTkSuQmCC
+    <thumbnail height='162' name='Low Margin Warning' width='192'>
+      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
+      rkJggg==
     </thumbnail>
     <thumbnail height='124' name='Walkthrough #1 - 1' width='192'>
       iVBORw0KGgoAAAANSUhEUgAAAMAAAAB8CAIAAACwtiheAAAACXBIWXMAAA7DAAAOwwHHb6hk
