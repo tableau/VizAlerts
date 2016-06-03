@@ -187,7 +187,7 @@ db.query: |
                 -- ########           Editable Filters          #########
                 -- ######################################################
                 (
-                LOWER(sch.name) LIKE '_lerts%'                    -- only Alerts schedules ("_" single-character wildcard allows you to substitute Cyrillic capital A, U+0410 for sorting purposes)
+                LOWER(sch.name) LIKE LOWER('_lerts%')             -- only Alerts schedules ("_" single-character wildcard allows you to substitute Cyrillic capital A, U+0410 for sorting purposes)
 
                 --AND st.name IN ('Default','TestSite')           -- allowed Sites
                 --AND p.name  IN ('Sales')                        -- allowed Projects
