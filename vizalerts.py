@@ -336,8 +336,8 @@ def validate_conf(configfile, logger):
             sys.exit(1)
 
     # check for valid server.version setting
-    if not localconfigs["server.version"] in {8,9}:
-        errormessage = u'server.version value is invalid--only version 8 or version 9 allowed'
+    if not localconfigs["server.version"] in {8,9,10}:
+        errormessage = u'server.version value is invalid--only version 8, 9, or 10 is allowed'
         print errormessage
         logger.error(errormessage)
         sys.exit(1)
@@ -1387,7 +1387,7 @@ def get_footer(subscriberemail, subscribersysname, subscriberdomain, vizurl, vie
 
         if server_version == 8:
             footer = footer + managesublink.format(managesuburlv8)
-        if server_version == 9:
+        if server_version in {9, 10}:
             footer = footer + managesublink.format(managesuburlv9)
 
     return footer
