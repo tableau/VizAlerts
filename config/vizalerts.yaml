@@ -22,7 +22,7 @@ smtp.password: null                             # password for account used to c
                                                     # OR it can be a valid path to a .txt file containing the password, e.g. 'c:\users\mcoles\password.txt'
 # Tableau Server settings
 server: localhost                               # the Tableau Server instance your alerts will reside on. Recommend using the fully-qualified name, e.g. "myserver.mydomain.com"
-server.version: 9                               # the major version of Tableau Server that this is running against (just ensures correct URLs in email footers)
+server.version: 10                              # the major version of Tableau Server that this is running against (just ensures correct URLs in email footers)
 server.user: SomeTableauServerUser              # this is ANY user licensed in Tableau Server--it does not need to be an Admin. It is only used to test whether Trusted Tickets work.
                                                     # If you are using Local Authentication, do not prepend domain name to this entry. (e.g., mcoles)
                                                     # If you are using Active Directory Authentication, specify the user as domain\username (e.g., tableau.com\mcoles)
