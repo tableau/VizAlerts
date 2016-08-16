@@ -2,6 +2,12 @@
 VERSION HISTORY
 ===============
 
+Version 1.1.1
+=================================
+-Minor tweaks for Tableau Server 10.0 (Issue #43)
+-Minor documentation updates (Issue #42)
+=================================
+
 Version 1.1.0
 =================================
 -Added VIZ_CSV() and VIZ_PDF() content reference for appended (non-inline) CSV and PDF attachments using Email Attachment ~ field (Issue #11)
