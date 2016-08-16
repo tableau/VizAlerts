@@ -1387,7 +1387,7 @@ def get_footer(subscriberemail, subscribersysname, subscriberdomain, vizurl, vie
 
         if server_version == 8:
             footer = footer + managesublink.format(managesuburlv8)
-        if server_version == 9:
+        if server_version in {9, 10}:
             footer = footer + managesublink.format(managesuburlv9)
 
     return footer
