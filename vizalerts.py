@@ -1,4 +1,5 @@
 #! python
+#! python
 # -*- coding: utf-8 -*-
 # Script to generate conditional automation against published views from a Tableau Server instance
 
@@ -57,14 +58,8 @@ from codecs import decode
 from codecs import encode
 
 # Global Variable Definitions
-valid_conf_keys = \
-    ['db.database',
-        'db.host',
-        'db.port',
-        'db.pw',
-        'db.query',
-        'db.user',
-        'log.dir',
+valid_conf_keys =\
+    ['log.dir',
         'log.dir.file_retention_seconds',
         'log.level',
         'schedule.state.dir',
@@ -72,9 +67,7 @@ valid_conf_keys = \
         'server.version',
         'server.user',
         'smtp.address.from',
-        'smtp.notify_subscriber_on_failure',
         'smtp.address.to',
-        'smtp.alloweddomains',
         'smtp.serv',
         'server.ssl',
         'server.certcheck',
@@ -82,11 +75,7 @@ valid_conf_keys = \
         'temp.dir',
         'temp.dir.file_retention_seconds',
         'trusted.clientip',
-        'trusted.useclientip',
-        'viz.data.maxrows',
-        'viz.data.timeout',
-        'viz.png.height',
-        'viz.png.width']
+        'trusted.useclientip']
 
 required_email_fields =\
     [' Email To *',
@@ -130,6 +119,7 @@ ARGUMENT_DELIMITER = u'|'
 _os_alt_seps = list(sep for sep in [os.path.sep, os.path.altsep]
                     if sep not in (None, '/'))
 
+
 class UnicodeCsvReader(object):
     """Code from http://stackoverflow.com/questions/1846135/general-unicode-utf-8-support-for-csv-files-in-python-2-6"""
     def __init__(self, f, encoding="utf-8", **kwargs):
@@ -156,6 +146,72 @@ class UnicodeDictReader(csv.DictReader):
     def __init__(self, f, encoding="utf-8", fieldnames=None, **kwds):
         csv.DictReader.__init__(self, f, fieldnames=fieldnames, **kwds)
         self.reader = UnicodeCsvReader(f, encoding=encoding, **kwds)
+
+
+class VizAlert:
+    """Standard class representing a VizAlert"""
+    def __init__ (self, view_url_suffix, site_name, subscriber_sysname, subscriber_domain):
+        self.view_url_suffix = view_url_suffix
+        self.site_name = site_name
+        self.subscriber_domain = subscriber_domain
+        self.subscriber_sysname = subscriber_sysname
+
+        # config
+        self.allowed_from_addresses = ''
+        self.allowed_recipient_addresses = ''
+        self.data_retrieval_tries = 2
+        self.force_refresh = True
+        self.notify_subscriber_on_failure = True
+        self.viz_data_maxrows = 1000
+        self.viz_png_height = 1500
+        self.viz_png_width = 1500
+        self.timeout_s = 60
+
+        # alert
+        self.alert_type = 'Simple'
+        self.is_test = False
+
+        # subscription
+        self.customized_view_id = -1
+        self.owner_email = ''
+        self.owner_friendly_name = ''
+        self.owner_sysname = ''
+        self.project_id = -1
+        self.project_name = ''
+        self.ran_last_at = ''
+        self.run_next_at = ''
+        self.schedule_frequency = ''
+        self.schedule_id = -1
+        self.schedule_name = ''
+        self.schedule_priority = -1
+        self.schedule_type = -1
+        self.site_id = -1
+        self.subscriber_email = ''
+        self.subscriber_license = ''
+        self.subscriber_user_id = -1
+        self.subscription_id = -1
+        self.view_id = -1
+        self.view_name = ''
+        self.view_owner_id = -1
+        self.workbook_id = ''
+        self.workbook_repository_url = ''
+
+    def get_view_url(self, server, customviewurlsuffix = None):
+        """Construct the full URL of the view"""
+
+        # this logic should be removed--empty string should be passed in from SQL
+        sitename = unicode(self.site_name).replace('Default', '')
+
+        if customviewurlsuffix == None:
+            customviewurlsuffix = self.view_url_suffix
+
+        # (omitting hash preserves 8.x functionality)
+        if sitename == '':
+            vizurl = u'http://' + server + u'/views/' + customviewurlsuffix
+        else:
+            vizurl = u'http://' + server + u'/t/' + sitename + u'/views/' + customviewurlsuffix
+
+        return vizurl
 
 
 def main(configfile=u'.\\config\\vizalerts.yaml',
@@ -202,53 +258,45 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
     # test ability to connect to Tableau Server and obtain a trusted ticket
     trusted_ticket_test()
 
-    # get the views to process
+    # get the alerts to process
     try:
-        views = get_views()
-        logger.info(u'Processing a total of {} views'.format(len(views)))
+        alerts = get_alerts()
+        logger.info(u'Processing a total of {} alerts'.format(len(alerts)))
     except Exception as e:
-        errormessage = u'Unable to get views to process, error: {}'.format(e.message)
+        errormessage = u'Unable to get alerts to process, error: {}'.format(e.message)
         logger.error(errormessage)
         quit_script(errormessage)
 
-    process_views(views)
+    process_alerts(alerts)
 
 
-def process_views(views):
-    """Iterate through the list of applicable views, and process each"""
-    for view in views:
-        logger.debug(u'Processing subscription_id {}, view_id {}, site_name {}, customized view id {}, '
+def process_alerts(alerts):
+    """Iterate through the list of applicable alerts, and process each"""
+    for alert in alerts:
+        logger.debug(u'Processing subscription_id {}, view_id {}, site_name {}, customized_view_id {}, '
                      'view_name {}'.format(
-                                        view["subscription_id"],
-                                        view["view_id"],
-                                        view["site_name"],
-                                        view["customized_view_id"],
-                                        view["view_name"]))
-        sitename = unicode(view["site_name"]).replace('Default', '')
-        viewurlsuffix = view['view_url_suffix']
-        viewname = unicode(view['view_name'])
-        timeout_s = view['timeout_s']
-        subscribersysname = unicode(view['subscriber_sysname'].decode('utf-8'))
-        subscriberemail = view['subscriber_email']
+                                        alert.subscription_id,
+                                        alert.view_id,
+                                        alert.site_name,
+                                        alert.customized_view_id,
+                                        alert.view_name))
+        sitename = unicode(alert.site_name).replace('Default', '')
+        viewurlsuffix = alert.view_url_suffix
+        viewname = unicode(alert.view_name)
+        timeout_s = alert.timeout_s
+        subscribersysname = unicode(alert.subscriber_sysname.decode('utf-8'))
+        subscriberemail = alert.subscriber_email
 
         # get the domain of the subscriber's user
         subscriberdomain = None
-        if view['subscriber_domain'] != 'local': # leave it as None if Server uses local authentication
-            subscriberdomain = view['subscriber_domain']
-
-        # check for invalid email domains
-        subscriberemailerror = address_is_invalid(subscriberemail)
-        if subscriberemailerror:
-            errormessage = u'VizAlerts was unable to process this alert, because it was unable to send email to address {}: {}'.format(subscriberemail, subscriberemailerror)
-            logger.error(errormessage)
-            view_failure(view, errormessage)
-            continue
+        if alert.subscriber_domain != 'local': # leave it as None if Server uses local authentication
+            subscriberdomain = alert.subscriber_domain
 
         # check for unlicensed user
-        if view['subscriber_license'] == 'Unlicensed':
+        if alert.subscriber_license == 'Unlicensed':
             errormessage = u'VizAlerts was unable to process this alert: User {} is unlicensed.'.format(subscribersysname)
             logger.error(errormessage)
-            view_failure(view, errormessage)
+            alert_failure(alert, errormessage)
             continue
 
         # set our clientip properly if Server is validating it
@@ -257,23 +305,23 @@ def process_views(views):
         else:
             clientip = None
 
-        # get the raw csv data from the view
+        # get the raw csv data from the alert
         try:
-            filepath = tabhttp.export_view(configs, view, tabhttp.Format.CSV, logger)
+            filepath = tabhttp.export_view(configs, alert, tabhttp.Format.CSV, logger)
         except Exception as e:
             errormessage = u'Unable to export viewname {} as {}, error: {}'.format(viewname, tabhttp.Format.CSV, e)
             logger.error(errormessage)
-            view_failure(view, u'VizAlerts was unable to export data for this view. Error message: {}'.format(errormessage))
+            alert_failure(alert, u'VizAlerts was unable to export data for this alert. Error message: {}'.format(errormessage))
             continue
 
         # We now have the CSV, so process it
         try:
-            process_csv(filepath, view, sitename, viewname, subscriberemail, subscribersysname, subscriberdomain,
-                        viewurlsuffix, timeout_s)
+            process_trigger_data(filepath, alert, sitename, viewname, subscriberemail, subscribersysname, subscriberdomain,
+                                 viewurlsuffix, timeout_s)
         except Exception as e:
-            errormessage = u'Unable to process data from viewname {}, error:<br> {}'.format(viewname, e)
+            errormessage = u'Unable to process alert data from viewname {}, error:<br> {}'.format(viewname, e)
             logger.error(errormessage)
-            view_failure(view, u'VizAlerts was unable to process this view due to the following error:<br>{}'.format(e))
+            alert_failure(alert, u'VizAlerts was unable to process this alert due to the following error:<br>{}'.format(e))
             continue
 
 
@@ -309,31 +357,6 @@ def validate_conf(configfile, logger):
 
     # test for password files and override with contents
     localconfigs["smtp.password"] = get_password_from_file(localconfigs["smtp.password"])
-    localconfigs["db.pw"] = get_password_from_file(localconfigs["db.pw"])
-
-    # check for valid viz.png heigh/width settings
-    if not type(localconfigs["viz.png.width"]) is int or not type(localconfigs["viz.png.height"]) is int:
-        errormessage = u'viz.png height/width values are invalid {},{}'.format(localconfigs["viz.png.width"],
-                                                                              localconfigs["viz.png.height"])
-        print errormessage
-        logger.error(errormessage)
-        sys.exit(1)
-
-    # check for valid viz.data.timeout setting
-    for rule in localconfigs["viz.data.timeout"]:
-        if len(rule) > 3:
-            errormessage = u'viz.data.timeout values are invalid--only three entries per rule allowed'
-            print errormessage
-            logger.error(errormessage)
-            sys.exit(1)
-
-    # check for valid viz.data.timeout setting
-    for rule in localconfigs["viz.data.retrieval_tries"]:
-        if len(rule) > 3:
-            errormessage = u'viz.data.retrieval_tries values are invalid--only three entries per rule allowed'
-            print errormessage
-            logger.error(errormessage)
-            sys.exit(1)
 
     # check for valid server.version setting
     if not localconfigs["server.version"] in {8,9,10}:
@@ -341,6 +364,25 @@ def validate_conf(configfile, logger):
         print errormessage
         logger.error(errormessage)
         sys.exit(1)
+
+    # validate ssl config
+    if localconfigs["server.ssl"] and localconfigs["server.certcheck"]:
+        if not localconfigs["server.certfile"]:
+            errormessage = u'To validate certificates using SSL, you must enter the path to your certificate authority bundle to the server.certfile config setting'
+            logger.error(errormessage)
+            sys.exit(1)
+        # ensure the certfile actually exists
+        if not os.access(localconfigs["server.certfile"], os.F_OK):
+            errormessage = u'The file specified in the server.certfile config setting could not be found: {}'.format(localconfigs["server.certfile"])
+            print errormessage
+            logger.error(errormessage)
+            sys.exit(1)
+        # ensure the certfile can be read
+        if not os.access(localconfigs["server.certfile"], os.R_OK):
+            errormessage = u'The file specified in the server.certfile config setting could not be accessed: {}'.format(localconfigs["server.certfile"])
+            print errormessage
+            logger.error(errormessage)
+            sys.exit(1)
 
     return localconfigs
 
@@ -365,34 +407,38 @@ def trusted_ticket_test():
         quit_script(errormessage)
 
 
-def get_views():
+def get_alerts():
     """Get the set of Tableau Server views to check during this execution"""
-    try:
-        connstring = "dbname={} user={} host={} port={} password={}".format(configs["db.database"], configs["db.user"],
-                                                                            configs["db.host"], configs["db.port"],
-                                                                            configs["db.pw"])
-        conn = psycopg2.connect(connstring)
-        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-        cur.execute(configs["db.query"])
-        views = cur.fetchall()
-        logger.debug(u'PostgreSQL repository returned {} rows'.format(len(views)))
-    except psycopg2.Error as e:
-        errormessage = u'Failed to execute query against PostgreSQL repository: {}'.format(e)
-        logger.error(errormessage)
-        quit_script(errormessage)
-    except Exception as e:
-        errormessage = u'Unknown error obtaining views to process: {}'.format(e)
-        logger.error(errormessage)
-        quit_script(errormessage)
+    # package up the data from the source viz-- this REALLY needs to be a class.
+    
+    ############## REVISIT THIS #####################################
+    
+    source_viz = VizAlert(configs['vizalerts.source.viz'], configs['vizalerts.viz.site'], configs['server.user'], 'tsi.lan')
+    source_viz.view_name = 'VizAlerts Source Viz'
+    source_viz.timeout_s = 30
+    source_viz.force_refresh = True
+    source_viz.data_retrieval_tries = 3
+
+    logger.debug('Pulling source viz data down')
+
+    source_viz_data = tabhttp.export_view(configs, source_viz, tabhttp.Format.CSV, logger)
+
+    logger.debug('Got viz data down')
+
+    f = open(source_viz_data, 'rU')
+    results = UnicodeDictReader(f)
 
     # retrieve schedule data from the last run and compare to current
     statefile = configs["schedule.state.dir"] + SCHEDULE_STATE_FILENAME
 
-    # list of views to write to the state file again
-    persistviews = []
+    # list of all alerts we've retrieved from the server that may need to be run
+    alerts = []
+    
+    # list of alerts to write to the state file again
+    persistalerts = []
 
     # final list of views to execute alerts for
-    execviews = []
+    execalerts = []
     try:
         if not os.path.exists(statefile):
             f = codecs.open(statefile, encoding='utf-8', mode='w+')
@@ -402,6 +448,96 @@ def get_views():
         logger.error(errormessage)
         quit_script(errormessage)
 
+    # Create VizAlert instances for all the alerts we've retrieved
+    try:
+        for line in results:
+            # build an alert instance for each line            
+            logger.debug('initializing alert')
+
+            alert = VizAlert(line['view_url_suffix'],
+                                line['site_name'],
+                                line['subscriber_sysname'],
+                                line['subscriber_domain'])
+
+            alert.allowed_from_addresses = line['allowed_from_addresses']
+            alert.allowed_recipient_addresses = line['allowed_recipient_addresses']
+            alert.data_retrieval_tries = int(line['data_retrieval_tries'])
+            
+            if line['force_refresh'].lower() == 'true':
+                alert.force_refresh = True
+            else:
+                alert.force_refresh = False
+            
+            alert.alert_type = line['alert_type']
+            
+            if line['notify_subscriber_on_failure'].lower() == 'true':
+                alert.notify_subscriber_on_failure = True
+            else:
+                alert.notify_subscriber_on_failure = False
+                
+            alert.viz_data_maxrows = int(line['viz_data_maxrows'])
+            alert.viz_png_height = int(line['viz_png_height'])
+            alert.viz_png_width = int(line['viz_png_width'])
+            alert.timeout_s = int(line['timeout_s'])
+
+            # alert
+            alert.alert_type = line['alert_type']
+            if line['is_test'].lower() == 'true':
+                alert.is_test = True
+            else:
+                alert.is_test = False
+
+            # subscription
+            if line['customized_view_id'] == '':
+                alert.customized_view_id = None
+            else:
+                alert.customized_view_id = line['customized_view_id']
+
+            alert.owner_email = line['owner_email']
+            alert.owner_friendly_name = line['owner_friendly_name']
+            alert.owner_sysname = line['owner_sysname']
+            alert.project_id = int(line['project_id'])
+            alert.project_name = line['project_name']
+            alert.ran_last_at = line['ran_last_at']
+            alert.run_next_at = line['run_next_at']
+            alert.schedule_frequency = line['schedule_frequency']
+            
+            if line['schedule_id'] == '':
+                alert.schedule_id = -1
+            else:
+                alert.schedule_id = int(line['schedule_id'])
+            
+            alert.schedule_name = line['schedule_name']
+            
+            if line['schedule_priority'] == '':
+                alert.schedule_priority = -1
+            else:
+                alert.schedule_priority = int(line['schedule_priority'])
+            
+            if line['schedule_type'] == '':
+                alert.schedule_type = -1
+            else:
+                alert.schedule_type = int(line['schedule_type'])
+
+            alert.site_id = int(line['site_id'])
+            alert.subscriber_license = line['subscriber_license']
+            alert.subscriber_email = line['subscriber_email']
+            alert.subscriber_user_id = int(line['subscriber_user_id'])
+            alert.subscription_id = int(line['subscription_id'])
+            alert.view_id = int(line['view_id'])
+            alert.view_name = line['view_name']
+            alert.view_owner_id = int(line['view_owner_id'])
+            alert.workbook_id = int(line['workbook_id'])
+            alert.workbook_repository_url = line['workbook_repository_url']
+        
+            # all done, now add it to the master list
+            alerts.append(alert)
+    except Exception as e:
+        errormessage = u'Error instantiating alerts from list obtained from server: {}'.format(e)
+        logger.error(errormessage)
+        quit_script(errormessage)
+
+    # now determine which actually need to be run now
     try:
         for line in fileinput.input([statefile]):
             if not fileinput.isfirstline():
@@ -413,32 +549,35 @@ def get_views():
                 linedict['ran_last_at'] = line.split('\t')[4]
                 linedict['run_next_at'] = line.split('\t')[5]
                 linedict['schedule_id'] = line.split('\t')[6].rstrip()  # remove trailing line break
-                for view in views:
+                for alert in alerts:
+                
+                    logger.debug('checking alert sub id: {} against statefile line with id {}'.format(alert.subscription_id, linedict['subscription_id']))
+
                     # subscription_id is our unique identifier
-                    if str(view['subscription_id']) == str(linedict['subscription_id']):
+                    if str(alert.subscription_id) == str(linedict['subscription_id']):
 
                         # preserve the last time the alert was scheduled to run
-                        view['ran_last_at'] = str(linedict['ran_last_at'])
+                        alert.ran_last_at = str(linedict['ran_last_at'])
 
-                        # if the run_next_at date is greater for this view since last we checked, mark it to run now
+                        # if the run_next_at date is greater for this alert since last we checked, mark it to run now
                             # the last condition ensures the alert doesn't run simply due to a schedule switch
                                 # (note that CHANGING a schedule will still trigger the alert check...to be fixed later
                         if (
-                            (datetime.datetime.strptime(str(view['run_next_at']), "%Y-%m-%d %H:%M:%S") \
+                            (datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
                                 != datetime.datetime.strptime(str(linedict['run_next_at']), "%Y-%m-%d %H:%M:%S") \
                                 and \
-                            str(view["schedule_id"]) == str(linedict["schedule_id"]))
+                            str(alert.schedule_id) == str(linedict['schedule_id']))
                             or
-                            (view['is_test'] and \
-                                datetime.datetime.strptime(str(view['run_next_at']), "%Y-%m-%d %H:%M:%S") \
+                            (alert.is_test and \
+                                datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
                                 != datetime.datetime.strptime(str(linedict['ran_last_at']), "%Y-%m-%d %H:%M:%S")) # test alerts run immediately if never executed before
                             ):
 
                             # For a test, run_next_at is anchored to the most recent comment, so use it as last run time
-                            if view['is_test']:
-                                view['ran_last_at'] = view['run_next_at']
+                            if alert.is_test:
+                                alert.ran_last_at = alert.run_next_at
                             else:
-                                view['ran_last_at'] = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                                alert.ran_last_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
                             seconds_since_last_run = \
                                 abs((
@@ -447,51 +586,36 @@ def get_views():
                                     datetime.datetime.utcnow()
                                     ).total_seconds())
 
-                            # Set the timeout value in seconds to use for this view
-                            timeout_s = view["timeout_s"]
-                            for rule in configs["viz.data.timeout"]:
-                                # REMOVE
-                                logger.debug('Checking rule with from: {}, to: {}, timeout: {}'.format(rule[0], rule[1], rule[2]))
-                                if rule[0] <= seconds_since_last_run <= rule[1]:
-                                    logger.debug('Rule applies!')
-                                    timeout_s = rule[2]
-                                    break
+                            execalerts.append(alert)
 
-                            # Set the number of data retrieval attempts to use for this view
-                            data_retrieval_tries = view["data_retrieval_tries"]
-                            for rule in configs["viz.data.retrieval_tries"]:
-                                if rule[0] <= seconds_since_last_run <= rule[1]:
-                                    data_retrieval_tries = rule[2]
-
-                            # overwrite the placeholder values with our newly derived values
-                            view['timeout_s'] = timeout_s
-                            view['data_retrieval_tries'] = data_retrieval_tries
-                            logger.debug(u'using timeout {}s, data retrieval tries {}, due to it being {} seconds since last'
-                                         ' run.'.format(timeout_s, data_retrieval_tries, seconds_since_last_run))
-                            execviews.append(view)
-
-                        # add the view to the list to write back to our state file
-                        persistviews.append(view)
+                        # add the alert to the list to write back to our state file
+                        persistalerts.append(alert)
 
         # add NEW subscriptions that weren't in our state file
             # this is ugly I, know...sorry. someday I'll be better at Python.
         persist_sub_ids = []
-        for view in persistviews:
-            persist_sub_ids.append(view['subscription_id'])
-        for view in views:
-            if view['subscription_id'] not in persist_sub_ids:
-                persistviews.append(view)
+        for alert in persistalerts:
+            persist_sub_ids.append(alert.subscription_id)
+        for alert in alerts:
+        
+            logger.debug('adding alerts that haven''t been run before: is subid {} in {}?'.format(alert.subscription_id,persist_sub_ids ))
+        
+            if alert.subscription_id not in persist_sub_ids:
+            
+                logger.debug('adding alert subid {}'.format(alert.subscription_id))
+                
+                persistalerts.append(alert)
 
         # write the next run times to file
         with codecs.open(statefile, encoding='utf-8', mode='w') as fw:
             fw.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format("site_name", "subscription_id", "view_id",
                                                        "customized_view_id", "ran_last_at", "run_next_at",
                                                        "schedule_id"))
-            for view in persistviews:
-                fw.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(view['site_name'], view["subscription_id"],
-                                                                   view["view_id"], view["customized_view_id"],
-                                                                   view["ran_last_at"], view["run_next_at"],
-                                                                   view["schedule_id"]))
+            for alert in persistalerts:
+                fw.write('{}\t{}\t{}\t{}\t{}\t{}\t{}\n'.format(alert.site_name, alert.subscription_id,
+                                                                   alert.view_id, alert.customized_view_id,
+                                                                   alert.ran_last_at, alert.run_next_at,
+                                                                   alert.schedule_id))
     except IOError as e:
         errormessage = u'IOError accessing {} while getting views to process: {}'.format(e.filename, e.message)
         logger.error(errormessage)
@@ -501,11 +625,11 @@ def get_views():
         logger.error(errormessage)
         quit_script(errormessage)
 
-    return execviews
+    return execalerts
 
 
-def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersysname, subscriberdomain, viewurlsuffix, timeout_s):
-    """For a CSV containing viz data, process it as a simple or advanced alert"""
+def process_trigger_data(csvpath, alert, sitename, viewname, subscriberemail, subscribersysname, subscriberdomain, viewurlsuffix, timeout_s):
+    """For a CSV containing alert trigger data, process it as a simple or advanced alert"""
     try:
         logger.debug(u'Opening file {} for reading'.format(csvpath))
 
@@ -513,7 +637,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
         csvreader = UnicodeDictReader(f)
 
     except Exception as e:
-        logger.error(u'Error accessing {} while getting processing view {}: {}'.format(csvpath, viewurlsuffix, e))
+        logger.error(u'Error accessing {} while getting processing alert {}: {}'.format(csvpath, viewurlsuffix, e))
         raise e
 
     # get the data into a list of dictionaries
@@ -521,9 +645,8 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
     rowcount = 0
     logger.debug(u'Iterating through rows')
     for row in csvreader:
-        if rowcount > configs["viz.data.maxrows"]:
-            errormessage = u'Maximum rows of {} exceeded.'.format(configs["viz.data.maxrows"],
-                                                                                       viewurlsuffix)
+        if rowcount > alert.viz_data_maxrows:
+            errormessage = u'Maximum rows of {} exceeded.'.format(alert.viz_data_maxrows, viewurlsuffix)
             logger.error(errormessage)
             raise UserWarning(errormessage)
         data.append(row)
@@ -540,13 +663,12 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
     # detect if this is a simple or advanced alert
     if u' Email Action *' in csvreader.fieldnames:
         logger.debug('Advanced alert detected')
-
         simplealert = False
     else:
         logger.debug('Simple alert detected')
         simplealert = True
 
-    vizurl = get_view_url(view)
+    vizurl = alert.get_view_url(configs["server"])
 
     # construct the body footer text for later use
     bodyfooter = get_footer(subscriberemail, subscribersysname, subscriberdomain, vizurl, viewname, simplealert, configs["server.version"])
@@ -562,8 +684,16 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
         try:
             logger.debug(u'Processing as a simple alert')
 
+            # check for invalid email domains  - SHOULD THIS BE REMOVED FOR ADVANCED ALERTS?
+            subscriberemailerror = address_is_invalid(subscriberemail, alert.allowed_from_addresses)
+            if subscriberemailerror:
+                errormessage = u'VizAlerts was unable to process this alert, because it was unable to send email to address {}: {}'.format(subscriberemail, subscriberemailerror)
+                logger.error(errormessage)
+                alert_failure(alert, errormessage)
+                raise UserWarning(errormessage)
+
             # export the viz to a PNG file
-            imagepath = tabhttp.export_view(configs, view, tabhttp.Format.PNG, logger)
+            imagepath = tabhttp.export_view(configs, alert, tabhttp.Format.PNG, logger)
 
             # attachments are stored lists of dicts to handle Advanced Alerts
             inlineattachments = [{'imagepath' : imagepath}]
@@ -587,9 +717,9 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
         logger.debug(u'Processing as an advanced alert')
 
         # ensure the subscriber is the owner of the viz -- if not, disregard it entirely
-        if view['subscriber_sysname'] != view['owner_sysname']:
+        if alert.subscriber_sysname != alert.owner_sysname:
             logger.info(u'Ignoring advanced alert subscription_id {} for non-owner {}'.format(
-                view['subscription_id'], view['subscriber_sysname']))
+                alert.subscription_id, alert.subscriber_sysname))
             return
 
         # test for valid fields
@@ -641,7 +771,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
 
             logger.debug(u'Validating email addresses')
             # validate all From and Recipient addresses
-            addresserrors = validate_addresses(data, has_email_from, has_email_cc, has_email_bcc)
+            addresserrors = validate_addresses(data, alert.allowed_from_addresses, alert.allowed_recipient_addresses, has_email_from, has_email_cc, has_email_bcc)
             if addresserrors:
                 errormessage = u'Invalid email addresses found, details to be emailed.'
                 logger.error(errormessage)
@@ -655,9 +785,9 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                                                                                                                 adderror['Error'],)
                 addresslist = addresslist + u'</table>'
                 appendattachments = [{'imagepath' : csvpath}]
-                view_failure(view, u'Errors found in recipients:<br><br>{}'.format(addresslist) + \
-                                u'<br><br>See row numbers in attached CSV file.' ,
-                                appendattachments)
+                alert_failure(alert, u'Errors found in recipients:<br><br>{}'.format(addresslist) + \
+                                u'<br><br>See row numbers in attached CSV file.',
+                              appendattachments)
                 return
 
             # eliminate duplicate rows and ensure proper sorting
@@ -672,7 +802,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
             vizcompleterefs = dict()
 
             try:
-                vizcompleterefs = find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer, has_email_attachment)
+                vizcompleterefs = find_viz_refs(alert, data, viewurlsuffix, has_email_header, has_email_footer, has_email_attachment)
             except Exception as e:
                 errormessage = u'Alert was triggered, but encountered a failure getting data/image references:<br> {}'.format(e.message)
                 logger.error(errormessage)
@@ -731,7 +861,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                                                                                     row[' Email Subject *']))
 
                             try: # remove this later??
-                                body, inlineattachments = append_body_and_inlineattachments(body, inlineattachments, row, vizcompleterefs, subscriberemail, vizurl, viewname, view, has_email_footer)
+                                body, inlineattachments = append_body_and_inlineattachments(body, inlineattachments, row, vizcompleterefs, subscriberemail, vizurl, viewname, alert, has_email_footer)
                                 appendattachments = append_attachments(appendattachments, row, vizcompleterefs, has_email_attachment)
                                 
                                 # send the email
@@ -786,7 +916,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                                                                                         email_cc , email_bcc,
                                                                                         row[' Email Subject *']))
 
-                                body, inlineattachments = append_body_and_inlineattachments(body, inlineattachments, row, vizcompleterefs, subscriberemail, vizurl, viewname, view, has_email_footer)
+                                body, inlineattachments = append_body_and_inlineattachments(body, inlineattachments, row, vizcompleterefs, subscriberemail, vizurl, viewname, alert, has_email_footer)
                                 appendattachments = append_attachments(appendattachments, row, vizcompleterefs, has_email_attachment)
 
                                 # send the email
@@ -815,7 +945,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                         if has_email_header:
                             body.append(row[' Email Header ~'])
 
-                        body, inlineattachments = append_body_and_inlineattachments(body, inlineattachments, row, vizcompleterefs, subscriberemail, vizurl, viewname, view, has_email_footer)
+                        body, inlineattachments = append_body_and_inlineattachments(body, inlineattachments, row, vizcompleterefs, subscriberemail, vizurl, viewname, alert, has_email_footer)
                         appendattachments = append_attachments(appendattachments, row, vizcompleterefs, has_email_attachment)
 
                             
@@ -833,7 +963,7 @@ def process_csv(csvpath, view, sitename, viewname, subscriberemail, subscribersy
                         appendattachments=[]
         else:
             # missing any valid action
-            logger.info(u'No valid actions specified in view data for {}, skipping'.format(viewurlsuffix))
+            logger.info(u'No valid actions specified in alert data for {}, skipping'.format(viewurlsuffix))
             return
 
 
@@ -885,7 +1015,6 @@ def mimify_file(filename, inline = True, overridename = None):
     return msg
 
 
-
 def quit_script(message):
     """"Called when a fatal error is encountered in the script"""
     try:
@@ -895,20 +1024,20 @@ def quit_script(message):
     sys.exit(1)
 
 
-def view_failure(view, message, attachments=None):
+def alert_failure(alert, message, attachments=None):
     """Alert the Admin, and optionally the Subscriber, to a failure to process their alert"""
 
-    subject = u'VizAlerts was unable to process view {}'.format(view["view_name"])
+    subject = u'VizAlerts was unable to process alert {}'.format(alert.view_name)
     body = message + u'<br><br>' + \
         u'<b>Details:</b><br><br>' + \
-        u'<b>View URL:</b> <a href="{}">{}<a>'.format(get_view_url(view), get_view_url(view)) + u'<br>' \
-        u'<b>Subscriber:</b> <a href="mailto:{}">{}</a>'.format(view['subscriber_email'], view['subscriber_sysname']) + u'<br>' \
-        u'<b>View Owner:</b> <a href="mailto:{}">{}</a>'.format(view['owner_email'], view['owner_sysname']) + u'<br>' \
-        u'<b>Site Id:</b> {}'.format(view['site_name']) + u'<br>' \
-        u'<b>Project:</b> {}'.format(view['project_name'])
+        u'<b>View URL:</b> <a href="{}">{}<a>'.format(alert.get_view_url(configs["server"]), alert.get_view_url(configs["server"])) + u'<br>' \
+        u'<b>Subscriber:</b> <a href="mailto:{}">{}</a>'.format(alert.subscriber_email, alert.subscriber_sysname) + u'<br>' \
+        u'<b>View Owner:</b> <a href="mailto:{}">{}</a>'.format(alert.owner_email, alert.owner_sysname) + u'<br>' \
+        u'<b>Site Id:</b> {}'.format(alert.site_name) + u'<br>' \
+        u'<b>Project:</b> {}'.format(alert.project_name)
 
-    if configs['smtp.notify_subscriber_on_failure'] == True:
-        toaddrs = view['subscriber_email'] # email the Subscriber, cc the Admin
+    if alert.notify_subscriber_on_failure == True:
+        toaddrs = alert.subscriber_email # email the Subscriber, cc the Admin
         ccaddrs = configs['smtp.address.to']
     else:
         toaddrs = configs['smtp.address.to'] # just email the Admin
@@ -924,7 +1053,7 @@ def view_failure(view, message, attachments=None):
         logger.error(u'Unknown error sending exception alert email: {}'.format(e.message))
 
 
-def validate_addresses(vizdata, has_email_from, has_email_cc, has_email_bcc):
+def validate_addresses(vizdata, allowed_from_addresses, allowed_recipient_addresses, has_email_from, has_email_cc, has_email_bcc):
     """Loops through the viz data for an Advanced Alert and returns a list of dicts
         containing any errors found in recipients"""
 
@@ -932,19 +1061,19 @@ def validate_addresses(vizdata, has_email_from, has_email_cc, has_email_bcc):
     rownum = 2 # account for field header in CSV
 
     for row in vizdata:
-        result = addresses_are_invalid(row[' Email To *'], False) # empty string not acceptable as a To address
+        result = addresses_are_invalid(row[' Email To *'], False, allowed_recipient_addresses) # empty string not acceptable as a To address
         if result:
             errorlist.append({'Row': rownum, 'Field': ' Email To *', 'Value': result['address'], 'Error': result['errormessage']})
         if has_email_from:
-            result = addresses_are_invalid(row[' Email From ~'], False) # empty string not acceptable as a From address
+            result = addresses_are_invalid(row[' Email From ~'], False, allowed_from_addresses) # empty string not acceptable as a From address
             if result:
                 errorlist.append({'Row': rownum, 'Field': ' Email From ~', 'Value': result['address'], 'Error': result['errormessage']})
         if has_email_cc:
-            result = addresses_are_invalid(row[' Email CC ~'], True)
+            result = addresses_are_invalid(row[' Email CC ~'], True, allowed_recipient_addresses)
             if result:
                 errorlist.append({'Row': rownum, 'Field': ' Email CC ~', 'Value': result['address'], 'Error': result['errormessage']})
         if has_email_bcc:
-            result = addresses_are_invalid(row[' Email BCC ~'], True)
+            result = addresses_are_invalid(row[' Email BCC ~'], True, allowed_recipient_addresses)
             if result:
                 errorlist.append({'Row': rownum, 'Field': ' Email BCC ~', 'Value': result['address'], 'Error': result['errormessage']})
         rownum = rownum + 1
@@ -952,8 +1081,8 @@ def validate_addresses(vizdata, has_email_from, has_email_cc, has_email_bcc):
     return errorlist
 
 
-def addresses_are_invalid(emailaddresses, emptystringok):
-    """Validates all email addresses found in a given string"""
+def addresses_are_invalid(emailaddresses, emptystringok, regex_eval=None):
+    """Validates all email addresses found in a given string, optionally that conform to the regex_eval"""
     logger.debug(u'Validating email field value: {}'.format(emailaddresses))
     address_list = re.split(EMAIL_RECIP_SPLIT_REGEX, emailaddresses.strip())
     for address in address_list:
@@ -961,7 +1090,7 @@ def addresses_are_invalid(emailaddresses, emptystringok):
         if emptystringok and (address == '' or address is None):
             return None
         else:
-            errormessage = address_is_invalid(address)
+            errormessage = address_is_invalid(address, regex_eval)
             if errormessage:
                 logger.debug(u'Address is invalid: {}, Error: {}'.format(address, errormessage))
                 if len(address) > 64:
@@ -970,9 +1099,17 @@ def addresses_are_invalid(emailaddresses, emptystringok):
     return None
 
 
-def address_is_invalid(address):
+def address_is_invalid(address, regex_eval=None):
     """Checks for a syntactically invalid email address."""
     # (most code derived from from http://zeth.net/archive/2008/05/03/email-syntax-check)
+
+    # Validate address according to admin regex
+    if regex_eval:
+        logger.debug("testing address {} against regex {}".format(address, regex_eval))
+        if not re.match(regex_eval, address):
+            errormessage = u'Address does not match pattern restriction set by the administrator: {}'.format(regex_eval)
+            logger.error(errormessage)
+            return errormessage
 
     # Email address must not be empty
     if address is None or len(address) == 0 or address == '':
@@ -1007,13 +1144,6 @@ def address_is_invalid(address):
         errormessage = u'Address has too few parts'
         logger.error(errormessage)
         return errormessage
-
-    # Validate domain if specified in config
-    if len(configs["smtp.alloweddomains"]) > 0:
-        if domainname not in configs["smtp.alloweddomains"]:
-            errormessage = u'Address has invalid domain'
-            logger.error(errormessage)
-            return errormessage
 
     for i in '-_.%+.':
         localpart = localpart.replace(i, "")
@@ -1239,7 +1369,7 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
     for vizref in vizdistinctrefs:
         try:
             # set the view_url_suffix to the vizref so we can do the download
-            view['view_url_suffix'] = vizdistinctrefs[vizref]['view_url_suffix']
+            view.view_url_suffix = vizdistinctrefs[vizref]['view_url_suffix']
             # export/render the viz to a file, store path to the download as value with vizref as key
             vizdistinctrefs[vizref]['imagepath'] = tabhttp.export_view(configs, view, eval('tabhttp.Format.' + vizdistinctrefs[vizref]['formatstring']), logger)
 
@@ -1249,7 +1379,7 @@ def find_viz_refs(view, data, viewurlsuffix, has_email_header, has_email_footer,
             raise UserWarning(errormessage)
 
     #reset view_url_suffix back to original calling view
-    view['view_url_suffix'] = viewurlsuffix
+    view.view_url_suffix = viewurlsuffix
 
     #now match vizdistinctrefs to original references to store the correct imagepaths
     for vizref in vizcompleterefs:
@@ -1349,24 +1479,6 @@ def replace_in_list(inlist, findstr, replacestr):
     return {'foundstring':foundstring, 'outlist':outlist}
 
 
-def get_view_url(view, customviewurlsuffix = None):
-    """Construct the full URL of the view"""
-
-    # this logic should be removed--empty string should be passed in from SQL
-    sitename = unicode(view["site_name"]).replace('Default', '')
-
-    if customviewurlsuffix == None:
-        customviewurlsuffix = view['view_url_suffix']
-
-    # (omitting hash preserves 8.x functionality)
-    if sitename == '':
-        vizurl = u'http://' + configs["server"] + u'/views/' + customviewurlsuffix
-    else:
-        vizurl = u'http://' + configs["server"] + u'/t/' + sitename + u'/views/' + customviewurlsuffix
-
-    return vizurl
-
-
 def get_footer(subscriberemail, subscribersysname, subscriberdomain, vizurl, viewname, simplealert, server_version):
     """Get the footer text for an email alert"""
     httpprefix = u'http://'
@@ -1387,7 +1499,7 @@ def get_footer(subscriberemail, subscribersysname, subscriberdomain, vizurl, vie
 
         if server_version == 8:
             footer = footer + managesublink.format(managesuburlv8)
-        if server_version in {9, 10}:
+        if server_version in [9,10]:
             footer = footer + managesublink.format(managesuburlv9)
 
     return footer
@@ -1438,7 +1550,7 @@ def append_body_and_inlineattachments(body, inlineattachments, row, vizcompleter
             if vizcompleterefs[vizref]['formatstring'] == 'PNG':
                 # add hyperlinks to images if necessary
                 if VIZLINK_ARGUMENT in vizcompleterefs[vizref] and vizcompleterefs[vizref][VIZLINK_ARGUMENT] == 'y':
-                    replacestring = u'<a href="' + get_view_url(view, vizcompleterefs[vizref]['view_url_suffix']) + u'"><img src="cid:{}">'.format(basename(vizcompleterefs[vizref]['imagepath'])) +u'</a>'
+                    replacestring = u'<a href="' + view.get_view_url(configs["server"], vizcompleterefs[vizref]['view_url_suffix']) + u'"><img src="cid:{}">'.format(basename(vizcompleterefs[vizref]['imagepath'])) +u'</a>'
                 else:
                     replacestring = u'<img src="cid:{}">'.format(basename(vizcompleterefs[vizref]['imagepath']))
 
@@ -1458,14 +1570,14 @@ def append_body_and_inlineattachments(body, inlineattachments, row, vizcompleter
                 # use raw link if that option is present
 
                 if RAWLINK_ARGUMENT in vizcompleterefs[vizref] and vizcompleterefs[vizref][RAWLINK_ARGUMENT] == 'y':
-                    replacestring = get_view_url(view, vizcompleterefs[vizref]['view_url_suffix'])
+                    replacestring = view.get_view_url(configs["server"], vizcompleterefs[vizref]['view_url_suffix'])
                 else:
                     # test for whether the filename field is used, if so that is the link text
                     if 'filename' in vizcompleterefs[vizref] and len(vizcompleterefs[vizref]['filename']) > 0:
-                        replacestring = u'<a href="' + get_view_url(view, vizcompleterefs[vizref]['view_url_suffix']) + u'">' + vizcompleterefs[vizref]['filename'] + u'</a>'
+                        replacestring = u'<a href="' + view.get_view_url(configs["server"], vizcompleterefs[vizref]['view_url_suffix']) + u'">' + vizcompleterefs[vizref]['filename'] + u'</a>'
                     # use the view_url_suffix as the link text
                     else:
-                        replacestring = u'<a href="' + get_view_url(view, vizcompleterefs[vizref]['view_url_suffix']) + u'">' + vizcompleterefs[vizref]['view_url_suffix'] + u'</a>'
+                        replacestring = u'<a href="' + view.get_view_url(configs["server"], vizcompleterefs[vizref]['view_url_suffix']) + u'">' + vizcompleterefs[vizref]['view_url_suffix'] + u'</a>'
 
                 replaceresult = replace_in_list(body, vizref, replacestring)
 
@@ -1621,7 +1733,7 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
             server.ehlo()
             server.starttls()
         if configs["smtp.user"]:
-            server.login(configs["smtp.user"], configs["smtp.password"])
+            server.login(str(configs["smtp.user"]), str(configs["smtp.password"]))
 
         # from http://wordeology.com/computer/how-to-send-good-unicode-email-with-python.html
         io = StringIO()

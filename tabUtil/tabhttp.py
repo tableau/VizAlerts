@@ -13,6 +13,7 @@ import codecs
 import re
 import ssl
 from requests_ntlm import HttpNtlmAuth
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 
 class Format(object):
@@ -23,8 +24,8 @@ class Format(object):
 
 
 # Generate a trusted ticket
-def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=True, userdomain=None, clientip=None, tries=1):
-
+def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=True, certfile=None, userdomain=None, clientip=None, tries=1):
+    
     protocol = u'http'
 
     # overrides for https
@@ -61,13 +62,15 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=Tr
 
             # If we're using SSL, and config says to validate the certificate, then do so
             if encrypt and certcheck:
+                logger.debug('using SSL and verifying cert')
+                request = urllib2.Request(trustedurl, data)
+                response = urllib2.urlopen(request, cafile=certfile)
+            else:
+                # We're either not using SSL, or just not validating the certificate
+                logger.debug('NOT using SSL and NOT verifying cert')
                 context = ssl._create_unverified_context()
                 request = urllib2.Request(trustedurl, data)
                 response = urllib2.urlopen(request, context=context)
-            else:
-                # We're either not using SSL, or just not validating the certificate
-                request = urllib2.Request(trustedurl, data)
-                response = urllib2.urlopen(request)
 
             ticket = response.read()
             logger.debug(u'Got ticket: {}'.format(ticket))
@@ -111,22 +114,25 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=Tr
 def export_view(configs, view, format, logger):
 
     # assign variables (clean this up later)
-    viewname = unicode(view['view_name'])
+    viewname = unicode(view.view_name)
 
-    username = view['subscriber_sysname']
-    sitename = unicode(view["site_name"]).replace('Default', '')
-    if view['subscriber_domain'] != 'local': # leave it as None if Server uses local authentication
-        subscriberdomain = view['subscriber_domain']
+    username = view.subscriber_sysname
+    sitename = unicode(view.site_name).replace('Default', '')
+    if view.subscriber_domain != 'local': # leave it as None if Server uses local authentication
+        subscriberdomain = view.subscriber_domain
     else:
         subscriberdomain = None
-    timeout_s = view['timeout_s']
-    refresh = view['force_refresh']
-    tries = view["data_retrieval_tries"]
+
+    timeout_s = view.timeout_s
+    refresh = view.force_refresh
+    tries = view.data_retrieval_tries
+    pngwidth = view.viz_png_width
+    pngheight = view.viz_png_height
 
     server = configs["server"]
     encrypt = configs["server.ssl"]
-    pngwidth = configs["viz.png.width"]
-    pngheight = configs["viz.png.height"]
+    certcheck = configs["server.certcheck"]
+    certfile = configs["server.certfile"]
     tempdir = configs["temp.dir"]
     if configs["trusted.useclientip"]:
         clientip = configs["trusted.clientip"]
@@ -146,12 +152,12 @@ def export_view(configs, view, format, logger):
     #viewurlsuffix may be of form workbook/view
     #or workbook/view?param1=value1&param2=value2
     #in the latter case separate it out
-    search = re.search(u'(.*?)\?(.*)', view['view_url_suffix'])
+    search = re.search(u'(.*?)\?(.*)', view.view_url_suffix)
     if search:
         viewurlsuffix = search.group(1)
         extraurlparameter = '?' + search.group(2)
     else:
-        viewurlsuffix = view['view_url_suffix']
+        viewurlsuffix = view.view_url_suffix
         # always need a ? to add in the formatparam and potentially refresh URL parameters
         extraurlparameter = '?'
 
@@ -177,7 +183,7 @@ def export_view(configs, view, format, logger):
             tries -= 1
 
             # get a trusted ticket
-            ticket = get_trusted_ticket(server, sitename, username, encrypt, logger, subscriberdomain, clientip)
+            ticket = get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck, certfile, subscriberdomain, clientip)
 
             # build final URL
             url = protocol + u'://' + server + u'/trusted/' + ticket + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
@@ -190,10 +196,22 @@ def export_view(configs, view, format, logger):
             response = None
             if subscriberdomain:
                 # Tableau Server is using AD auth (is this even needed? May need to remove later)
-                response = requests.get(url, auth=HttpNtlmAuth(subscriberdomain + u'\\' + username, ''), verify=False, timeout=timeout_s)
+                if certcheck:
+                    logger.debug('Validating cert for this request')
+                    response = requests.get(url, auth=HttpNtlmAuth(subscriberdomain + u'\\' + username, ''), verify=certfile, timeout=timeout_s)
+                else:
+                    logger.debug('NOT Validating cert for this request')
+                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # disable warnings for unverified certs
+                    response = requests.get(url, auth=HttpNtlmAuth(subscriberdomain + u'\\' + username, ''), verify=False, timeout=timeout_s)
             else:
                 # Server is using local auth
-                response = requests.get(url, auth=(username, ''), verify=False, timeout=timeout_s)
+                if certcheck:
+                    logger.debug('Validating cert for this request')
+                    response = requests.get(url, auth=(username, ''), verify=certfile, timeout=timeout_s)
+                else:
+                    logger.debug('NOT Validating cert for this request')
+                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # disable warnings for unverified certs
+                    response = requests.get(url, auth=(username, ''), verify=False, timeout=timeout_s)
             if not response.ok:
                 raise requests.RequestException
 
@@ -225,10 +243,19 @@ def export_view(configs, view, format, logger):
                 raise UserWarning(errormessage)
             else:
                 continue
+        except requests.exceptions.SSLError as e:
+            errormessage = cgi.escape(u'SSL error getting vizdata from url {}. Error: {}'.format(displayurl, e))
+            logger.error(errormessage)
+            if tries == 0:
+                raise UserWarning(errormessage)
+            else:
+                continue
         except requests.exceptions.RequestException as e:
-            errormessage = cgi.escape(u'Unable to get vizdata from url {}. Cause: {}'.format(displayurl, e))
-            if response:
-                errormessage = errormessage + ', response: {}'.format(response)
+            errormessage = cgi.escape(u'Unable to get vizdata from url {}. Error: {}.'.format(displayurl, e))
+
+            #errormessage = errormessage + ', Error: {}, status: {}, response: {}. '.format(response.error, response.status_code, response.text)
+            #if response:
+                
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)
