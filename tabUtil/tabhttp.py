@@ -12,6 +12,7 @@ import cgi
 import codecs
 import re
 import ssl
+import threading
 from requests_ntlm import HttpNtlmAuth
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -129,13 +130,13 @@ def export_view(configs, view, format, logger):
     pngwidth = view.viz_png_width
     pngheight = view.viz_png_height
 
-    server = configs["server"]
-    encrypt = configs["server.ssl"]
-    certcheck = configs["server.certcheck"]
-    certfile = configs["server.certfile"]
-    tempdir = configs["temp.dir"]
-    if configs["trusted.useclientip"]:
-        clientip = configs["trusted.clientip"]
+    server = configs['server']
+    encrypt = configs['server.ssl']
+    certcheck = configs['server.certcheck']
+    certfile = configs['server.certfile']
+    tempdir = configs['temp.dir']
+    if configs['trusted.useclientip']:
+        clientip = configs['trusted.clientip']
     else:
         clientip = None
 
@@ -144,7 +145,7 @@ def export_view(configs, view, format, logger):
     ticket = None
 
     # overrides for various url components
-    if configs["server.ssl"]:
+    if configs['server.ssl']:
         protocol = u'https'
     else:
         protocol = u'http'
@@ -212,14 +213,13 @@ def export_view(configs, view, format, logger):
                     logger.debug('NOT Validating cert for this request')
                     requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # disable warnings for unverified certs
                     response = requests.get(url, auth=(username, ''), verify=False, timeout=timeout_s)
-            if not response.ok:
-                raise requests.RequestException
+            response.raise_for_status()
 
             # Create the temporary file, datestring is down to microsecond to prevent dups since
             # we are excluding any extraurl parameters for space & security reasons
             # (users might obfuscate results by hiding URL parameters)
             datestring = datetime.datetime.now().strftime('%Y%m%d%H%M%S%f')
-            filename = datestring + '_' + viewurlsuffix.replace('/', '-') + '.' + format
+            filename = datestring + '_' + threading.current_thread().name + '_' + viewurlsuffix.replace('/', '-') + '.' + format
             filepath = tempdir + filename
 
             logger.info(u'Attempting to write to: {}'.format(filepath))
@@ -235,9 +235,8 @@ def export_view(configs, view, format, logger):
                     f.write(block)
             f.close()
             return unicode(filepath)
-
-        except urllib2.HTTPError as e:
-            errormessage = cgi.escape(u'HTTP error getting vizdata from url {}. Code: {}, Reason data: {}'.format(displayurl, e.code, e.reason))
+        except requests.exceptions.HTTPError as e:
+            errormessage = cgi.escape(u'HTTP error getting vizdata from url {}. Code: {}, Response data:<br><br> {}'.format(displayurl, e.response.status_code, e.response.text))
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)
@@ -251,7 +250,13 @@ def export_view(configs, view, format, logger):
             else:
                 continue
         except requests.exceptions.RequestException as e:
-            errormessage = cgi.escape(u'Unable to get vizdata from url {}. Error: {}.'.format(displayurl, e))
+            errormessage = cgi.escape(u'Request Exception getting vizdata from url {}. Error: {}'.format(displayurl, e))
+            if response:
+                errormessage += ' Response: {}'.format(response)
+            if hasattr(e, 'code'):
+                errormessage += ' Code: {}'.format(e.code)
+            if hasattr(e, 'reason'):
+                errormessage += ' Reason: {}'.format(e.reason)
 
             #errormessage = errormessage + ', Error: {}, status: {}, response: {}. '.format(response.error, response.status_code, response.text)
             #if response:
@@ -269,9 +274,13 @@ def export_view(configs, view, format, logger):
             else:
                 continue
         except Exception as e:
-            errormessage = cgi.escape(u'Unable to export the url {} to {}, error: {}'.format(displayurl, format, e))
+            errormessage = cgi.escape(u'Generic exception trying to export the url {} to {}, error: {}'.format(displayurl, format, e))
             if response:
                 errormessage = errormessage + ', response: {}'.format(response)
+            if hasattr(e, 'code'):
+                errormessage += ' Code: {}'.format(e.code)
+            if hasattr(e, 'reason'):
+                errormessage += ' Reason: {}'.format(e.reason)
             logger.error(errormessage)
             if tries == 0:
                 raise UserWarning(errormessage)

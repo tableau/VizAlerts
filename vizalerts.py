@@ -523,8 +523,6 @@ def get_alerts():
     try:
         for line in results:
             # build an alert instance for each line            
-            logger.debug('initializing alert')
-
             alert = VizAlert(line['view_url_suffix'],
                              line['site_name'],
                              line['subscriber_sysname'],
@@ -621,11 +619,6 @@ def get_alerts():
                 linedict['run_next_at'] = line.split('\t')[5]
                 linedict['schedule_id'] = line.split('\t')[6].rstrip()  # remove trailing line break
                 for alert in alerts:
-                    logger.debug(
-                        'checking alert sub id: {} against statefile line with id {}'.format(alert.subscription_id,
-                                                                                             linedict[
-                                                                                                 'subscription_id']))
-
                     # subscription_id is our unique identifier
                     if str(alert.subscription_id) == str(linedict['subscription_id']):
 
@@ -675,12 +668,7 @@ def get_alerts():
         for alert in persistalerts:
             persist_sub_ids.append(alert.subscription_id)
         for alert in alerts:
-            logger.debug('adding alerts that haven''t been run before: is subid {} in {}?'.format(alert.subscription_id,
-                                                                                                  persist_sub_ids))
-
             if alert.subscription_id not in persist_sub_ids:
-                logger.debug('adding alert subid {}'.format(alert.subscription_id))
-
                 persistalerts.append(alert)
 
         # write the next run times to file
@@ -764,7 +752,7 @@ def process_trigger_data(csvpath, alert, sitename, viewname, subscriberemail, su
             logger.debug(u'Processing as a simple alert')
 
             # check for invalid email domains  - SHOULD THIS BE REMOVED FOR ADVANCED ALERTS?
-            subscriberemailerror = address_is_invalid(subscriberemail, alert.allowed_from_addresses)
+            subscriberemailerror = address_is_invalid(subscriberemail, alert.allowed_recipient_addresses)
             if subscriberemailerror:
                 errormessage = u'VizAlerts was unable to process this alert, because it was unable to send email to address {}: {}'.format(
                     subscriberemail, subscriberemailerror)
