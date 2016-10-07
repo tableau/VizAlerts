@@ -6,6 +6,9 @@ Version 2.0
 =================================
 -Added multi-threading to improve alert timeliness (Issue #7)
 -Configuration settings are now primarily derived from a Tableau Server view rather than config/vizalerts.yaml (Issue #41)
+-Fixed defect where SSL certificate was not being validated
+-Added config options around SSL certificate validation
+-Improved error handling
 =================================
 
 Version 1.1.1

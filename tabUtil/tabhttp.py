@@ -28,6 +28,7 @@ class Format(object):
 def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=True, certfile=None, userdomain=None, clientip=None, tries=1):
     
     protocol = u'http'
+    attempts = 0
 
     # overrides for https
     if encrypt:
@@ -57,13 +58,15 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=Tr
     logger.debug(u'Generating trusted ticket. Request details: {}'.format(requestdetails))
 
     ticket = 0
-    while tries > 0:
+    while attempts < tries:
         try:
-            tries -= 1
+            attempts += 1
 
             # If we're using SSL, and config says to validate the certificate, then do so
-            if encrypt and certcheck:
-                logger.debug('using SSL and verifying cert')
+            if certcheck:
+                if not certfile:
+                    certfile = requests.utils.DEFAULT_CA_BUNDLE_PATH
+                logger.debug('using SSL and verifying cert using certfile {}'.format(certfile))
                 request = urllib2.Request(trustedurl, data)
                 response = urllib2.urlopen(request, cafile=certfile)
             else:
@@ -84,14 +87,14 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=Tr
         except urllib2.HTTPError as e:
             errormessage = cgi.escape(u'HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except urllib2.URLError as e:
             errormessage = cgi.escape(u'URLError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= tries:
                 raise UserWarning(errormessage)
             else:
                 continue
@@ -102,7 +105,7 @@ def get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck=Tr
         except Exception as e:
             errormessage = cgi.escape(u'Generic exception generating trusted ticket: {}  Request details: {}'.format(str(e.message), requestdetails))
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= tries:
                 raise UserWarning(errormessage)
             else:
                 continue
@@ -126,7 +129,7 @@ def export_view(configs, view, format, logger):
 
     timeout_s = view.timeout_s
     refresh = view.force_refresh
-    tries = view.data_retrieval_tries
+    attempts = 0
     pngwidth = view.viz_png_width
     pngheight = view.viz_png_height
 
@@ -179,9 +182,9 @@ def export_view(configs, view, format, logger):
     if refresh:
         displayurl = displayurl + u'&:refresh=y'   # show admin/users that we forced a refresh
 
-    while tries > 0:
+    while attempts < view.data_retrieval_tries:
         try:
-            tries -= 1
+            attempts += 1
 
             # get a trusted ticket
             ticket = get_trusted_ticket(server, sitename, username, encrypt, logger, certcheck, certfile, subscriberdomain, clientip)
@@ -198,7 +201,9 @@ def export_view(configs, view, format, logger):
             if subscriberdomain:
                 # Tableau Server is using AD auth (is this even needed? May need to remove later)
                 if certcheck:
-                    logger.debug('Validating cert for this request')
+                    logger.debug('Validating cert for this request using certfile {}'.format(certfile))
+                    if not certfile:
+                        certfile = requests.utils.DEFAULT_CA_BUNDLE_PATH
                     response = requests.get(url, auth=HttpNtlmAuth(subscriberdomain + u'\\' + username, ''), verify=certfile, timeout=timeout_s)
                 else:
                     logger.debug('NOT Validating cert for this request')
@@ -207,7 +212,9 @@ def export_view(configs, view, format, logger):
             else:
                 # Server is using local auth
                 if certcheck:
-                    logger.debug('Validating cert for this request')
+                    logger.debug('Validating cert for this request using certfile {}'.format(certfile))
+                    if not certfile:
+                        certfile = requests.utils.DEFAULT_CA_BUNDLE_PATH
                     response = requests.get(url, auth=(username, ''), verify=certfile, timeout=timeout_s)
                 else:
                     logger.debug('NOT Validating cert for this request')
@@ -235,17 +242,24 @@ def export_view(configs, view, format, logger):
                     f.write(block)
             f.close()
             return unicode(filepath)
-        except requests.exceptions.HTTPError as e:
-            errormessage = cgi.escape(u'HTTP error getting vizdata from url {}. Code: {}, Response data:<br><br> {}'.format(displayurl, e.response.status_code, e.response.text))
+        except requests.exceptions.Timeout as e:
+            errormessage = cgi.escape(u'Timeout error. Could not retrieve vizdata from url {} within {} seconds, after {} tries'.format(displayurl, timeout_s, attempts))
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= view.data_retrieval_tries:
+                raise UserWarning(errormessage)
+            else:
+                continue
+        except requests.exceptions.HTTPError as e:
+            errormessage = cgi.escape(u'HTTP error getting vizdata from url {}. Code: {} Reason: {}'.format(displayurl, e.response.status_code, e.response.reason))
+            logger.error(errormessage)
+            if attempts >= view.data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except requests.exceptions.SSLError as e:
             errormessage = cgi.escape(u'SSL error getting vizdata from url {}. Error: {}'.format(displayurl, e))
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= view.data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
@@ -257,19 +271,15 @@ def export_view(configs, view, format, logger):
                 errormessage += ' Code: {}'.format(e.code)
             if hasattr(e, 'reason'):
                 errormessage += ' Reason: {}'.format(e.reason)
-
-            #errormessage = errormessage + ', Error: {}, status: {}, response: {}. '.format(response.error, response.status_code, response.text)
-            #if response:
-                
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= view.data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except IOError as e:
             errormessage = cgi.escape(u'Unable to write the file {} for url {}, error: {}'.format(filepath, displayurl, e))
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= view.data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
@@ -282,7 +292,7 @@ def export_view(configs, view, format, logger):
             if hasattr(e, 'reason'):
                 errormessage += ' Reason: {}'.format(e.reason)
             logger.error(errormessage)
-            if tries == 0:
+            if attempts >= view.data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue

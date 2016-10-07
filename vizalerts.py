@@ -1,5 +1,4 @@
 #! python
-# ! python
 # -*- coding: utf-8 -*-
 # Script to generate conditional automation against published views from a Tableau Server instance
 
@@ -368,15 +367,13 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
 
         # loop until work is done
         while 1 == 1:
-            logger.debug('Threadcount at: {}'.format(threading.active_count()))
             if threading.active_count() == 1:
                 logger.debug('Worker threads have completed. Exiting')
                 return
-            time.sleep(3)
-            logger.debug('Enumerating threads:')
-            logger.debug('{}'.format(threading.enumerate()))
+            time.sleep(10)
+            logger.debug('Waiting on {} worker threads. Currently active threads:: {}'.format(threading.active_count() - 1,threading.enumerate()))
 
-        
+
 def validate_conf(configfile, logger):
     """Import config values and do some basic validations"""
     try:
@@ -420,11 +417,7 @@ def validate_conf(configfile, logger):
         sys.exit(1)
 
     # validate ssl config
-    if localconfigs['server.ssl'] and localconfigs['server.certcheck']:
-        if not localconfigs['server.certfile']:
-            errormessage = u'To validate certificates using SSL, you must enter the path to your certificate authority bundle to the server.certfile config setting'
-            logger.error(errormessage)
-            sys.exit(1)
+    if localconfigs['server.certfile']:
         # ensure the certfile actually exists
         if not os.access(localconfigs['server.certfile'], os.F_OK):
             errormessage = u'The file specified in the server.certfile config setting could not be found: {}'.format(
@@ -466,7 +459,7 @@ def trusted_ticket_test():
             configs['server.ssl'],
             logger,
             configs['server.certcheck'],
-            None,
+            configs['server.certfile'],
             configs['server.user.domain'],
             clientip)
         logger.debug(u'Generated test trusted ticket. Value is: {}'.format(test_ticket))
@@ -493,8 +486,6 @@ def get_alerts():
     logger.debug('Pulling source viz data down')
 
     source_viz_data = tabhttp.export_view(configs, source_viz, tabhttp.Format.CSV, logger)
-
-    logger.debug('Got viz data down')
 
     f = open(source_viz_data, 'rU')
     results = UnicodeDictReader(f)
@@ -624,8 +615,6 @@ def get_alerts():
 
                         # preserve the last time the alert was scheduled to run
                         alert.ran_last_at = str(linedict['ran_last_at'])
-                        
-                        logger.debug('SubId {} ran last at: {}, to be run next at: {}'.format(alert.subscription_id, alert.ran_last_at, linedict['run_next_at']))
 
                         # if the run_next_at date is greater for this alert since last we checked, mark it to run now
                         # the last condition ensures the alert doesn't run simply due to a schedule switch
@@ -662,8 +651,8 @@ def get_alerts():
                         # add the alert to the list to write back to our state file
                         persistalerts.append(alert)
 
-                        # add NEW subscriptions that weren't in our state file
-                        # this is ugly I, know...sorry. someday I'll be better at Python.
+        # add NEW subscriptions that weren't in our state file
+        # this is ugly I, know...sorry. someday I'll be better at Python.
         persist_sub_ids = []
         for alert in persistalerts:
             persist_sub_ids.append(alert.subscription_id)
@@ -1212,7 +1201,7 @@ def address_is_invalid(address, regex_eval=None):
     if regex_eval:
         logger.debug("testing address {} against regex {}".format(address, regex_eval))
         if not re.match(regex_eval, address):
-            errormessage = u'Address does not match pattern restriction set by the administrator: {}'.format(regex_eval)
+            errormessage = u'Address must match regex pattern set by the administrator: {}'.format(regex_eval)
             logger.error(errormessage)
             return errormessage
 
