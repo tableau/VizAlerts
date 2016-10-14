@@ -22,14 +22,14 @@
         <calculation class='tableau' formula='&quot;vizalerts@tableau\.com&quot;' />
         <desc>
           <formatted-text>
-            <run>System-wide default for describing what email address VizAlerts is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run>System-wide default for describing what email address a VizAlert is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
             <run bold='true'>allowed_from_address</run>
             <run> calculation</run>
           </formatted-text>
         </desc>
       </column>
-      <column caption='default_timeout_s' datatype='integer' default-format='n0;-0' name='[Parameter 3]' param-domain-type='any' role='measure' type='quantitative' value='60'>
-        <calculation class='tableau' formula='60' />
+      <column caption='default_timeout_s' datatype='integer' default-format='n0;-0' name='[Parameter 3]' param-domain-type='any' role='measure' type='quantitative' value='120'>
+        <calculation class='tableau' formula='120' />
         <desc>
           <formatted-text>
             <run>System wide default for the number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
@@ -72,6 +72,609 @@
           <member value='false' />
         </members>
       </column>
+      <column caption='default_action_enabled_email' datatype='integer' datatype-customized='true' name='[Parameter 7]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+        <calculation class='tableau' formula='1' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for whether or not a Subscriber should be allowed to send an </run>
+            <run bold='true'>email</run>
+            <run> (at all) with VizAlerts.&#10;&#10;1 = true, allowed to send email (subject to other restrictions in the settings)&#10;0 = false, no email actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> action_enabled_email </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+        <members>
+          <member value='0' />
+          <member value='1' />
+        </members>
+      </column>
+      <column caption='default_fileshare_base' datatype='string' name='[Parameter 8]' param-domain-type='any' role='measure' type='nominal' value='&quot;\\\\\\\\myshare\\\\&quot;'>
+        <calculation class='tableau' formula='&quot;\\\\myshare\\&quot;' />
+        <desc>
+          <formatted-text>
+            <run>This is the </run>
+            <run bold='true'>base</run>
+            <run> fileshare that VizAlerts will use to perform File Actions. It is used in the </run>
+            <run bold='true'>allowed_filepath</run>
+            <run> calculation, which is a regex string that defines which fileshare(s) a VizAlert may perform File Actions within.&#10;&#10;See the </run>
+            <run bold='true'>allowed_filepath </run>
+            <run>calculation for more details.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='schedule_name_filter' datatype='string' name='[Parameter 9]' param-domain-type='any' role='measure' type='nominal' value='&quot;lert&quot;'>
+        <calculation class='tableau' formula='&quot;lert&quot;' />
+      </column>
+      <column caption='default_action_enabled_sms' datatype='integer' datatype-customized='true' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+        <calculation class='tableau' formula='1' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for whether or not a Subscriber should be allowed to send an </run>
+            <run bold='true'>SMS message</run>
+            <run> (at all) with VizAlerts.&#10;&#10;1 = true, allowed to send SMS messages (subject to other restrictions in the settings)&#10;0 = false, no SMS actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> action_enabled_sms </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+        <members>
+          <member value='1' />
+          <member value='0' />
+        </members>
+      </column>
+      <column caption='default_allowed_recipient_numbers' datatype='string' datatype-customized='true' name='[default_action_enabled_sms (copy 2)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+        <calculation class='tableau' formula='&quot;.*&quot;' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for describing what phone numbers this VizAlert is able to send SMS messages to, defined as a regular expression.&#10;&#10;For more information, and to override this setting dynamically, see the </run>
+            <run bold='true'>allowed_recipient_numbers </run>
+            <run>calculation</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column alias='United States of America' caption='default_phone_country_code' datatype='string' name='[default_action_enabled_sms (copy 3)]' param-domain-type='list' role='measure' type='nominal' value='&quot;US&quot;'>
+        <calculation class='tableau' formula='&quot;US&quot;' />
+        <aliases>
+          <alias key='&quot;AD&quot;' value='Andorra' />
+          <alias key='&quot;AE&quot;' value='United Arab Emirates' />
+          <alias key='&quot;AF&quot;' value='Afghanistan' />
+          <alias key='&quot;AG&quot;' value='Antigua and Barbuda' />
+          <alias key='&quot;AI&quot;' value='Anguilla' />
+          <alias key='&quot;AL&quot;' value='Albania' />
+          <alias key='&quot;AM&quot;' value='Armenia' />
+          <alias key='&quot;AO&quot;' value='Angola' />
+          <alias key='&quot;AQ&quot;' value='Antarctica' />
+          <alias key='&quot;AR&quot;' value='Argentina' />
+          <alias key='&quot;AS&quot;' value='American Samoa' />
+          <alias key='&quot;AT&quot;' value='Austria' />
+          <alias key='&quot;AU&quot;' value='Australia' />
+          <alias key='&quot;AW&quot;' value='Aruba' />
+          <alias key='&quot;AX&quot;' value='Åland Islands' />
+          <alias key='&quot;AZ&quot;' value='Azerbaijan' />
+          <alias key='&quot;BA&quot;' value='Bosnia and Herzegovina' />
+          <alias key='&quot;BB&quot;' value='Barbados' />
+          <alias key='&quot;BD&quot;' value='Bangladesh' />
+          <alias key='&quot;BE&quot;' value='Belgium' />
+          <alias key='&quot;BF&quot;' value='Burkina Faso' />
+          <alias key='&quot;BG&quot;' value='Bulgaria' />
+          <alias key='&quot;BH&quot;' value='Bahrain' />
+          <alias key='&quot;BI&quot;' value='Burundi' />
+          <alias key='&quot;BJ&quot;' value='Benin' />
+          <alias key='&quot;BL&quot;' value='Saint Barthélemy' />
+          <alias key='&quot;BM&quot;' value='Bermuda' />
+          <alias key='&quot;BN&quot;' value='Brunei Darussalam' />
+          <alias key='&quot;BO&quot;' value='Bolivia, Plurinational State of' />
+          <alias key='&quot;BQ&quot;' value='Bonaire, Sint Eustatius and Saba' />
+          <alias key='&quot;BR&quot;' value='Brazil' />
+          <alias key='&quot;BS&quot;' value='Bahamas' />
+          <alias key='&quot;BT&quot;' value='Bhutan' />
+          <alias key='&quot;BV&quot;' value='Bouvet Island' />
+          <alias key='&quot;BW&quot;' value='Botswana' />
+          <alias key='&quot;BY&quot;' value='Belarus' />
+          <alias key='&quot;BZ&quot;' value='Belize' />
+          <alias key='&quot;CA&quot;' value='Canada' />
+          <alias key='&quot;CC&quot;' value='Cocos (Keeling) Islands' />
+          <alias key='&quot;CD&quot;' value='Congo, the Democratic Republic of the' />
+          <alias key='&quot;CF&quot;' value='Central African Republic' />
+          <alias key='&quot;CG&quot;' value='Congo' />
+          <alias key='&quot;CH&quot;' value='Switzerland' />
+          <alias key='&quot;CI&quot;' value='Côte d&apos;Ivoire' />
+          <alias key='&quot;CK&quot;' value='Cook Islands' />
+          <alias key='&quot;CL&quot;' value='Chile' />
+          <alias key='&quot;CM&quot;' value='Cameroon' />
+          <alias key='&quot;CN&quot;' value='China' />
+          <alias key='&quot;CO&quot;' value='Colombia' />
+          <alias key='&quot;CR&quot;' value='Costa Rica' />
+          <alias key='&quot;CU&quot;' value='Cuba' />
+          <alias key='&quot;CV&quot;' value='Cabo Verde' />
+          <alias key='&quot;CW&quot;' value='Curaçao' />
+          <alias key='&quot;CX&quot;' value='Christmas Island' />
+          <alias key='&quot;CY&quot;' value='Cyprus' />
+          <alias key='&quot;CZ&quot;' value='Czechia' />
+          <alias key='&quot;DE&quot;' value='Germany' />
+          <alias key='&quot;DJ&quot;' value='Djibouti' />
+          <alias key='&quot;DK&quot;' value='Denmark' />
+          <alias key='&quot;DM&quot;' value='Dominica' />
+          <alias key='&quot;DO&quot;' value='Dominican Republic' />
+          <alias key='&quot;DZ&quot;' value='Algeria' />
+          <alias key='&quot;EC&quot;' value='Ecuador' />
+          <alias key='&quot;EE&quot;' value='Estonia' />
+          <alias key='&quot;EG&quot;' value='Egypt' />
+          <alias key='&quot;EH&quot;' value='Western Sahara' />
+          <alias key='&quot;ER&quot;' value='Eritrea' />
+          <alias key='&quot;ES&quot;' value='Spain' />
+          <alias key='&quot;ET&quot;' value='Ethiopia' />
+          <alias key='&quot;FI&quot;' value='Finland' />
+          <alias key='&quot;FJ&quot;' value='Fiji' />
+          <alias key='&quot;FK&quot;' value='Falkland Islands (Malvinas)' />
+          <alias key='&quot;FM&quot;' value='Micronesia, Federated States of' />
+          <alias key='&quot;FO&quot;' value='Faroe Islands' />
+          <alias key='&quot;FR&quot;' value='France' />
+          <alias key='&quot;GA&quot;' value='Gabon' />
+          <alias key='&quot;GB&quot;' value='United Kingdom of Great Britain and Northern Ireland' />
+          <alias key='&quot;GD&quot;' value='Grenada' />
+          <alias key='&quot;GE&quot;' value='Georgia' />
+          <alias key='&quot;GF&quot;' value='French Guiana' />
+          <alias key='&quot;GG&quot;' value='Guernsey' />
+          <alias key='&quot;GH&quot;' value='Ghana' />
+          <alias key='&quot;GI&quot;' value='Gibraltar' />
+          <alias key='&quot;GL&quot;' value='Greenland' />
+          <alias key='&quot;GM&quot;' value='Gambia' />
+          <alias key='&quot;GN&quot;' value='Guinea' />
+          <alias key='&quot;GP&quot;' value='Guadeloupe' />
+          <alias key='&quot;GQ&quot;' value='Equatorial Guinea' />
+          <alias key='&quot;GR&quot;' value='Greece' />
+          <alias key='&quot;GS&quot;' value='South Georgia and the South Sandwich Islands' />
+          <alias key='&quot;GT&quot;' value='Guatemala' />
+          <alias key='&quot;GU&quot;' value='Guam' />
+          <alias key='&quot;GW&quot;' value='Guinea-Bissau' />
+          <alias key='&quot;GY&quot;' value='Guyana' />
+          <alias key='&quot;HK&quot;' value='Hong Kong' />
+          <alias key='&quot;HM&quot;' value='Heard Island and McDonald Islands' />
+          <alias key='&quot;HN&quot;' value='Honduras' />
+          <alias key='&quot;HR&quot;' value='Croatia' />
+          <alias key='&quot;HT&quot;' value='Haiti' />
+          <alias key='&quot;HU&quot;' value='Hungary' />
+          <alias key='&quot;ID&quot;' value='Indonesia' />
+          <alias key='&quot;IE&quot;' value='Ireland' />
+          <alias key='&quot;IL&quot;' value='Israel' />
+          <alias key='&quot;IM&quot;' value='Isle of Man' />
+          <alias key='&quot;IN&quot;' value='India' />
+          <alias key='&quot;IO&quot;' value='British Indian Ocean Territory' />
+          <alias key='&quot;IQ&quot;' value='Iraq' />
+          <alias key='&quot;IR&quot;' value='Iran, Islamic Republic of' />
+          <alias key='&quot;IS&quot;' value='Iceland' />
+          <alias key='&quot;IT&quot;' value='Italy' />
+          <alias key='&quot;JE&quot;' value='Jersey' />
+          <alias key='&quot;JM&quot;' value='Jamaica' />
+          <alias key='&quot;JO&quot;' value='Jordan' />
+          <alias key='&quot;JP&quot;' value='Japan' />
+          <alias key='&quot;KE&quot;' value='Kenya' />
+          <alias key='&quot;KG&quot;' value='Kyrgyzstan' />
+          <alias key='&quot;KH&quot;' value='Cambodia' />
+          <alias key='&quot;KI&quot;' value='Kiribati' />
+          <alias key='&quot;KM&quot;' value='Comoros' />
+          <alias key='&quot;KN&quot;' value='Saint Kitts and Nevis' />
+          <alias key='&quot;KP&quot;' value='Korea, Democratic People&apos;s Republic of' />
+          <alias key='&quot;KR&quot;' value='Korea, Republic of' />
+          <alias key='&quot;KW&quot;' value='Kuwait' />
+          <alias key='&quot;KY&quot;' value='Cayman Islands' />
+          <alias key='&quot;KZ&quot;' value='Kazakhstan' />
+          <alias key='&quot;LA&quot;' value='Lao People&apos;s Democratic Republic' />
+          <alias key='&quot;LB&quot;' value='Lebanon' />
+          <alias key='&quot;LC&quot;' value='Saint Lucia' />
+          <alias key='&quot;LI&quot;' value='Liechtenstein' />
+          <alias key='&quot;LK&quot;' value='Sri Lanka' />
+          <alias key='&quot;LR&quot;' value='Liberia' />
+          <alias key='&quot;LS&quot;' value='Lesotho' />
+          <alias key='&quot;LT&quot;' value='Lithuania' />
+          <alias key='&quot;LU&quot;' value='Luxembourg' />
+          <alias key='&quot;LV&quot;' value='Latvia' />
+          <alias key='&quot;LY&quot;' value='Libya' />
+          <alias key='&quot;MA&quot;' value='Morocco' />
+          <alias key='&quot;MC&quot;' value='Monaco' />
+          <alias key='&quot;MD&quot;' value='Moldova, Republic of' />
+          <alias key='&quot;ME&quot;' value='Montenegro' />
+          <alias key='&quot;MF&quot;' value='Saint Martin (French part)' />
+          <alias key='&quot;MG&quot;' value='Madagascar' />
+          <alias key='&quot;MH&quot;' value='Marshall Islands' />
+          <alias key='&quot;MK&quot;' value='Macedonia, the former Yugoslav Republic of' />
+          <alias key='&quot;ML&quot;' value='Mali' />
+          <alias key='&quot;MM&quot;' value='Myanmar' />
+          <alias key='&quot;MN&quot;' value='Mongolia' />
+          <alias key='&quot;MO&quot;' value='Macao' />
+          <alias key='&quot;MP&quot;' value='Northern Mariana Islands' />
+          <alias key='&quot;MQ&quot;' value='Martinique' />
+          <alias key='&quot;MR&quot;' value='Mauritania' />
+          <alias key='&quot;MS&quot;' value='Montserrat' />
+          <alias key='&quot;MT&quot;' value='Malta' />
+          <alias key='&quot;MU&quot;' value='Mauritius' />
+          <alias key='&quot;MV&quot;' value='Maldives' />
+          <alias key='&quot;MW&quot;' value='Malawi' />
+          <alias key='&quot;MX&quot;' value='Mexico' />
+          <alias key='&quot;MY&quot;' value='Malaysia' />
+          <alias key='&quot;MZ&quot;' value='Mozambique' />
+          <alias key='&quot;NA&quot;' value='Namibia' />
+          <alias key='&quot;NC&quot;' value='New Caledonia' />
+          <alias key='&quot;NE&quot;' value='Niger' />
+          <alias key='&quot;NF&quot;' value='Norfolk Island' />
+          <alias key='&quot;NG&quot;' value='Nigeria' />
+          <alias key='&quot;NI&quot;' value='Nicaragua' />
+          <alias key='&quot;NL&quot;' value='Netherlands' />
+          <alias key='&quot;NO&quot;' value='Norway' />
+          <alias key='&quot;NP&quot;' value='Nepal' />
+          <alias key='&quot;NR&quot;' value='Nauru' />
+          <alias key='&quot;NU&quot;' value='Niue' />
+          <alias key='&quot;NZ&quot;' value='New Zealand' />
+          <alias key='&quot;OM&quot;' value='Oman' />
+          <alias key='&quot;PA&quot;' value='Panama' />
+          <alias key='&quot;PE&quot;' value='Peru' />
+          <alias key='&quot;PF&quot;' value='French Polynesia' />
+          <alias key='&quot;PG&quot;' value='Papua New Guinea' />
+          <alias key='&quot;PH&quot;' value='Philippines' />
+          <alias key='&quot;PK&quot;' value='Pakistan' />
+          <alias key='&quot;PL&quot;' value='Poland' />
+          <alias key='&quot;PM&quot;' value='Saint Pierre and Miquelon' />
+          <alias key='&quot;PN&quot;' value='Pitcairn' />
+          <alias key='&quot;PR&quot;' value='Puerto Rico' />
+          <alias key='&quot;PS&quot;' value='Palestine, State of' />
+          <alias key='&quot;PT&quot;' value='Portugal' />
+          <alias key='&quot;PW&quot;' value='Palau' />
+          <alias key='&quot;PY&quot;' value='Paraguay' />
+          <alias key='&quot;QA&quot;' value='Qatar' />
+          <alias key='&quot;RE&quot;' value='Réunion' />
+          <alias key='&quot;RO&quot;' value='Romania' />
+          <alias key='&quot;RS&quot;' value='Serbia' />
+          <alias key='&quot;RU&quot;' value='Russian Federation' />
+          <alias key='&quot;RW&quot;' value='Rwanda' />
+          <alias key='&quot;SA&quot;' value='Saudi Arabia' />
+          <alias key='&quot;SB&quot;' value='Solomon Islands' />
+          <alias key='&quot;SC&quot;' value='Seychelles' />
+          <alias key='&quot;SD&quot;' value='Sudan' />
+          <alias key='&quot;SE&quot;' value='Sweden' />
+          <alias key='&quot;SG&quot;' value='Singapore' />
+          <alias key='&quot;SH&quot;' value='Saint Helena, Ascension and Tristan da Cunha' />
+          <alias key='&quot;SI&quot;' value='Slovenia' />
+          <alias key='&quot;SJ&quot;' value='Svalbard and Jan Mayen' />
+          <alias key='&quot;SK&quot;' value='Slovakia' />
+          <alias key='&quot;SL&quot;' value='Sierra Leone' />
+          <alias key='&quot;SM&quot;' value='San Marino' />
+          <alias key='&quot;SN&quot;' value='Senegal' />
+          <alias key='&quot;SO&quot;' value='Somalia' />
+          <alias key='&quot;SR&quot;' value='Suriname' />
+          <alias key='&quot;SS&quot;' value='South Sudan' />
+          <alias key='&quot;ST&quot;' value='Sao Tome and Principe' />
+          <alias key='&quot;SV&quot;' value='El Salvador' />
+          <alias key='&quot;SX&quot;' value='Sint Maarten (Dutch part)' />
+          <alias key='&quot;SY&quot;' value='Syrian Arab Republic' />
+          <alias key='&quot;SZ&quot;' value='Swaziland' />
+          <alias key='&quot;TC&quot;' value='Turks and Caicos Islands' />
+          <alias key='&quot;TD&quot;' value='Chad' />
+          <alias key='&quot;TF&quot;' value='French Southern Territories' />
+          <alias key='&quot;TG&quot;' value='Togo' />
+          <alias key='&quot;TH&quot;' value='Thailand' />
+          <alias key='&quot;TJ&quot;' value='Tajikistan' />
+          <alias key='&quot;TK&quot;' value='Tokelau' />
+          <alias key='&quot;TL&quot;' value='Timor-Leste' />
+          <alias key='&quot;TM&quot;' value='Turkmenistan' />
+          <alias key='&quot;TN&quot;' value='Tunisia' />
+          <alias key='&quot;TO&quot;' value='Tonga' />
+          <alias key='&quot;TR&quot;' value='Turkey' />
+          <alias key='&quot;TT&quot;' value='Trinidad and Tobago' />
+          <alias key='&quot;TV&quot;' value='Tuvalu' />
+          <alias key='&quot;TW&quot;' value='Taiwan, Province of China' />
+          <alias key='&quot;TZ&quot;' value='Tanzania, United Republic of' />
+          <alias key='&quot;UA&quot;' value='Ukraine' />
+          <alias key='&quot;UG&quot;' value='Uganda' />
+          <alias key='&quot;UM&quot;' value='United States Minor Outlying Islands' />
+          <alias key='&quot;US&quot;' value='United States of America' />
+          <alias key='&quot;UY&quot;' value='Uruguay' />
+          <alias key='&quot;UZ&quot;' value='Uzbekistan' />
+          <alias key='&quot;VA&quot;' value='Holy See' />
+          <alias key='&quot;VC&quot;' value='Saint Vincent and the Grenadines' />
+          <alias key='&quot;VE&quot;' value='Venezuela, Bolivarian Republic of' />
+          <alias key='&quot;VG&quot;' value='Virgin Islands, British' />
+          <alias key='&quot;VI&quot;' value='Virgin Islands, U.S.' />
+          <alias key='&quot;VN&quot;' value='Viet Nam' />
+          <alias key='&quot;VU&quot;' value='Vanuatu' />
+          <alias key='&quot;WF&quot;' value='Wallis and Futuna' />
+          <alias key='&quot;WS&quot;' value='Samoa' />
+          <alias key='&quot;YE&quot;' value='Yemen' />
+          <alias key='&quot;YT&quot;' value='Mayotte' />
+          <alias key='&quot;ZA&quot;' value='South Africa' />
+          <alias key='&quot;ZM&quot;' value='Zambia' />
+          <alias key='&quot;ZW&quot;' value='Zimbabwe' />
+        </aliases>
+        <desc>
+          <formatted-text>
+            <run>System-wide default for what</run>
+            <run bold='true'> country </run>
+            <run>phone numbers used in SMS messages are from.&#10;&#10;Must use the ISO Alpha-2 format, e.g. US, GB, DE (see more at http://bit.ly/1MObR9o )&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> phone_country_code </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+        <members>
+          <member alias='United States of America' value='&quot;US&quot;' />
+          <member alias='Andorra' value='&quot;AD&quot;' />
+          <member alias='United Arab Emirates' value='&quot;AE&quot;' />
+          <member alias='Afghanistan' value='&quot;AF&quot;' />
+          <member alias='Antigua and Barbuda' value='&quot;AG&quot;' />
+          <member alias='Anguilla' value='&quot;AI&quot;' />
+          <member alias='Albania' value='&quot;AL&quot;' />
+          <member alias='Armenia' value='&quot;AM&quot;' />
+          <member alias='Angola' value='&quot;AO&quot;' />
+          <member alias='Antarctica' value='&quot;AQ&quot;' />
+          <member alias='Argentina' value='&quot;AR&quot;' />
+          <member alias='American Samoa' value='&quot;AS&quot;' />
+          <member alias='Austria' value='&quot;AT&quot;' />
+          <member alias='Australia' value='&quot;AU&quot;' />
+          <member alias='Aruba' value='&quot;AW&quot;' />
+          <member alias='Åland Islands' value='&quot;AX&quot;' />
+          <member alias='Azerbaijan' value='&quot;AZ&quot;' />
+          <member alias='Bosnia and Herzegovina' value='&quot;BA&quot;' />
+          <member alias='Barbados' value='&quot;BB&quot;' />
+          <member alias='Bangladesh' value='&quot;BD&quot;' />
+          <member alias='Belgium' value='&quot;BE&quot;' />
+          <member alias='Burkina Faso' value='&quot;BF&quot;' />
+          <member alias='Bulgaria' value='&quot;BG&quot;' />
+          <member alias='Bahrain' value='&quot;BH&quot;' />
+          <member alias='Burundi' value='&quot;BI&quot;' />
+          <member alias='Benin' value='&quot;BJ&quot;' />
+          <member alias='Saint Barthélemy' value='&quot;BL&quot;' />
+          <member alias='Bermuda' value='&quot;BM&quot;' />
+          <member alias='Brunei Darussalam' value='&quot;BN&quot;' />
+          <member alias='Bolivia, Plurinational State of' value='&quot;BO&quot;' />
+          <member alias='Bonaire, Sint Eustatius and Saba' value='&quot;BQ&quot;' />
+          <member alias='Brazil' value='&quot;BR&quot;' />
+          <member alias='Bahamas' value='&quot;BS&quot;' />
+          <member alias='Bhutan' value='&quot;BT&quot;' />
+          <member alias='Bouvet Island' value='&quot;BV&quot;' />
+          <member alias='Botswana' value='&quot;BW&quot;' />
+          <member alias='Belarus' value='&quot;BY&quot;' />
+          <member alias='Belize' value='&quot;BZ&quot;' />
+          <member alias='Canada' value='&quot;CA&quot;' />
+          <member alias='Cocos (Keeling) Islands' value='&quot;CC&quot;' />
+          <member alias='Congo, the Democratic Republic of the' value='&quot;CD&quot;' />
+          <member alias='Central African Republic' value='&quot;CF&quot;' />
+          <member alias='Congo' value='&quot;CG&quot;' />
+          <member alias='Switzerland' value='&quot;CH&quot;' />
+          <member alias='Côte d&apos;Ivoire' value='&quot;CI&quot;' />
+          <member alias='Cook Islands' value='&quot;CK&quot;' />
+          <member alias='Chile' value='&quot;CL&quot;' />
+          <member alias='Cameroon' value='&quot;CM&quot;' />
+          <member alias='China' value='&quot;CN&quot;' />
+          <member alias='Colombia' value='&quot;CO&quot;' />
+          <member alias='Costa Rica' value='&quot;CR&quot;' />
+          <member alias='Cuba' value='&quot;CU&quot;' />
+          <member alias='Cabo Verde' value='&quot;CV&quot;' />
+          <member alias='Curaçao' value='&quot;CW&quot;' />
+          <member alias='Christmas Island' value='&quot;CX&quot;' />
+          <member alias='Cyprus' value='&quot;CY&quot;' />
+          <member alias='Czechia' value='&quot;CZ&quot;' />
+          <member alias='Germany' value='&quot;DE&quot;' />
+          <member alias='Djibouti' value='&quot;DJ&quot;' />
+          <member alias='Denmark' value='&quot;DK&quot;' />
+          <member alias='Dominica' value='&quot;DM&quot;' />
+          <member alias='Dominican Republic' value='&quot;DO&quot;' />
+          <member alias='Algeria' value='&quot;DZ&quot;' />
+          <member alias='Ecuador' value='&quot;EC&quot;' />
+          <member alias='Estonia' value='&quot;EE&quot;' />
+          <member alias='Egypt' value='&quot;EG&quot;' />
+          <member alias='Western Sahara' value='&quot;EH&quot;' />
+          <member alias='Eritrea' value='&quot;ER&quot;' />
+          <member alias='Spain' value='&quot;ES&quot;' />
+          <member alias='Ethiopia' value='&quot;ET&quot;' />
+          <member alias='Finland' value='&quot;FI&quot;' />
+          <member alias='Fiji' value='&quot;FJ&quot;' />
+          <member alias='Falkland Islands (Malvinas)' value='&quot;FK&quot;' />
+          <member alias='Micronesia, Federated States of' value='&quot;FM&quot;' />
+          <member alias='Faroe Islands' value='&quot;FO&quot;' />
+          <member alias='France' value='&quot;FR&quot;' />
+          <member alias='Gabon' value='&quot;GA&quot;' />
+          <member alias='United Kingdom of Great Britain and Northern Ireland' value='&quot;GB&quot;' />
+          <member alias='Grenada' value='&quot;GD&quot;' />
+          <member alias='Georgia' value='&quot;GE&quot;' />
+          <member alias='French Guiana' value='&quot;GF&quot;' />
+          <member alias='Guernsey' value='&quot;GG&quot;' />
+          <member alias='Ghana' value='&quot;GH&quot;' />
+          <member alias='Gibraltar' value='&quot;GI&quot;' />
+          <member alias='Greenland' value='&quot;GL&quot;' />
+          <member alias='Gambia' value='&quot;GM&quot;' />
+          <member alias='Guinea' value='&quot;GN&quot;' />
+          <member alias='Guadeloupe' value='&quot;GP&quot;' />
+          <member alias='Equatorial Guinea' value='&quot;GQ&quot;' />
+          <member alias='Greece' value='&quot;GR&quot;' />
+          <member alias='South Georgia and the South Sandwich Islands' value='&quot;GS&quot;' />
+          <member alias='Guatemala' value='&quot;GT&quot;' />
+          <member alias='Guam' value='&quot;GU&quot;' />
+          <member alias='Guinea-Bissau' value='&quot;GW&quot;' />
+          <member alias='Guyana' value='&quot;GY&quot;' />
+          <member alias='Hong Kong' value='&quot;HK&quot;' />
+          <member alias='Heard Island and McDonald Islands' value='&quot;HM&quot;' />
+          <member alias='Honduras' value='&quot;HN&quot;' />
+          <member alias='Croatia' value='&quot;HR&quot;' />
+          <member alias='Haiti' value='&quot;HT&quot;' />
+          <member alias='Hungary' value='&quot;HU&quot;' />
+          <member alias='Indonesia' value='&quot;ID&quot;' />
+          <member alias='Ireland' value='&quot;IE&quot;' />
+          <member alias='Israel' value='&quot;IL&quot;' />
+          <member alias='Isle of Man' value='&quot;IM&quot;' />
+          <member alias='India' value='&quot;IN&quot;' />
+          <member alias='British Indian Ocean Territory' value='&quot;IO&quot;' />
+          <member alias='Iraq' value='&quot;IQ&quot;' />
+          <member alias='Iran, Islamic Republic of' value='&quot;IR&quot;' />
+          <member alias='Iceland' value='&quot;IS&quot;' />
+          <member alias='Italy' value='&quot;IT&quot;' />
+          <member alias='Jersey' value='&quot;JE&quot;' />
+          <member alias='Jamaica' value='&quot;JM&quot;' />
+          <member alias='Jordan' value='&quot;JO&quot;' />
+          <member alias='Japan' value='&quot;JP&quot;' />
+          <member alias='Kenya' value='&quot;KE&quot;' />
+          <member alias='Kyrgyzstan' value='&quot;KG&quot;' />
+          <member alias='Cambodia' value='&quot;KH&quot;' />
+          <member alias='Kiribati' value='&quot;KI&quot;' />
+          <member alias='Comoros' value='&quot;KM&quot;' />
+          <member alias='Saint Kitts and Nevis' value='&quot;KN&quot;' />
+          <member alias='Korea, Democratic People&apos;s Republic of' value='&quot;KP&quot;' />
+          <member alias='Korea, Republic of' value='&quot;KR&quot;' />
+          <member alias='Kuwait' value='&quot;KW&quot;' />
+          <member alias='Cayman Islands' value='&quot;KY&quot;' />
+          <member alias='Kazakhstan' value='&quot;KZ&quot;' />
+          <member alias='Lao People&apos;s Democratic Republic' value='&quot;LA&quot;' />
+          <member alias='Lebanon' value='&quot;LB&quot;' />
+          <member alias='Saint Lucia' value='&quot;LC&quot;' />
+          <member alias='Liechtenstein' value='&quot;LI&quot;' />
+          <member alias='Sri Lanka' value='&quot;LK&quot;' />
+          <member alias='Liberia' value='&quot;LR&quot;' />
+          <member alias='Lesotho' value='&quot;LS&quot;' />
+          <member alias='Lithuania' value='&quot;LT&quot;' />
+          <member alias='Luxembourg' value='&quot;LU&quot;' />
+          <member alias='Latvia' value='&quot;LV&quot;' />
+          <member alias='Libya' value='&quot;LY&quot;' />
+          <member alias='Morocco' value='&quot;MA&quot;' />
+          <member alias='Monaco' value='&quot;MC&quot;' />
+          <member alias='Moldova, Republic of' value='&quot;MD&quot;' />
+          <member alias='Montenegro' value='&quot;ME&quot;' />
+          <member alias='Saint Martin (French part)' value='&quot;MF&quot;' />
+          <member alias='Madagascar' value='&quot;MG&quot;' />
+          <member alias='Marshall Islands' value='&quot;MH&quot;' />
+          <member alias='Macedonia, the former Yugoslav Republic of' value='&quot;MK&quot;' />
+          <member alias='Mali' value='&quot;ML&quot;' />
+          <member alias='Myanmar' value='&quot;MM&quot;' />
+          <member alias='Mongolia' value='&quot;MN&quot;' />
+          <member alias='Macao' value='&quot;MO&quot;' />
+          <member alias='Northern Mariana Islands' value='&quot;MP&quot;' />
+          <member alias='Martinique' value='&quot;MQ&quot;' />
+          <member alias='Mauritania' value='&quot;MR&quot;' />
+          <member alias='Montserrat' value='&quot;MS&quot;' />
+          <member alias='Malta' value='&quot;MT&quot;' />
+          <member alias='Mauritius' value='&quot;MU&quot;' />
+          <member alias='Maldives' value='&quot;MV&quot;' />
+          <member alias='Malawi' value='&quot;MW&quot;' />
+          <member alias='Mexico' value='&quot;MX&quot;' />
+          <member alias='Malaysia' value='&quot;MY&quot;' />
+          <member alias='Mozambique' value='&quot;MZ&quot;' />
+          <member alias='Namibia' value='&quot;NA&quot;' />
+          <member alias='New Caledonia' value='&quot;NC&quot;' />
+          <member alias='Niger' value='&quot;NE&quot;' />
+          <member alias='Norfolk Island' value='&quot;NF&quot;' />
+          <member alias='Nigeria' value='&quot;NG&quot;' />
+          <member alias='Nicaragua' value='&quot;NI&quot;' />
+          <member alias='Netherlands' value='&quot;NL&quot;' />
+          <member alias='Norway' value='&quot;NO&quot;' />
+          <member alias='Nepal' value='&quot;NP&quot;' />
+          <member alias='Nauru' value='&quot;NR&quot;' />
+          <member alias='Niue' value='&quot;NU&quot;' />
+          <member alias='New Zealand' value='&quot;NZ&quot;' />
+          <member alias='Oman' value='&quot;OM&quot;' />
+          <member alias='Panama' value='&quot;PA&quot;' />
+          <member alias='Peru' value='&quot;PE&quot;' />
+          <member alias='French Polynesia' value='&quot;PF&quot;' />
+          <member alias='Papua New Guinea' value='&quot;PG&quot;' />
+          <member alias='Philippines' value='&quot;PH&quot;' />
+          <member alias='Pakistan' value='&quot;PK&quot;' />
+          <member alias='Poland' value='&quot;PL&quot;' />
+          <member alias='Saint Pierre and Miquelon' value='&quot;PM&quot;' />
+          <member alias='Pitcairn' value='&quot;PN&quot;' />
+          <member alias='Puerto Rico' value='&quot;PR&quot;' />
+          <member alias='Palestine, State of' value='&quot;PS&quot;' />
+          <member alias='Portugal' value='&quot;PT&quot;' />
+          <member alias='Palau' value='&quot;PW&quot;' />
+          <member alias='Paraguay' value='&quot;PY&quot;' />
+          <member alias='Qatar' value='&quot;QA&quot;' />
+          <member alias='Réunion' value='&quot;RE&quot;' />
+          <member alias='Romania' value='&quot;RO&quot;' />
+          <member alias='Serbia' value='&quot;RS&quot;' />
+          <member alias='Russian Federation' value='&quot;RU&quot;' />
+          <member alias='Rwanda' value='&quot;RW&quot;' />
+          <member alias='Saudi Arabia' value='&quot;SA&quot;' />
+          <member alias='Solomon Islands' value='&quot;SB&quot;' />
+          <member alias='Seychelles' value='&quot;SC&quot;' />
+          <member alias='Sudan' value='&quot;SD&quot;' />
+          <member alias='Sweden' value='&quot;SE&quot;' />
+          <member alias='Singapore' value='&quot;SG&quot;' />
+          <member alias='Saint Helena, Ascension and Tristan da Cunha' value='&quot;SH&quot;' />
+          <member alias='Slovenia' value='&quot;SI&quot;' />
+          <member alias='Svalbard and Jan Mayen' value='&quot;SJ&quot;' />
+          <member alias='Slovakia' value='&quot;SK&quot;' />
+          <member alias='Sierra Leone' value='&quot;SL&quot;' />
+          <member alias='San Marino' value='&quot;SM&quot;' />
+          <member alias='Senegal' value='&quot;SN&quot;' />
+          <member alias='Somalia' value='&quot;SO&quot;' />
+          <member alias='Suriname' value='&quot;SR&quot;' />
+          <member alias='South Sudan' value='&quot;SS&quot;' />
+          <member alias='Sao Tome and Principe' value='&quot;ST&quot;' />
+          <member alias='El Salvador' value='&quot;SV&quot;' />
+          <member alias='Sint Maarten (Dutch part)' value='&quot;SX&quot;' />
+          <member alias='Syrian Arab Republic' value='&quot;SY&quot;' />
+          <member alias='Swaziland' value='&quot;SZ&quot;' />
+          <member alias='Turks and Caicos Islands' value='&quot;TC&quot;' />
+          <member alias='Chad' value='&quot;TD&quot;' />
+          <member alias='French Southern Territories' value='&quot;TF&quot;' />
+          <member alias='Togo' value='&quot;TG&quot;' />
+          <member alias='Thailand' value='&quot;TH&quot;' />
+          <member alias='Tajikistan' value='&quot;TJ&quot;' />
+          <member alias='Tokelau' value='&quot;TK&quot;' />
+          <member alias='Timor-Leste' value='&quot;TL&quot;' />
+          <member alias='Turkmenistan' value='&quot;TM&quot;' />
+          <member alias='Tunisia' value='&quot;TN&quot;' />
+          <member alias='Tonga' value='&quot;TO&quot;' />
+          <member alias='Turkey' value='&quot;TR&quot;' />
+          <member alias='Trinidad and Tobago' value='&quot;TT&quot;' />
+          <member alias='Tuvalu' value='&quot;TV&quot;' />
+          <member alias='Taiwan, Province of China' value='&quot;TW&quot;' />
+          <member alias='Tanzania, United Republic of' value='&quot;TZ&quot;' />
+          <member alias='Ukraine' value='&quot;UA&quot;' />
+          <member alias='Uganda' value='&quot;UG&quot;' />
+          <member alias='United States Minor Outlying Islands' value='&quot;UM&quot;' />
+          <member alias='Uruguay' value='&quot;UY&quot;' />
+          <member alias='Uzbekistan' value='&quot;UZ&quot;' />
+          <member alias='Holy See' value='&quot;VA&quot;' />
+          <member alias='Saint Vincent and the Grenadines' value='&quot;VC&quot;' />
+          <member alias='Venezuela, Bolivarian Republic of' value='&quot;VE&quot;' />
+          <member alias='Virgin Islands, British' value='&quot;VG&quot;' />
+          <member alias='Virgin Islands, U.S.' value='&quot;VI&quot;' />
+          <member alias='Viet Nam' value='&quot;VN&quot;' />
+          <member alias='Vanuatu' value='&quot;VU&quot;' />
+          <member alias='Wallis and Futuna' value='&quot;WF&quot;' />
+          <member alias='Samoa' value='&quot;WS&quot;' />
+          <member alias='Yemen' value='&quot;YE&quot;' />
+          <member alias='Mayotte' value='&quot;YT&quot;' />
+          <member alias='South Africa' value='&quot;ZA&quot;' />
+          <member alias='Zambia' value='&quot;ZM&quot;' />
+          <member alias='Zimbabwe' value='&quot;ZW&quot;' />
+        </members>
+      </column>
+      <column caption='default_action_enabled_file' datatype='integer' datatype-customized='true' name='[default_action_enabled_sms (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+        <calculation class='tableau' formula='1' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for whether or not a Subscriber should be allowed to operated on </run>
+            <run bold='true'>files </run>
+            <run>(at all)</run>
+            <run bold='true'>Æ </run>
+            <run>with VizAlerts.&#10;&#10;1 = true, allowed to act on files (subject to other restrictions in the settings)&#10;0 = false, no file actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> action_enabled_file </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+        <members>
+          <member value='1' />
+          <member value='0' />
+        </members>
+      </column>
+      <column caption='default_allowed_from_number' datatype='string' datatype-customized='true' name='[default_allowed_recipient_numbers (copy)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+        <calculation class='tableau' formula='&quot;.*&quot;' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for describing what phone numbers this VizAlert is able to send SMS messages </run>
+            <run bold='true'>from</run>
+            <run>, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run bold='true'>allowed_from_numbers </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
       <column caption='default_data_retrieval_tries' datatype='integer' default-format='n0;-0' name='[default_timeout_s (copy)]' param-domain-type='any' role='measure' type='quantitative' value='2'>
         <calculation class='tableau' formula='2' />
         <desc>
@@ -92,6 +695,30 @@
           </formatted-text>
         </desc>
       </column>
+      <folder name='0 - General Default Settings' role='parameters'>
+        <folder-item name='[Parameter 3]' type='field' />
+        <folder-item name='[Parameter 4]' type='field' />
+        <folder-item name='[Parameter 5]' type='field' />
+        <folder-item name='[Parameter 6]' type='field' />
+        <folder-item name='[Parameter 9]' type='field' />
+        <folder-item name='[default_timeout_s (copy)]' type='field' />
+        <folder-item name='[default_viz_png_height (copy)]' type='field' />
+      </folder>
+      <folder name='1 - Email Action Default Settings' role='parameters'>
+        <folder-item name='[Parameter 1]' type='field' />
+        <folder-item name='[Parameter 2]' type='field' />
+        <folder-item name='[Parameter 7]' type='field' />
+      </folder>
+      <folder name='2 - SMS Action Default Settings' role='parameters'>
+        <folder-item name='[default_action_email_enabled (copy)]' type='field' />
+        <folder-item name='[default_action_enabled_sms (copy 2)]' type='field' />
+        <folder-item name='[default_action_enabled_sms (copy 3)]' type='field' />
+        <folder-item name='[default_allowed_recipient_numbers (copy)]' type='field' />
+      </folder>
+      <folder name='3 - File Action Default Settings' role='parameters'>
+        <folder-item name='[Parameter 8]' type='field' />
+        <folder-item name='[default_action_enabled_sms (copy)]' type='field' />
+      </folder>
     </datasource>
     <datasource caption='VizAlerts Alert List' inline='true' name='postgres.42520.320455937501' version='8.3'>
       <connection class='postgres' dbname='workgroup' odbc-native-protocol='yes' port='8060' server='your-tableau-repository' server-oauth='' username='readonly' workgroup-auth-mode='prompt'>
@@ -621,6 +1248,36 @@
           </formatted-text>
         </desc>
       </column>
+      <column caption='allowed_filepath' datatype='string' name='[Calculation_5091007085156600]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what file paths an alert can perform file actions within. Must be a valid regular expression.&#13;&#10;&#13;&#10;    // The idea here is that the administrator sets up a file share used by VizAlerts. The account you are running the scheduled task under &#13;&#10;    // must have full owner rights on that it. Within that share, each Tableau Server user would have their own folder that their own alerts &#13;&#10;    // can read/write/modify.&#13;&#10;    //&#13;&#10;    // So, if the share you set up is \\myshare, then user &quot;jdrummey&quot;&apos;s VizAlerts could do anything they like to \\myshare\jdrummey, and any file or folder within it.&#13;&#10;    //&#13;&#10;    // Because this is a regex pattern, you must escape the backslash &quot;\&quot; character by using it twice.&#13;&#10;    //   To configure things as described above, the default_fileshare_base would be \\\\myshare\\, and this calculation would &#13;&#10;    //   result in the final string being \\\\myshare\\jdrummey\\.*&#13;&#10;    //&#13;&#10;    //       To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;&#13;&#10;[Parameters].[Parameter 8] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to write files to any folder in the VizAlerts share, but restrict everyone else to just their own folder:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN [default_fileshare_base] + &apos;.*&apos; &#13;&#10;        // ELSE [default_fileshare_base] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;        // END' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Describes what file path(s) this VizAlert is able to perform </run>
+            <run bold='true'>any</run>
+            <run> file action on (read/write/modify), defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='is_valid_schedule' datatype='boolean' name='[Calculation_5911012080139041]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(schedule_name, [Parameters].[Parameter 9])' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Determines which Tableau Server subscription schedules are reserved for VizAlerts.&#10;&#10;Note that only </run>
+            <run bold='true'>disabled</run>
+            <run> schedules may be used--</run>
+            <run italic='true'>enabled</run>
+            <run> schedules are filtered out in the Custom SQL query (which you should not mess with)</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='action_enabled_email' datatype='integer' default-format='n0;-0' name='[Calculation_7731007071204722]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send email&#13;&#10;    // 0 = false, no email may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any email to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_email]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 7]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any emails. Emails it attempts to send will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
       <column caption='allowed_from_addresses' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
         <desc>
@@ -631,6 +1288,62 @@
       </column>
       <column datatype='integer' hidden='true' name='[Number of Records]' role='measure' type='quantitative' user:auto-column='numrec'>
         <calculation class='tableau' formula='1' />
+      </column>
+      <column caption='action_enabled_sms' datatype='integer' default-format='n0;-0' name='[action_enabled_email (copy)]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send SMS messages&#13;&#10;    // 0 = false, no SMS may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any SMS to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_sms]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_action_email_enabled (copy)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any SMS messages. SMS&apos;s it attempts to send will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='action_enabled_file' datatype='integer' default-format='n0;-0' name='[action_enabled_sms (copy)]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may act on files&#13;&#10;    // 0 = false, no file actions are allowed&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any file actions to be performed unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_file]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>This is simply a boolean value that denotes whether or not a VizAlert is able to act on any files. Files it attempts to act on will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='phone_country_code' datatype='string' name='[allowed_from_number (copy)]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what coutry phone numbers should be assumed to be from.&#13;&#10;//  Must be a valid ISO Alpha-2 code, e.g. US, GB, DE, etc (see http://bit.ly/1MObR9o)&#13;&#10;&#13;&#10;    // Alert authors may send SMS messages using a variety of phone number formats.&#13;&#10;    //    Some formats don&apos;t include country code, and messaging services can have trouble with them.&#13;&#10;    //    Therefore, if the phone number a user wants to message is not in the E.164 format (e.g. +15107488230),&#13;&#10;    //    we will assume that their number is from this country, and it will be validated and converted accordingly.&#13;&#10;    //       So this field is ignored entirely if the author uses the full E.164 format.&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy 3)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Specifies what</run>
+            <run bold='true'> country </run>
+            <run>phone numbers used in SMS messages within this VizAlert are from.&#10;&#10;Must use the ISO Alpha-2 format, e.g. US, GB, DE (see more at http://bit.ly/1MObR9o )&#10;&#10;If the numbers used by the author are in E.164 format (e.g., </run>
+            <run fontname='Courier New,courier'>+15107488230</run>
+            <run>), then this value is ignored. Otherwise, we will parse and validate their numbers as if they came from this country.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='allowed_recipient_numbers' datatype='string' name='[allowed_recipient_addresses (copy)]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert can send messages to. Must be a valid regular expression.&#13;&#10;    // The numbers listed in the &quot; SMS To *&quot; and other recipient fields must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy 2)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Describes what phone numbers this VizAlert is able to send messages to, defined as a regular expression.&#10;&#10;The </run>
+            <run italic='true'>E.164 version</run>
+            <run> of whatever number(s) are specified in the &quot;SMS To *&quot; field in an alert are what will be evaluated against this regex, </run>
+            <run italic='true'>not</run>
+            <run> the raw text the alert author used.&#10;&#10;Example: An alert author wishes to send an SMS to their personal number, &quot;(206) 867-5309&quot;. VizAlerts converts it to the E.164 format, adding the default country code &quot;1&quot; specified in this config file:&#10;&#10;+12068675309&#10;&#10;This is the final form which will be evaluated against the regex from the allowed_recipient_numbers field, which simplifies the administration somewhat.&#10;&#10;See http://bit.ly/2doiLuP (Twilio) for more information on E.164.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='allowed_from_number' datatype='string' name='[allowed_recipient_numbers (copy)]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert can send messages from. Must be a valid regular expression.&#13;&#10;    // The numbers listed in the &quot; SMS From *&quot; and field (converted to E.164 format) must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^\+12068675309$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[default_allowed_recipient_numbers (copy)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Describes what phone numbers this VizAlert is able to send messages </run>
+            <run bold='true'>from</run>
+            <run>, defined as a regular expression.&#10;&#10;The Twilio account used for VizAlerts </run>
+            <run bold='true'>must </run>
+            <run>be the owner of any &quot;SMS From *&quot; numbers specified.&#10;&#10;The </run>
+            <run italic='true'>E.164 version</run>
+            <run> of whatever number(s) are specified in the &quot;SMS From *&quot; field in an alert are what will be evaluated against this regex, </run>
+            <run italic='true'>not</run>
+            <run> the raw text the alert author used.&#10;&#10;Example: An alert author wishes to send an SMS from their personal number, &quot;(206) 867-5309&quot;. VizAlerts converts it to the E.164 format, adding the default country code &quot;1&quot; specified in this config file:&#10;&#10;+12068675309&#10;&#10;This is the final form which will be evaluated against the regex from the allowed_from_number field, which simplifies the administration somewhat.&#10;&#10;See http://bit.ly/2doiLuP (Twilio) for more information on E.164.</run>
+          </formatted-text>
+        </desc>
       </column>
       <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[customized_view_id]' role='dimension' type='ordinal'>
       </column>
@@ -701,8 +1414,33 @@
       </column>
       <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[workbook_id]' role='dimension' type='ordinal'>
       </column>
+      <folder name='0 - General Settings' role='dimensions'>
+        <folder-item name='[Calculation_0630608185616497]' type='field' />
+        <folder-item name='[Calculation_1300811092148681]' type='field' />
+        <folder-item name='[Calculation_2310608122723904]' type='field' />
+        <folder-item name='[Calculation_2380602155000967]' type='field' />
+        <folder-item name='[data_retrieval_tries (copy 2)]' type='field' />
+        <folder-item name='[data_retrieval_tries (copy)]' type='field' />
+        <folder-item name='[viz_png_height (copy)]' type='field' />
+      </folder>
+      <folder name='1 - Email Action Settings' role='dimensions'>
+        <folder-item name='[Calculation_0880602155537439]' type='field' />
+        <folder-item name='[Calculation_7731007071204722]' type='field' />
+        <folder-item name='[Calculation_9040602154240465]' type='field' />
+      </folder>
+      <folder name='2 - SMS Action Settings' role='dimensions'>
+        <folder-item name='[action_enabled_email (copy)]' type='field' />
+        <folder-item name='[allowed_from_number (copy)]' type='field' />
+        <folder-item name='[allowed_recipient_addresses (copy)]' type='field' />
+        <folder-item name='[allowed_recipient_numbers (copy)]' type='field' />
+      </folder>
+      <folder name='3 - File Action Settings' role='dimensions'>
+        <folder-item name='[Calculation_5091007085156600]' type='field' />
+        <folder-item name='[action_enabled_sms (copy)]' type='field' />
+      </folder>
       <folder name='Schedule' role='dimensions'>
         <folder-item name='[Calculation_1880608160023327]' type='field' />
+        <folder-item name='[Calculation_5911012080139041]' type='field' />
         <folder-item name='[is_test]' type='field' />
         <folder-item name='[ran_last_at]' type='field' />
         <folder-item name='[run_next_at]' type='field' />
@@ -738,18 +1476,7 @@
         <folder-item name='[owner_sysname]' type='field' />
         <folder-item name='[view_owner_id]' type='field' />
       </folder>
-      <folder name='VizAlert Settings' role='dimensions'>
-        <folder-item name='[Calculation_0630608185616497]' type='field' />
-        <folder-item name='[Calculation_0880602155537439]' type='field' />
-        <folder-item name='[Calculation_1300811092148681]' type='field' />
-        <folder-item name='[Calculation_2310608122723904]' type='field' />
-        <folder-item name='[Calculation_2380602155000967]' type='field' />
-        <folder-item name='[Calculation_9040602154240465]' type='field' />
-        <folder-item name='[data_retrieval_tries (copy 2)]' type='field' />
-        <folder-item name='[data_retrieval_tries (copy)]' type='field' />
-        <folder-item name='[viz_png_height (copy)]' type='field' />
-      </folder>
-      <layout dim-ordering='alphabetic' dim-percentage='0.552846' measure-ordering='alphabetic' measure-percentage='0.128455' show-structure='true' />
+      <layout dim-ordering='alphabetic' dim-percentage='0.598374' measure-ordering='alphabetic' measure-percentage='0.0699187' show-structure='true' />
       <semantic-values>
         <semantic-value key='[Country].[Name]' value='&quot;United States&quot;' />
       </semantic-values>
@@ -764,18 +1491,18 @@
             </formatted-text>
           </desc>
         </column>
-        <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;vizalerts@tableau\\.com&quot;'>
-          <calculation class='tableau' formula='&quot;vizalerts@tableau\.com&quot;' />
+        <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+          <calculation class='tableau' formula='&quot;.*&quot;' />
           <desc>
             <formatted-text>
-              <run>System-wide default for describing what email address VizAlerts is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run>System-wide default for describing what email address a VizAlert is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
               <run bold='true'>allowed_from_address</run>
               <run> calculation</run>
             </formatted-text>
           </desc>
         </column>
-        <column caption='default_timeout_s' datatype='integer' default-format='n0;-0' name='[Parameter 3]' param-domain-type='any' role='measure' type='quantitative' value='60'>
-          <calculation class='tableau' formula='60' />
+        <column caption='default_timeout_s' datatype='integer' default-format='n0;-0' name='[Parameter 3]' param-domain-type='any' role='measure' type='quantitative' value='120'>
+          <calculation class='tableau' formula='120' />
           <desc>
             <formatted-text>
               <run>System wide default for the number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
@@ -818,6 +1545,609 @@
             <member value='false' />
           </members>
         </column>
+        <column caption='default_action_enabled_email' datatype='integer' datatype-customized='true' name='[Parameter 7]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+          <calculation class='tableau' formula='1' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for whether or not a Subscriber should be allowed to send an </run>
+              <run bold='true'>email</run>
+              <run> (at all) with VizAlerts.&#10;&#10;1 = true, allowed to send email (subject to other restrictions in the settings)&#10;0 = false, no email actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> action_enabled_email </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+          <members>
+            <member value='0' />
+            <member value='1' />
+          </members>
+        </column>
+        <column caption='default_fileshare_base' datatype='string' name='[Parameter 8]' param-domain-type='any' role='measure' type='nominal' value='&quot;\\\\\\\\myshare\\\\&quot;'>
+          <calculation class='tableau' formula='&quot;\\\\myshare\\&quot;' />
+          <desc>
+            <formatted-text>
+              <run>This is the </run>
+              <run bold='true'>base</run>
+              <run> fileshare that VizAlerts will use to perform File Actions. It is used in the </run>
+              <run bold='true'>allowed_filepath</run>
+              <run> calculation, which is a regex string that defines which fileshare(s) a VizAlert may perform File Actions within.&#10;&#10;See the </run>
+              <run bold='true'>allowed_filepath </run>
+              <run>calculation for more details.</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='schedule_name_filter' datatype='string' name='[Parameter 9]' param-domain-type='any' role='measure' type='nominal' value='&quot;lert&quot;'>
+          <calculation class='tableau' formula='&quot;lert&quot;' />
+        </column>
+        <column caption='default_action_enabled_sms' datatype='integer' datatype-customized='true' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+          <calculation class='tableau' formula='1' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for whether or not a Subscriber should be allowed to send an </run>
+              <run bold='true'>SMS message</run>
+              <run> (at all) with VizAlerts.&#10;&#10;1 = true, allowed to send SMS messages (subject to other restrictions in the settings)&#10;0 = false, no SMS actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> action_enabled_sms </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+          <members>
+            <member value='1' />
+            <member value='0' />
+          </members>
+        </column>
+        <column caption='default_allowed_recipient_numbers' datatype='string' datatype-customized='true' name='[default_action_enabled_sms (copy 2)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+          <calculation class='tableau' formula='&quot;.*&quot;' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for describing what phone numbers this VizAlert is able to send SMS messages to, defined as a regular expression.&#10;&#10;For more information, and to override this setting dynamically, see the </run>
+              <run bold='true'>allowed_recipient_numbers </run>
+              <run>calculation</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column alias='United States of America' caption='default_phone_country_code' datatype='string' name='[default_action_enabled_sms (copy 3)]' param-domain-type='list' role='measure' type='nominal' value='&quot;US&quot;'>
+          <calculation class='tableau' formula='&quot;US&quot;' />
+          <aliases>
+            <alias key='&quot;AD&quot;' value='Andorra' />
+            <alias key='&quot;AE&quot;' value='United Arab Emirates' />
+            <alias key='&quot;AF&quot;' value='Afghanistan' />
+            <alias key='&quot;AG&quot;' value='Antigua and Barbuda' />
+            <alias key='&quot;AI&quot;' value='Anguilla' />
+            <alias key='&quot;AL&quot;' value='Albania' />
+            <alias key='&quot;AM&quot;' value='Armenia' />
+            <alias key='&quot;AO&quot;' value='Angola' />
+            <alias key='&quot;AQ&quot;' value='Antarctica' />
+            <alias key='&quot;AR&quot;' value='Argentina' />
+            <alias key='&quot;AS&quot;' value='American Samoa' />
+            <alias key='&quot;AT&quot;' value='Austria' />
+            <alias key='&quot;AU&quot;' value='Australia' />
+            <alias key='&quot;AW&quot;' value='Aruba' />
+            <alias key='&quot;AX&quot;' value='Åland Islands' />
+            <alias key='&quot;AZ&quot;' value='Azerbaijan' />
+            <alias key='&quot;BA&quot;' value='Bosnia and Herzegovina' />
+            <alias key='&quot;BB&quot;' value='Barbados' />
+            <alias key='&quot;BD&quot;' value='Bangladesh' />
+            <alias key='&quot;BE&quot;' value='Belgium' />
+            <alias key='&quot;BF&quot;' value='Burkina Faso' />
+            <alias key='&quot;BG&quot;' value='Bulgaria' />
+            <alias key='&quot;BH&quot;' value='Bahrain' />
+            <alias key='&quot;BI&quot;' value='Burundi' />
+            <alias key='&quot;BJ&quot;' value='Benin' />
+            <alias key='&quot;BL&quot;' value='Saint Barthélemy' />
+            <alias key='&quot;BM&quot;' value='Bermuda' />
+            <alias key='&quot;BN&quot;' value='Brunei Darussalam' />
+            <alias key='&quot;BO&quot;' value='Bolivia, Plurinational State of' />
+            <alias key='&quot;BQ&quot;' value='Bonaire, Sint Eustatius and Saba' />
+            <alias key='&quot;BR&quot;' value='Brazil' />
+            <alias key='&quot;BS&quot;' value='Bahamas' />
+            <alias key='&quot;BT&quot;' value='Bhutan' />
+            <alias key='&quot;BV&quot;' value='Bouvet Island' />
+            <alias key='&quot;BW&quot;' value='Botswana' />
+            <alias key='&quot;BY&quot;' value='Belarus' />
+            <alias key='&quot;BZ&quot;' value='Belize' />
+            <alias key='&quot;CA&quot;' value='Canada' />
+            <alias key='&quot;CC&quot;' value='Cocos (Keeling) Islands' />
+            <alias key='&quot;CD&quot;' value='Congo, the Democratic Republic of the' />
+            <alias key='&quot;CF&quot;' value='Central African Republic' />
+            <alias key='&quot;CG&quot;' value='Congo' />
+            <alias key='&quot;CH&quot;' value='Switzerland' />
+            <alias key='&quot;CI&quot;' value='Côte d&apos;Ivoire' />
+            <alias key='&quot;CK&quot;' value='Cook Islands' />
+            <alias key='&quot;CL&quot;' value='Chile' />
+            <alias key='&quot;CM&quot;' value='Cameroon' />
+            <alias key='&quot;CN&quot;' value='China' />
+            <alias key='&quot;CO&quot;' value='Colombia' />
+            <alias key='&quot;CR&quot;' value='Costa Rica' />
+            <alias key='&quot;CU&quot;' value='Cuba' />
+            <alias key='&quot;CV&quot;' value='Cabo Verde' />
+            <alias key='&quot;CW&quot;' value='Curaçao' />
+            <alias key='&quot;CX&quot;' value='Christmas Island' />
+            <alias key='&quot;CY&quot;' value='Cyprus' />
+            <alias key='&quot;CZ&quot;' value='Czechia' />
+            <alias key='&quot;DE&quot;' value='Germany' />
+            <alias key='&quot;DJ&quot;' value='Djibouti' />
+            <alias key='&quot;DK&quot;' value='Denmark' />
+            <alias key='&quot;DM&quot;' value='Dominica' />
+            <alias key='&quot;DO&quot;' value='Dominican Republic' />
+            <alias key='&quot;DZ&quot;' value='Algeria' />
+            <alias key='&quot;EC&quot;' value='Ecuador' />
+            <alias key='&quot;EE&quot;' value='Estonia' />
+            <alias key='&quot;EG&quot;' value='Egypt' />
+            <alias key='&quot;EH&quot;' value='Western Sahara' />
+            <alias key='&quot;ER&quot;' value='Eritrea' />
+            <alias key='&quot;ES&quot;' value='Spain' />
+            <alias key='&quot;ET&quot;' value='Ethiopia' />
+            <alias key='&quot;FI&quot;' value='Finland' />
+            <alias key='&quot;FJ&quot;' value='Fiji' />
+            <alias key='&quot;FK&quot;' value='Falkland Islands (Malvinas)' />
+            <alias key='&quot;FM&quot;' value='Micronesia, Federated States of' />
+            <alias key='&quot;FO&quot;' value='Faroe Islands' />
+            <alias key='&quot;FR&quot;' value='France' />
+            <alias key='&quot;GA&quot;' value='Gabon' />
+            <alias key='&quot;GB&quot;' value='United Kingdom of Great Britain and Northern Ireland' />
+            <alias key='&quot;GD&quot;' value='Grenada' />
+            <alias key='&quot;GE&quot;' value='Georgia' />
+            <alias key='&quot;GF&quot;' value='French Guiana' />
+            <alias key='&quot;GG&quot;' value='Guernsey' />
+            <alias key='&quot;GH&quot;' value='Ghana' />
+            <alias key='&quot;GI&quot;' value='Gibraltar' />
+            <alias key='&quot;GL&quot;' value='Greenland' />
+            <alias key='&quot;GM&quot;' value='Gambia' />
+            <alias key='&quot;GN&quot;' value='Guinea' />
+            <alias key='&quot;GP&quot;' value='Guadeloupe' />
+            <alias key='&quot;GQ&quot;' value='Equatorial Guinea' />
+            <alias key='&quot;GR&quot;' value='Greece' />
+            <alias key='&quot;GS&quot;' value='South Georgia and the South Sandwich Islands' />
+            <alias key='&quot;GT&quot;' value='Guatemala' />
+            <alias key='&quot;GU&quot;' value='Guam' />
+            <alias key='&quot;GW&quot;' value='Guinea-Bissau' />
+            <alias key='&quot;GY&quot;' value='Guyana' />
+            <alias key='&quot;HK&quot;' value='Hong Kong' />
+            <alias key='&quot;HM&quot;' value='Heard Island and McDonald Islands' />
+            <alias key='&quot;HN&quot;' value='Honduras' />
+            <alias key='&quot;HR&quot;' value='Croatia' />
+            <alias key='&quot;HT&quot;' value='Haiti' />
+            <alias key='&quot;HU&quot;' value='Hungary' />
+            <alias key='&quot;ID&quot;' value='Indonesia' />
+            <alias key='&quot;IE&quot;' value='Ireland' />
+            <alias key='&quot;IL&quot;' value='Israel' />
+            <alias key='&quot;IM&quot;' value='Isle of Man' />
+            <alias key='&quot;IN&quot;' value='India' />
+            <alias key='&quot;IO&quot;' value='British Indian Ocean Territory' />
+            <alias key='&quot;IQ&quot;' value='Iraq' />
+            <alias key='&quot;IR&quot;' value='Iran, Islamic Republic of' />
+            <alias key='&quot;IS&quot;' value='Iceland' />
+            <alias key='&quot;IT&quot;' value='Italy' />
+            <alias key='&quot;JE&quot;' value='Jersey' />
+            <alias key='&quot;JM&quot;' value='Jamaica' />
+            <alias key='&quot;JO&quot;' value='Jordan' />
+            <alias key='&quot;JP&quot;' value='Japan' />
+            <alias key='&quot;KE&quot;' value='Kenya' />
+            <alias key='&quot;KG&quot;' value='Kyrgyzstan' />
+            <alias key='&quot;KH&quot;' value='Cambodia' />
+            <alias key='&quot;KI&quot;' value='Kiribati' />
+            <alias key='&quot;KM&quot;' value='Comoros' />
+            <alias key='&quot;KN&quot;' value='Saint Kitts and Nevis' />
+            <alias key='&quot;KP&quot;' value='Korea, Democratic People&apos;s Republic of' />
+            <alias key='&quot;KR&quot;' value='Korea, Republic of' />
+            <alias key='&quot;KW&quot;' value='Kuwait' />
+            <alias key='&quot;KY&quot;' value='Cayman Islands' />
+            <alias key='&quot;KZ&quot;' value='Kazakhstan' />
+            <alias key='&quot;LA&quot;' value='Lao People&apos;s Democratic Republic' />
+            <alias key='&quot;LB&quot;' value='Lebanon' />
+            <alias key='&quot;LC&quot;' value='Saint Lucia' />
+            <alias key='&quot;LI&quot;' value='Liechtenstein' />
+            <alias key='&quot;LK&quot;' value='Sri Lanka' />
+            <alias key='&quot;LR&quot;' value='Liberia' />
+            <alias key='&quot;LS&quot;' value='Lesotho' />
+            <alias key='&quot;LT&quot;' value='Lithuania' />
+            <alias key='&quot;LU&quot;' value='Luxembourg' />
+            <alias key='&quot;LV&quot;' value='Latvia' />
+            <alias key='&quot;LY&quot;' value='Libya' />
+            <alias key='&quot;MA&quot;' value='Morocco' />
+            <alias key='&quot;MC&quot;' value='Monaco' />
+            <alias key='&quot;MD&quot;' value='Moldova, Republic of' />
+            <alias key='&quot;ME&quot;' value='Montenegro' />
+            <alias key='&quot;MF&quot;' value='Saint Martin (French part)' />
+            <alias key='&quot;MG&quot;' value='Madagascar' />
+            <alias key='&quot;MH&quot;' value='Marshall Islands' />
+            <alias key='&quot;MK&quot;' value='Macedonia, the former Yugoslav Republic of' />
+            <alias key='&quot;ML&quot;' value='Mali' />
+            <alias key='&quot;MM&quot;' value='Myanmar' />
+            <alias key='&quot;MN&quot;' value='Mongolia' />
+            <alias key='&quot;MO&quot;' value='Macao' />
+            <alias key='&quot;MP&quot;' value='Northern Mariana Islands' />
+            <alias key='&quot;MQ&quot;' value='Martinique' />
+            <alias key='&quot;MR&quot;' value='Mauritania' />
+            <alias key='&quot;MS&quot;' value='Montserrat' />
+            <alias key='&quot;MT&quot;' value='Malta' />
+            <alias key='&quot;MU&quot;' value='Mauritius' />
+            <alias key='&quot;MV&quot;' value='Maldives' />
+            <alias key='&quot;MW&quot;' value='Malawi' />
+            <alias key='&quot;MX&quot;' value='Mexico' />
+            <alias key='&quot;MY&quot;' value='Malaysia' />
+            <alias key='&quot;MZ&quot;' value='Mozambique' />
+            <alias key='&quot;NA&quot;' value='Namibia' />
+            <alias key='&quot;NC&quot;' value='New Caledonia' />
+            <alias key='&quot;NE&quot;' value='Niger' />
+            <alias key='&quot;NF&quot;' value='Norfolk Island' />
+            <alias key='&quot;NG&quot;' value='Nigeria' />
+            <alias key='&quot;NI&quot;' value='Nicaragua' />
+            <alias key='&quot;NL&quot;' value='Netherlands' />
+            <alias key='&quot;NO&quot;' value='Norway' />
+            <alias key='&quot;NP&quot;' value='Nepal' />
+            <alias key='&quot;NR&quot;' value='Nauru' />
+            <alias key='&quot;NU&quot;' value='Niue' />
+            <alias key='&quot;NZ&quot;' value='New Zealand' />
+            <alias key='&quot;OM&quot;' value='Oman' />
+            <alias key='&quot;PA&quot;' value='Panama' />
+            <alias key='&quot;PE&quot;' value='Peru' />
+            <alias key='&quot;PF&quot;' value='French Polynesia' />
+            <alias key='&quot;PG&quot;' value='Papua New Guinea' />
+            <alias key='&quot;PH&quot;' value='Philippines' />
+            <alias key='&quot;PK&quot;' value='Pakistan' />
+            <alias key='&quot;PL&quot;' value='Poland' />
+            <alias key='&quot;PM&quot;' value='Saint Pierre and Miquelon' />
+            <alias key='&quot;PN&quot;' value='Pitcairn' />
+            <alias key='&quot;PR&quot;' value='Puerto Rico' />
+            <alias key='&quot;PS&quot;' value='Palestine, State of' />
+            <alias key='&quot;PT&quot;' value='Portugal' />
+            <alias key='&quot;PW&quot;' value='Palau' />
+            <alias key='&quot;PY&quot;' value='Paraguay' />
+            <alias key='&quot;QA&quot;' value='Qatar' />
+            <alias key='&quot;RE&quot;' value='Réunion' />
+            <alias key='&quot;RO&quot;' value='Romania' />
+            <alias key='&quot;RS&quot;' value='Serbia' />
+            <alias key='&quot;RU&quot;' value='Russian Federation' />
+            <alias key='&quot;RW&quot;' value='Rwanda' />
+            <alias key='&quot;SA&quot;' value='Saudi Arabia' />
+            <alias key='&quot;SB&quot;' value='Solomon Islands' />
+            <alias key='&quot;SC&quot;' value='Seychelles' />
+            <alias key='&quot;SD&quot;' value='Sudan' />
+            <alias key='&quot;SE&quot;' value='Sweden' />
+            <alias key='&quot;SG&quot;' value='Singapore' />
+            <alias key='&quot;SH&quot;' value='Saint Helena, Ascension and Tristan da Cunha' />
+            <alias key='&quot;SI&quot;' value='Slovenia' />
+            <alias key='&quot;SJ&quot;' value='Svalbard and Jan Mayen' />
+            <alias key='&quot;SK&quot;' value='Slovakia' />
+            <alias key='&quot;SL&quot;' value='Sierra Leone' />
+            <alias key='&quot;SM&quot;' value='San Marino' />
+            <alias key='&quot;SN&quot;' value='Senegal' />
+            <alias key='&quot;SO&quot;' value='Somalia' />
+            <alias key='&quot;SR&quot;' value='Suriname' />
+            <alias key='&quot;SS&quot;' value='South Sudan' />
+            <alias key='&quot;ST&quot;' value='Sao Tome and Principe' />
+            <alias key='&quot;SV&quot;' value='El Salvador' />
+            <alias key='&quot;SX&quot;' value='Sint Maarten (Dutch part)' />
+            <alias key='&quot;SY&quot;' value='Syrian Arab Republic' />
+            <alias key='&quot;SZ&quot;' value='Swaziland' />
+            <alias key='&quot;TC&quot;' value='Turks and Caicos Islands' />
+            <alias key='&quot;TD&quot;' value='Chad' />
+            <alias key='&quot;TF&quot;' value='French Southern Territories' />
+            <alias key='&quot;TG&quot;' value='Togo' />
+            <alias key='&quot;TH&quot;' value='Thailand' />
+            <alias key='&quot;TJ&quot;' value='Tajikistan' />
+            <alias key='&quot;TK&quot;' value='Tokelau' />
+            <alias key='&quot;TL&quot;' value='Timor-Leste' />
+            <alias key='&quot;TM&quot;' value='Turkmenistan' />
+            <alias key='&quot;TN&quot;' value='Tunisia' />
+            <alias key='&quot;TO&quot;' value='Tonga' />
+            <alias key='&quot;TR&quot;' value='Turkey' />
+            <alias key='&quot;TT&quot;' value='Trinidad and Tobago' />
+            <alias key='&quot;TV&quot;' value='Tuvalu' />
+            <alias key='&quot;TW&quot;' value='Taiwan, Province of China' />
+            <alias key='&quot;TZ&quot;' value='Tanzania, United Republic of' />
+            <alias key='&quot;UA&quot;' value='Ukraine' />
+            <alias key='&quot;UG&quot;' value='Uganda' />
+            <alias key='&quot;UM&quot;' value='United States Minor Outlying Islands' />
+            <alias key='&quot;US&quot;' value='United States of America' />
+            <alias key='&quot;UY&quot;' value='Uruguay' />
+            <alias key='&quot;UZ&quot;' value='Uzbekistan' />
+            <alias key='&quot;VA&quot;' value='Holy See' />
+            <alias key='&quot;VC&quot;' value='Saint Vincent and the Grenadines' />
+            <alias key='&quot;VE&quot;' value='Venezuela, Bolivarian Republic of' />
+            <alias key='&quot;VG&quot;' value='Virgin Islands, British' />
+            <alias key='&quot;VI&quot;' value='Virgin Islands, U.S.' />
+            <alias key='&quot;VN&quot;' value='Viet Nam' />
+            <alias key='&quot;VU&quot;' value='Vanuatu' />
+            <alias key='&quot;WF&quot;' value='Wallis and Futuna' />
+            <alias key='&quot;WS&quot;' value='Samoa' />
+            <alias key='&quot;YE&quot;' value='Yemen' />
+            <alias key='&quot;YT&quot;' value='Mayotte' />
+            <alias key='&quot;ZA&quot;' value='South Africa' />
+            <alias key='&quot;ZM&quot;' value='Zambia' />
+            <alias key='&quot;ZW&quot;' value='Zimbabwe' />
+          </aliases>
+          <desc>
+            <formatted-text>
+              <run>System-wide default for what</run>
+              <run bold='true'> country </run>
+              <run>phone numbers used in SMS messages are from.&#10;&#10;Must use the ISO Alpha-2 format, e.g. US, GB, DE (see more at http://bit.ly/1MObR9o )&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> phone_country_code </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+          <members>
+            <member alias='United States of America' value='&quot;US&quot;' />
+            <member alias='Andorra' value='&quot;AD&quot;' />
+            <member alias='United Arab Emirates' value='&quot;AE&quot;' />
+            <member alias='Afghanistan' value='&quot;AF&quot;' />
+            <member alias='Antigua and Barbuda' value='&quot;AG&quot;' />
+            <member alias='Anguilla' value='&quot;AI&quot;' />
+            <member alias='Albania' value='&quot;AL&quot;' />
+            <member alias='Armenia' value='&quot;AM&quot;' />
+            <member alias='Angola' value='&quot;AO&quot;' />
+            <member alias='Antarctica' value='&quot;AQ&quot;' />
+            <member alias='Argentina' value='&quot;AR&quot;' />
+            <member alias='American Samoa' value='&quot;AS&quot;' />
+            <member alias='Austria' value='&quot;AT&quot;' />
+            <member alias='Australia' value='&quot;AU&quot;' />
+            <member alias='Aruba' value='&quot;AW&quot;' />
+            <member alias='Åland Islands' value='&quot;AX&quot;' />
+            <member alias='Azerbaijan' value='&quot;AZ&quot;' />
+            <member alias='Bosnia and Herzegovina' value='&quot;BA&quot;' />
+            <member alias='Barbados' value='&quot;BB&quot;' />
+            <member alias='Bangladesh' value='&quot;BD&quot;' />
+            <member alias='Belgium' value='&quot;BE&quot;' />
+            <member alias='Burkina Faso' value='&quot;BF&quot;' />
+            <member alias='Bulgaria' value='&quot;BG&quot;' />
+            <member alias='Bahrain' value='&quot;BH&quot;' />
+            <member alias='Burundi' value='&quot;BI&quot;' />
+            <member alias='Benin' value='&quot;BJ&quot;' />
+            <member alias='Saint Barthélemy' value='&quot;BL&quot;' />
+            <member alias='Bermuda' value='&quot;BM&quot;' />
+            <member alias='Brunei Darussalam' value='&quot;BN&quot;' />
+            <member alias='Bolivia, Plurinational State of' value='&quot;BO&quot;' />
+            <member alias='Bonaire, Sint Eustatius and Saba' value='&quot;BQ&quot;' />
+            <member alias='Brazil' value='&quot;BR&quot;' />
+            <member alias='Bahamas' value='&quot;BS&quot;' />
+            <member alias='Bhutan' value='&quot;BT&quot;' />
+            <member alias='Bouvet Island' value='&quot;BV&quot;' />
+            <member alias='Botswana' value='&quot;BW&quot;' />
+            <member alias='Belarus' value='&quot;BY&quot;' />
+            <member alias='Belize' value='&quot;BZ&quot;' />
+            <member alias='Canada' value='&quot;CA&quot;' />
+            <member alias='Cocos (Keeling) Islands' value='&quot;CC&quot;' />
+            <member alias='Congo, the Democratic Republic of the' value='&quot;CD&quot;' />
+            <member alias='Central African Republic' value='&quot;CF&quot;' />
+            <member alias='Congo' value='&quot;CG&quot;' />
+            <member alias='Switzerland' value='&quot;CH&quot;' />
+            <member alias='Côte d&apos;Ivoire' value='&quot;CI&quot;' />
+            <member alias='Cook Islands' value='&quot;CK&quot;' />
+            <member alias='Chile' value='&quot;CL&quot;' />
+            <member alias='Cameroon' value='&quot;CM&quot;' />
+            <member alias='China' value='&quot;CN&quot;' />
+            <member alias='Colombia' value='&quot;CO&quot;' />
+            <member alias='Costa Rica' value='&quot;CR&quot;' />
+            <member alias='Cuba' value='&quot;CU&quot;' />
+            <member alias='Cabo Verde' value='&quot;CV&quot;' />
+            <member alias='Curaçao' value='&quot;CW&quot;' />
+            <member alias='Christmas Island' value='&quot;CX&quot;' />
+            <member alias='Cyprus' value='&quot;CY&quot;' />
+            <member alias='Czechia' value='&quot;CZ&quot;' />
+            <member alias='Germany' value='&quot;DE&quot;' />
+            <member alias='Djibouti' value='&quot;DJ&quot;' />
+            <member alias='Denmark' value='&quot;DK&quot;' />
+            <member alias='Dominica' value='&quot;DM&quot;' />
+            <member alias='Dominican Republic' value='&quot;DO&quot;' />
+            <member alias='Algeria' value='&quot;DZ&quot;' />
+            <member alias='Ecuador' value='&quot;EC&quot;' />
+            <member alias='Estonia' value='&quot;EE&quot;' />
+            <member alias='Egypt' value='&quot;EG&quot;' />
+            <member alias='Western Sahara' value='&quot;EH&quot;' />
+            <member alias='Eritrea' value='&quot;ER&quot;' />
+            <member alias='Spain' value='&quot;ES&quot;' />
+            <member alias='Ethiopia' value='&quot;ET&quot;' />
+            <member alias='Finland' value='&quot;FI&quot;' />
+            <member alias='Fiji' value='&quot;FJ&quot;' />
+            <member alias='Falkland Islands (Malvinas)' value='&quot;FK&quot;' />
+            <member alias='Micronesia, Federated States of' value='&quot;FM&quot;' />
+            <member alias='Faroe Islands' value='&quot;FO&quot;' />
+            <member alias='France' value='&quot;FR&quot;' />
+            <member alias='Gabon' value='&quot;GA&quot;' />
+            <member alias='United Kingdom of Great Britain and Northern Ireland' value='&quot;GB&quot;' />
+            <member alias='Grenada' value='&quot;GD&quot;' />
+            <member alias='Georgia' value='&quot;GE&quot;' />
+            <member alias='French Guiana' value='&quot;GF&quot;' />
+            <member alias='Guernsey' value='&quot;GG&quot;' />
+            <member alias='Ghana' value='&quot;GH&quot;' />
+            <member alias='Gibraltar' value='&quot;GI&quot;' />
+            <member alias='Greenland' value='&quot;GL&quot;' />
+            <member alias='Gambia' value='&quot;GM&quot;' />
+            <member alias='Guinea' value='&quot;GN&quot;' />
+            <member alias='Guadeloupe' value='&quot;GP&quot;' />
+            <member alias='Equatorial Guinea' value='&quot;GQ&quot;' />
+            <member alias='Greece' value='&quot;GR&quot;' />
+            <member alias='South Georgia and the South Sandwich Islands' value='&quot;GS&quot;' />
+            <member alias='Guatemala' value='&quot;GT&quot;' />
+            <member alias='Guam' value='&quot;GU&quot;' />
+            <member alias='Guinea-Bissau' value='&quot;GW&quot;' />
+            <member alias='Guyana' value='&quot;GY&quot;' />
+            <member alias='Hong Kong' value='&quot;HK&quot;' />
+            <member alias='Heard Island and McDonald Islands' value='&quot;HM&quot;' />
+            <member alias='Honduras' value='&quot;HN&quot;' />
+            <member alias='Croatia' value='&quot;HR&quot;' />
+            <member alias='Haiti' value='&quot;HT&quot;' />
+            <member alias='Hungary' value='&quot;HU&quot;' />
+            <member alias='Indonesia' value='&quot;ID&quot;' />
+            <member alias='Ireland' value='&quot;IE&quot;' />
+            <member alias='Israel' value='&quot;IL&quot;' />
+            <member alias='Isle of Man' value='&quot;IM&quot;' />
+            <member alias='India' value='&quot;IN&quot;' />
+            <member alias='British Indian Ocean Territory' value='&quot;IO&quot;' />
+            <member alias='Iraq' value='&quot;IQ&quot;' />
+            <member alias='Iran, Islamic Republic of' value='&quot;IR&quot;' />
+            <member alias='Iceland' value='&quot;IS&quot;' />
+            <member alias='Italy' value='&quot;IT&quot;' />
+            <member alias='Jersey' value='&quot;JE&quot;' />
+            <member alias='Jamaica' value='&quot;JM&quot;' />
+            <member alias='Jordan' value='&quot;JO&quot;' />
+            <member alias='Japan' value='&quot;JP&quot;' />
+            <member alias='Kenya' value='&quot;KE&quot;' />
+            <member alias='Kyrgyzstan' value='&quot;KG&quot;' />
+            <member alias='Cambodia' value='&quot;KH&quot;' />
+            <member alias='Kiribati' value='&quot;KI&quot;' />
+            <member alias='Comoros' value='&quot;KM&quot;' />
+            <member alias='Saint Kitts and Nevis' value='&quot;KN&quot;' />
+            <member alias='Korea, Democratic People&apos;s Republic of' value='&quot;KP&quot;' />
+            <member alias='Korea, Republic of' value='&quot;KR&quot;' />
+            <member alias='Kuwait' value='&quot;KW&quot;' />
+            <member alias='Cayman Islands' value='&quot;KY&quot;' />
+            <member alias='Kazakhstan' value='&quot;KZ&quot;' />
+            <member alias='Lao People&apos;s Democratic Republic' value='&quot;LA&quot;' />
+            <member alias='Lebanon' value='&quot;LB&quot;' />
+            <member alias='Saint Lucia' value='&quot;LC&quot;' />
+            <member alias='Liechtenstein' value='&quot;LI&quot;' />
+            <member alias='Sri Lanka' value='&quot;LK&quot;' />
+            <member alias='Liberia' value='&quot;LR&quot;' />
+            <member alias='Lesotho' value='&quot;LS&quot;' />
+            <member alias='Lithuania' value='&quot;LT&quot;' />
+            <member alias='Luxembourg' value='&quot;LU&quot;' />
+            <member alias='Latvia' value='&quot;LV&quot;' />
+            <member alias='Libya' value='&quot;LY&quot;' />
+            <member alias='Morocco' value='&quot;MA&quot;' />
+            <member alias='Monaco' value='&quot;MC&quot;' />
+            <member alias='Moldova, Republic of' value='&quot;MD&quot;' />
+            <member alias='Montenegro' value='&quot;ME&quot;' />
+            <member alias='Saint Martin (French part)' value='&quot;MF&quot;' />
+            <member alias='Madagascar' value='&quot;MG&quot;' />
+            <member alias='Marshall Islands' value='&quot;MH&quot;' />
+            <member alias='Macedonia, the former Yugoslav Republic of' value='&quot;MK&quot;' />
+            <member alias='Mali' value='&quot;ML&quot;' />
+            <member alias='Myanmar' value='&quot;MM&quot;' />
+            <member alias='Mongolia' value='&quot;MN&quot;' />
+            <member alias='Macao' value='&quot;MO&quot;' />
+            <member alias='Northern Mariana Islands' value='&quot;MP&quot;' />
+            <member alias='Martinique' value='&quot;MQ&quot;' />
+            <member alias='Mauritania' value='&quot;MR&quot;' />
+            <member alias='Montserrat' value='&quot;MS&quot;' />
+            <member alias='Malta' value='&quot;MT&quot;' />
+            <member alias='Mauritius' value='&quot;MU&quot;' />
+            <member alias='Maldives' value='&quot;MV&quot;' />
+            <member alias='Malawi' value='&quot;MW&quot;' />
+            <member alias='Mexico' value='&quot;MX&quot;' />
+            <member alias='Malaysia' value='&quot;MY&quot;' />
+            <member alias='Mozambique' value='&quot;MZ&quot;' />
+            <member alias='Namibia' value='&quot;NA&quot;' />
+            <member alias='New Caledonia' value='&quot;NC&quot;' />
+            <member alias='Niger' value='&quot;NE&quot;' />
+            <member alias='Norfolk Island' value='&quot;NF&quot;' />
+            <member alias='Nigeria' value='&quot;NG&quot;' />
+            <member alias='Nicaragua' value='&quot;NI&quot;' />
+            <member alias='Netherlands' value='&quot;NL&quot;' />
+            <member alias='Norway' value='&quot;NO&quot;' />
+            <member alias='Nepal' value='&quot;NP&quot;' />
+            <member alias='Nauru' value='&quot;NR&quot;' />
+            <member alias='Niue' value='&quot;NU&quot;' />
+            <member alias='New Zealand' value='&quot;NZ&quot;' />
+            <member alias='Oman' value='&quot;OM&quot;' />
+            <member alias='Panama' value='&quot;PA&quot;' />
+            <member alias='Peru' value='&quot;PE&quot;' />
+            <member alias='French Polynesia' value='&quot;PF&quot;' />
+            <member alias='Papua New Guinea' value='&quot;PG&quot;' />
+            <member alias='Philippines' value='&quot;PH&quot;' />
+            <member alias='Pakistan' value='&quot;PK&quot;' />
+            <member alias='Poland' value='&quot;PL&quot;' />
+            <member alias='Saint Pierre and Miquelon' value='&quot;PM&quot;' />
+            <member alias='Pitcairn' value='&quot;PN&quot;' />
+            <member alias='Puerto Rico' value='&quot;PR&quot;' />
+            <member alias='Palestine, State of' value='&quot;PS&quot;' />
+            <member alias='Portugal' value='&quot;PT&quot;' />
+            <member alias='Palau' value='&quot;PW&quot;' />
+            <member alias='Paraguay' value='&quot;PY&quot;' />
+            <member alias='Qatar' value='&quot;QA&quot;' />
+            <member alias='Réunion' value='&quot;RE&quot;' />
+            <member alias='Romania' value='&quot;RO&quot;' />
+            <member alias='Serbia' value='&quot;RS&quot;' />
+            <member alias='Russian Federation' value='&quot;RU&quot;' />
+            <member alias='Rwanda' value='&quot;RW&quot;' />
+            <member alias='Saudi Arabia' value='&quot;SA&quot;' />
+            <member alias='Solomon Islands' value='&quot;SB&quot;' />
+            <member alias='Seychelles' value='&quot;SC&quot;' />
+            <member alias='Sudan' value='&quot;SD&quot;' />
+            <member alias='Sweden' value='&quot;SE&quot;' />
+            <member alias='Singapore' value='&quot;SG&quot;' />
+            <member alias='Saint Helena, Ascension and Tristan da Cunha' value='&quot;SH&quot;' />
+            <member alias='Slovenia' value='&quot;SI&quot;' />
+            <member alias='Svalbard and Jan Mayen' value='&quot;SJ&quot;' />
+            <member alias='Slovakia' value='&quot;SK&quot;' />
+            <member alias='Sierra Leone' value='&quot;SL&quot;' />
+            <member alias='San Marino' value='&quot;SM&quot;' />
+            <member alias='Senegal' value='&quot;SN&quot;' />
+            <member alias='Somalia' value='&quot;SO&quot;' />
+            <member alias='Suriname' value='&quot;SR&quot;' />
+            <member alias='South Sudan' value='&quot;SS&quot;' />
+            <member alias='Sao Tome and Principe' value='&quot;ST&quot;' />
+            <member alias='El Salvador' value='&quot;SV&quot;' />
+            <member alias='Sint Maarten (Dutch part)' value='&quot;SX&quot;' />
+            <member alias='Syrian Arab Republic' value='&quot;SY&quot;' />
+            <member alias='Swaziland' value='&quot;SZ&quot;' />
+            <member alias='Turks and Caicos Islands' value='&quot;TC&quot;' />
+            <member alias='Chad' value='&quot;TD&quot;' />
+            <member alias='French Southern Territories' value='&quot;TF&quot;' />
+            <member alias='Togo' value='&quot;TG&quot;' />
+            <member alias='Thailand' value='&quot;TH&quot;' />
+            <member alias='Tajikistan' value='&quot;TJ&quot;' />
+            <member alias='Tokelau' value='&quot;TK&quot;' />
+            <member alias='Timor-Leste' value='&quot;TL&quot;' />
+            <member alias='Turkmenistan' value='&quot;TM&quot;' />
+            <member alias='Tunisia' value='&quot;TN&quot;' />
+            <member alias='Tonga' value='&quot;TO&quot;' />
+            <member alias='Turkey' value='&quot;TR&quot;' />
+            <member alias='Trinidad and Tobago' value='&quot;TT&quot;' />
+            <member alias='Tuvalu' value='&quot;TV&quot;' />
+            <member alias='Taiwan, Province of China' value='&quot;TW&quot;' />
+            <member alias='Tanzania, United Republic of' value='&quot;TZ&quot;' />
+            <member alias='Ukraine' value='&quot;UA&quot;' />
+            <member alias='Uganda' value='&quot;UG&quot;' />
+            <member alias='United States Minor Outlying Islands' value='&quot;UM&quot;' />
+            <member alias='Uruguay' value='&quot;UY&quot;' />
+            <member alias='Uzbekistan' value='&quot;UZ&quot;' />
+            <member alias='Holy See' value='&quot;VA&quot;' />
+            <member alias='Saint Vincent and the Grenadines' value='&quot;VC&quot;' />
+            <member alias='Venezuela, Bolivarian Republic of' value='&quot;VE&quot;' />
+            <member alias='Virgin Islands, British' value='&quot;VG&quot;' />
+            <member alias='Virgin Islands, U.S.' value='&quot;VI&quot;' />
+            <member alias='Viet Nam' value='&quot;VN&quot;' />
+            <member alias='Vanuatu' value='&quot;VU&quot;' />
+            <member alias='Wallis and Futuna' value='&quot;WF&quot;' />
+            <member alias='Samoa' value='&quot;WS&quot;' />
+            <member alias='Yemen' value='&quot;YE&quot;' />
+            <member alias='Mayotte' value='&quot;YT&quot;' />
+            <member alias='South Africa' value='&quot;ZA&quot;' />
+            <member alias='Zambia' value='&quot;ZM&quot;' />
+            <member alias='Zimbabwe' value='&quot;ZW&quot;' />
+          </members>
+        </column>
+        <column caption='default_action_enabled_file' datatype='integer' datatype-customized='true' name='[default_action_enabled_sms (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+          <calculation class='tableau' formula='1' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for whether or not a Subscriber should be allowed to operated on </run>
+              <run bold='true'>files </run>
+              <run>(at all)</run>
+              <run bold='true'>Æ </run>
+              <run>with VizAlerts.&#10;&#10;1 = true, allowed to act on files (subject to other restrictions in the settings)&#10;0 = false, no file actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> action_enabled_file </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+          <members>
+            <member value='1' />
+            <member value='0' />
+          </members>
+        </column>
+        <column caption='default_allowed_from_number' datatype='string' datatype-customized='true' name='[default_allowed_recipient_numbers (copy)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+          <calculation class='tableau' formula='&quot;.*&quot;' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for describing what phone numbers this VizAlert is able to send SMS messages </run>
+              <run bold='true'>from</run>
+              <run>, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run bold='true'>allowed_from_numbers </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+        </column>
         <column caption='default_data_retrieval_tries' datatype='integer' default-format='n0;-0' name='[default_timeout_s (copy)]' param-domain-type='any' role='measure' type='quantitative' value='2'>
           <calculation class='tableau' formula='2' />
           <desc>
@@ -846,7 +2176,13 @@
       <layout-options>
         <caption>
           <formatted-text>
-            <run>This view provides VizAlerts the information it needs to process all the VizAlerts created on Tableau Server, at the right times.&#10;&#10;It&apos;s intended to allow for flexible customization. In particular, you can flexibly define:&#10;&#10;timeout_s&#10;data_retrieval_tries&#10;(future)&#10;max_rows&#10;allowed_domains&#10;allow_from_spoofing&#10;author_is_allowed&#10;...&#10;&#10;Do NOT change the custom SQL unless you REALLY know what you are doing!</run>
+            <run fontsize='12'>This view provides VizAlerts the information it needs to process all the VizAlerts created on Tableau Server, at the right times. It&apos;s intended to allow for very flexible customization that will allow the administrator fine-grained control over which alerts may perform certain kinds of actions.&#10;&#10;First, set the </run>
+            <run bold='true' fontsize='12'>default configuration values</run>
+            <run fontsize='12'> that you prefer using the Parameter controls on the upper right. If you&apos;d like to better understand what each does, hover over the parameter name in the Parameters pane on the lower left.&#10;&#10;Now, if you want to grant an </run>
+            <run bold='true' fontsize='12'>exception</run>
+            <run fontsize='12'> to the default settings, edit the fields in the</run>
+            <run bold='true' fontsize='12'> VizAlert Settings folder</run>
+            <run fontsize='12'> in the data pane on the left. These calculations define the actual settings applied to each VizAlert, and you can change them however you like based on whatever criteria you like.&#10;&#10;Do NOT change the custom SQL connection unless you REALLY know what you are doing!</run>
           </formatted-text>
         </caption>
       </layout-options>
@@ -905,6 +2241,36 @@
                 </formatted-text>
               </desc>
             </column>
+            <column caption='allowed_filepath' datatype='string' name='[Calculation_5091007085156600]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what file paths an alert can perform file actions within. Must be a valid regular expression.&#13;&#10;&#13;&#10;    // The idea here is that the administrator sets up a file share used by VizAlerts. The account you are running the scheduled task under &#13;&#10;    // must have full owner rights on that it. Within that share, each Tableau Server user would have their own folder that their own alerts &#13;&#10;    // can read/write/modify.&#13;&#10;    //&#13;&#10;    // So, if the share you set up is \\myshare, then user &quot;jdrummey&quot;&apos;s VizAlerts could do anything they like to \\myshare\jdrummey, and any file or folder within it.&#13;&#10;    //&#13;&#10;    // Because this is a regex pattern, you must escape the backslash &quot;\&quot; character by using it twice.&#13;&#10;    //   To configure things as described above, the default_fileshare_base would be \\\\myshare\\, and this calculation would &#13;&#10;    //   result in the final string being \\\\myshare\\jdrummey\\.*&#13;&#10;    //&#13;&#10;    //       To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;&#13;&#10;[Parameters].[Parameter 8] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to write files to any folder in the VizAlerts share, but restrict everyone else to just their own folder:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN [default_fileshare_base] + &apos;.*&apos; &#13;&#10;        // ELSE [default_fileshare_base] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;        // END' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Describes what file path(s) this VizAlert is able to perform </run>
+                  <run bold='true'>any</run>
+                  <run> file action on (read/write/modify), defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='is_valid_schedule' datatype='boolean' name='[Calculation_5911012080139041]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(schedule_name, [Parameters].[Parameter 9])' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Determines which Tableau Server subscription schedules are reserved for VizAlerts.&#10;&#10;Note that only </run>
+                  <run bold='true'>disabled</run>
+                  <run> schedules may be used--</run>
+                  <run italic='true'>enabled</run>
+                  <run> schedules are filtered out in the Custom SQL query (which you should not mess with)</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='action_enabled_email' datatype='integer' default-format='n0;-0' name='[Calculation_7731007071204722]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send email&#13;&#10;    // 0 = false, no email may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any email to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_email]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 7]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any emails. Emails it attempts to send will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+                </formatted-text>
+              </desc>
+            </column>
             <column caption='allowed_from_addresses' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
               <desc>
@@ -913,7 +2279,63 @@
                 </formatted-text>
               </desc>
             </column>
+            <column caption='action_enabled_sms' datatype='integer' default-format='n0;-0' name='[action_enabled_email (copy)]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send SMS messages&#13;&#10;    // 0 = false, no SMS may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any SMS to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_sms]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_action_email_enabled (copy)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any SMS messages. SMS&apos;s it attempts to send will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='action_enabled_file' datatype='integer' default-format='n0;-0' name='[action_enabled_sms (copy)]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may act on files&#13;&#10;    // 0 = false, no file actions are allowed&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any file actions to be performed unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_file]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>This is simply a boolean value that denotes whether or not a VizAlert is able to act on any files. Files it attempts to act on will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+                </formatted-text>
+              </desc>
+            </column>
             <column datatype='string' name='[alert_type]' role='dimension' type='nominal'>
+            </column>
+            <column caption='phone_country_code' datatype='string' name='[allowed_from_number (copy)]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what coutry phone numbers should be assumed to be from.&#13;&#10;//  Must be a valid ISO Alpha-2 code, e.g. US, GB, DE, etc (see http://bit.ly/1MObR9o)&#13;&#10;&#13;&#10;    // Alert authors may send SMS messages using a variety of phone number formats.&#13;&#10;    //    Some formats don&apos;t include country code, and messaging services can have trouble with them.&#13;&#10;    //    Therefore, if the phone number a user wants to message is not in the E.164 format (e.g. +15107488230),&#13;&#10;    //    we will assume that their number is from this country, and it will be validated and converted accordingly.&#13;&#10;    //       So this field is ignored entirely if the author uses the full E.164 format.&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy 3)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Specifies what</run>
+                  <run bold='true'> country </run>
+                  <run>phone numbers used in SMS messages within this VizAlert are from.&#10;&#10;Must use the ISO Alpha-2 format, e.g. US, GB, DE (see more at http://bit.ly/1MObR9o )&#10;&#10;If the numbers used by the author are in E.164 format (e.g., </run>
+                  <run fontname='Courier New,courier'>+15107488230</run>
+                  <run>), then this value is ignored. Otherwise, we will parse and validate their numbers as if they came from this country.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='allowed_recipient_numbers' datatype='string' name='[allowed_recipient_addresses (copy)]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert can send messages to. Must be a valid regular expression.&#13;&#10;    // The numbers listed in the &quot; SMS To *&quot; and other recipient fields must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy 2)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Describes what phone numbers this VizAlert is able to send messages to, defined as a regular expression.&#10;&#10;The </run>
+                  <run italic='true'>E.164 version</run>
+                  <run> of whatever number(s) are specified in the &quot;SMS To *&quot; field in an alert are what will be evaluated against this regex, </run>
+                  <run italic='true'>not</run>
+                  <run> the raw text the alert author used.&#10;&#10;Example: An alert author wishes to send an SMS to their personal number, &quot;(206) 867-5309&quot;. VizAlerts converts it to the E.164 format, adding the default country code &quot;1&quot; specified in this config file:&#10;&#10;+12068675309&#10;&#10;This is the final form which will be evaluated against the regex from the allowed_recipient_numbers field, which simplifies the administration somewhat.&#10;&#10;See http://bit.ly/2doiLuP (Twilio) for more information on E.164.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='allowed_from_number' datatype='string' name='[allowed_recipient_numbers (copy)]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert can send messages from. Must be a valid regular expression.&#13;&#10;    // The numbers listed in the &quot; SMS From *&quot; and field (converted to E.164 format) must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^\+12068675309$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[default_allowed_recipient_numbers (copy)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Describes what phone numbers this VizAlert is able to send messages </run>
+                  <run bold='true'>from</run>
+                  <run>, defined as a regular expression.&#10;&#10;The Twilio account used for VizAlerts </run>
+                  <run bold='true'>must </run>
+                  <run>be the owner of any &quot;SMS From *&quot; numbers specified.&#10;&#10;The </run>
+                  <run italic='true'>E.164 version</run>
+                  <run> of whatever number(s) are specified in the &quot;SMS From *&quot; field in an alert are what will be evaluated against this regex, </run>
+                  <run italic='true'>not</run>
+                  <run> the raw text the alert author used.&#10;&#10;Example: An alert author wishes to send an SMS from their personal number, &quot;(206) 867-5309&quot;. VizAlerts converts it to the E.164 format, adding the default country code &quot;1&quot; specified in this config file:&#10;&#10;+12068675309&#10;&#10;This is the final form which will be evaluated against the regex from the allowed_from_number field, which simplifies the administration somewhat.&#10;&#10;See http://bit.ly/2doiLuP (Twilio) for more information on E.164.</run>
+                </formatted-text>
+              </desc>
             </column>
             <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[customized_view_id]' role='dimension' type='ordinal'>
             </column>
@@ -944,12 +2366,20 @@
             </column>
             <column-instance column='[Calculation_0630608185616497]' derivation='None' name='[none:Calculation_0630608185616497:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_0880602155537439]' derivation='None' name='[none:Calculation_0880602155537439:nk]' pivot='key' type='nominal' />
-            <column-instance column='[Calculation_1300811092148681]' derivation='None' name='[none:Calculation_1300811092148681:ok]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_1300811092148681]' derivation='None' name='[none:Calculation_1300811092148681:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_1880608160023327]' derivation='None' name='[none:Calculation_1880608160023327:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_2310608122723904]' derivation='None' name='[none:Calculation_2310608122723904:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_2380602155000967]' derivation='None' name='[none:Calculation_2380602155000967:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[Calculation_5091007085156600]' derivation='None' name='[none:Calculation_5091007085156600:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_5911012080139041]' derivation='None' name='[none:Calculation_5911012080139041:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_7731007071204722]' derivation='None' name='[none:Calculation_7731007071204722:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_9040602154240465]' derivation='None' name='[none:Calculation_9040602154240465:nk]' pivot='key' type='nominal' />
+            <column-instance column='[action_enabled_email (copy)]' derivation='None' name='[none:action_enabled_email (copy):ok]' pivot='key' type='ordinal' />
+            <column-instance column='[action_enabled_sms (copy)]' derivation='None' name='[none:action_enabled_sms (copy):ok]' pivot='key' type='ordinal' />
             <column-instance column='[alert_type]' derivation='None' name='[none:alert_type:nk]' pivot='key' type='nominal' />
+            <column-instance column='[allowed_from_number (copy)]' derivation='None' name='[none:allowed_from_number (copy):nk]' pivot='key' type='nominal' />
+            <column-instance column='[allowed_recipient_addresses (copy)]' derivation='None' name='[none:allowed_recipient_addresses (copy):nk]' pivot='key' type='nominal' />
+            <column-instance column='[allowed_recipient_numbers (copy)]' derivation='None' name='[none:allowed_recipient_numbers (copy):nk]' pivot='key' type='nominal' />
             <column-instance column='[customized_view_id]' derivation='None' name='[none:customized_view_id:ok]' pivot='key' type='ordinal' />
             <column-instance column='[data_retrieval_tries (copy 2)]' derivation='None' name='[none:data_retrieval_tries (copy 2):ok]' pivot='key' type='ordinal' />
             <column-instance column='[data_retrieval_tries (copy)]' derivation='None' name='[none:data_retrieval_tries (copy):ok]' pivot='key' type='ordinal' />
@@ -1050,22 +2480,19 @@
             <column datatype='string' name='[workbook_repository_url]' role='dimension' type='nominal'>
             </column>
           </datasource-dependencies>
-          <filter class='categorical' column='[postgres.42520.320455937501].[none:schedule_name:nk]'>
-            <groupfilter function='member' level='[none:schedule_name:nk]' member='&quot;Аlerts – Every 15 Minutes&quot;' user:ui-domain='database' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
-          </filter>
-          <filter class='categorical' column='[postgres.42520.320455937501].[none:view_name:nk]'>
-            <groupfilter function='member' level='[none:view_name:nk]' member='&quot;ToCC&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          <filter class='categorical' column='[postgres.42520.320455937501].[none:Calculation_5911012080139041:nk]'>
+            <groupfilter function='member' level='[none:Calculation_5911012080139041:nk]' member='true' user:ui-domain='database' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
           </filter>
           <slices>
-            <column>[postgres.42520.320455937501].[none:schedule_name:nk]</column>
-            <column>[postgres.42520.320455937501].[none:view_name:nk]</column>
+            <column>[postgres.42520.320455937501].[none:Calculation_5911012080139041:nk]</column>
           </slices>
           <aggregation value='true' />
         </view>
         <style>
           <style-rule element='header'>
-            <format attr='width' field='[postgres.42520.320455937501].[none:run_next_at:ok]' value='188' />
+            <format attr='width' field='[postgres.42520.320455937501].[none:run_next_at:ok]' value='116' />
             <format attr='width' field='[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]' value='300' />
+            <format attr='width' field='[postgres.42520.320455937501].[none:schedule_id:ok]' value='68' />
           </style-rule>
         </style>
         <panes>
@@ -1107,12 +2534,19 @@
               <lod column='[postgres.42520.320455937501].[none:Calculation_9040602154240465:nk]' />
               <lod column='[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]' />
               <lod column='[postgres.42520.320455937501].[none:data_retrieval_tries (copy):ok]' />
-              <lod column='[postgres.42520.320455937501].[none:Calculation_1300811092148681:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_1300811092148681:nk]' />
               <lod column='[postgres.42520.320455937501].[none:Calculation_2310608122723904:nk]' />
               <lod column='[postgres.42520.320455937501].[none:Calculation_2380602155000967:ok]' />
               <lod column='[postgres.42520.320455937501].[none:Calculation_0630608185616497:ok]' />
               <lod column='[postgres.42520.320455937501].[none:data_retrieval_tries (copy 2):ok]' />
               <lod column='[postgres.42520.320455937501].[none:viz_png_height (copy):ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_7731007071204722:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:action_enabled_email (copy):ok]' />
+              <lod column='[postgres.42520.320455937501].[none:action_enabled_sms (copy):ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_5091007085156600:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:allowed_recipient_addresses (copy):nk]' />
+              <lod column='[postgres.42520.320455937501].[none:allowed_recipient_numbers (copy):nk]' />
+              <lod column='[postgres.42520.320455937501].[none:allowed_from_number (copy):nk]' />
             </encodings>
           </pane>
         </panes>
@@ -1126,10 +2560,24 @@
     <window auto-hidden='0' class='worksheet' maximized='1' name='AlertList'>
       <cards>
         <edge name='left'>
-          <strip size='171'>
-            <card type='pages' />
+          <strip size='100'>
             <card type='filters' />
-            <card type='marks' />
+          </strip>
+          <strip size='235'>
+            <card mode='type_in' param='[Parameters].[Parameter 9]' type='parameter' />
+            <card mode='compact' param='[Parameters].[Parameter 7]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 1]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 2]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 3]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[default_timeout_s (copy)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 4]' type='parameter' />
+            <card mode='compact' param='[Parameters].[Parameter 6]' type='parameter' />
+            <card mode='compact' param='[Parameters].[default_action_email_enabled (copy)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[default_action_enabled_sms (copy 3)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[default_action_enabled_sms (copy 2)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[default_allowed_recipient_numbers (copy)]' type='parameter' />
+            <card mode='compact' param='[Parameters].[default_action_enabled_sms (copy)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 8]' type='parameter' />
           </strip>
         </edge>
         <edge name='top'>
@@ -1141,21 +2589,8 @@
           </strip>
         </edge>
         <edge name='bottom'>
-          <strip size='199'>
+          <strip size='85'>
             <card type='caption' />
-          </strip>
-        </edge>
-        <edge name='right'>
-          <strip size='300'>
-            <card param='[postgres.42520.320455937501].[none:schedule_name:nk]' type='filter' />
-            <card mode='type_in' param='[Parameters].[Parameter 1]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[Parameter 2]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[Parameter 3]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[default_timeout_s (copy)]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[Parameter 4]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[default_viz_png_height (copy)]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[Parameter 5]' type='parameter' />
-            <card mode='compact' param='[Parameters].[Parameter 6]' type='parameter' />
           </strip>
         </edge>
       </cards>
@@ -1164,7 +2599,12 @@
           <field>[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]</field>
           <field>[postgres.42520.320455937501].[none:Calculation_1880608160023327:nk]</field>
           <field>[postgres.42520.320455937501].[none:Calculation_2380602155000967:ok]</field>
+          <field>[postgres.42520.320455937501].[none:Calculation_5911012080139041:nk]</field>
           <field>[postgres.42520.320455937501].[none:alert_type:nk]</field>
+          <field>[postgres.42520.320455937501].[none:allowed_from_number (copy):nk]</field>
+          <field>[postgres.42520.320455937501].[none:allowed_recipient_addresses (copy):nk]</field>
+          <field>[postgres.42520.320455937501].[none:allowed_recipient_numbers (copy):nk]</field>
+          <field>[postgres.42520.320455937501].[none:is_valid_schedule (copy):nk]</field>
           <field>[postgres.42520.320455937501].[none:ran_last_at:ok]</field>
           <field>[postgres.42520.320455937501].[none:run_next_at:ok]</field>
           <field>[postgres.42520.320455937501].[none:schedule_name:nk]</field>

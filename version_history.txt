@@ -2,13 +2,16 @@
 VERSION HISTORY
 ===============
 
-Version 2.0
+Version 2.0.0
 =================================
+-Added support for SMS messages through Twilio (Issue #57)
 -Added multi-threading to improve alert timeliness (Issue #7)
 -Configuration settings are now primarily derived from a Tableau Server view rather than config/vizalerts.yaml (Issue #41)
+-Field naming convention is now more flexible (Issue #12)
 -Fixed defect where SSL certificate was not being validated
 -Added config options around SSL certificate validation
 -Improved error handling
+-Restructured code for more modularity and for future features
 =================================
 
 Version 1.1.1
