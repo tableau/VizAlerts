@@ -1,0 +1,1208 @@
+<?xml version='1.0' encoding='utf-8' ?>
+
+<workbook source-platform='win' version='8.3' xml:base='http://yourserver' xmlns:user='http://www.tableausoftware.com/xml/user'>
+  <!-- build 8300.15.0909.2330                                -->
+  <repository-location id='VizAlerts' path='/workbooks' revision='2.1' />
+  <preferences>
+  </preferences>
+  <datasources>
+    <datasource hasconnection='false' inline='true' name='Parameters' version='8.3'>
+      <aliases enabled='yes' />
+      <column caption='default_allowed_recipient_addresses' datatype='string' name='[Parameter 1]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*tableau\\.com|.*tableausoftware\\.com&quot;'>
+        <calculation class='tableau' formula='&quot;.*tableau\.com|.*tableausoftware\.com&quot;' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run bold='true'>allowed_recipient_addresses </run>
+            <run>calculation</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;vizalerts@tableau\\.com&quot;'>
+        <calculation class='tableau' formula='&quot;vizalerts@tableau\.com&quot;' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for describing what email address VizAlerts is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run bold='true'>allowed_from_address</run>
+            <run> calculation</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='default_timeout_s' datatype='integer' default-format='n0;-0' name='[Parameter 3]' param-domain-type='any' role='measure' type='quantitative' value='60'>
+        <calculation class='tableau' formula='60' />
+        <desc>
+          <formatted-text>
+            <run>System wide default for the number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> timeout_s </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='default_data_maxrows' datatype='integer' default-format='n0;-0' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='1000'>
+        <calculation class='tableau' formula='1000' />
+        <desc>
+          <formatted-text>
+            <run>System wide default for the maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run bold='true'>viz_data_maxrows</run>
+            <run> calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='default_viz_png_height' datatype='integer' default-format='n0;-0' name='[Parameter 5]' param-domain-type='any' role='measure' type='quantitative' value='1500'>
+        <calculation class='tableau' formula='1500' />
+        <desc>
+          <formatted-text>
+            <run>If alert author does not specify an image height, use this value as the default.  For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> viz_png_height</run>
+            <run> calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='default_notify_subscriber_on_failure' datatype='boolean' name='[Parameter 6]' param-domain-type='list' role='measure' type='nominal' value='true'>
+        <calculation class='tableau' formula='true' />
+        <desc>
+          <formatted-text>
+            <run>System-wide default for whether or not a Subscriber should be emailed when their VizAlert fails to  process successfully, for whatever reason. Recommend &quot;true&quot;.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> notify_subscriber_on_failure </run>
+            <run>calculation.</run>
+          </formatted-text>
+        </desc>
+        <members>
+          <member value='true' />
+          <member value='false' />
+        </members>
+      </column>
+      <column caption='default_data_retrieval_tries' datatype='integer' default-format='n0;-0' name='[default_timeout_s (copy)]' param-domain-type='any' role='measure' type='quantitative' value='2'>
+        <calculation class='tableau' formula='2' />
+        <desc>
+          <formatted-text>
+            <run>System wide default for the maximum number of tries that VizAlerts will attempt for any VizAlert.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> data_retrieval_tries</run>
+            <run> calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='default_viz_png_width' datatype='integer' default-format='n0;-0' name='[default_viz_png_height (copy)]' param-domain-type='any' role='measure' type='quantitative' value='1500'>
+        <calculation class='tableau' formula='1500' />
+        <desc>
+          <formatted-text>
+            <run>If alert author does not specify an image width, use this value as the default.  For more information, or to override this setting dynamically, see the</run>
+            <run bold='true'> viz_png_width</run>
+            <run> calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+    </datasource>
+    <datasource caption='VizAlerts Alert List' inline='true' name='postgres.42520.320455937501' version='8.3'>
+      <connection class='postgres' dbname='workgroup' odbc-native-protocol='yes' port='8060' server='your-tableau-repository' server-oauth='' username='readonly' workgroup-auth-mode='prompt'>
+        <relation name='Alerts' type='text'>SELECT&#13;&#10;         s.id                    AS subscription_id ,&#13;&#10;         v.id                    AS view_id ,&#13;&#10;         cv.id                   AS customized_view_id ,&#13;&#10;         COALESCE(v.name || &apos;/&apos; || cv.url_id ,&#13;&#10;        v.name)              AS view_name ,&#13;&#10;         COALESCE(w.repository_url || &apos;/&apos; || v.sheet_id || &apos;/&apos; || su_cust.name || &apos;@&apos; || d.name || &apos;/&apos; || cv.url_id ,&#13;&#10;             w.repository_url || &apos;/&apos; || v.sheet_id)         -- determine URL for a customized view&#13;&#10;                                 AS view_url_suffix ,&#13;&#10;         w.id                    AS workbook_id ,&#13;&#10;         w.repository_url        AS workbook_repository_url ,&#13;&#10;         p.id                    AS project_id ,&#13;&#10;         p.name                  AS project_name ,&#13;&#10;         st.id                   AS site_id ,&#13;&#10;         CASE&#13;&#10;             WHEN st.url_namespace IS NULL THEN &apos;Default&apos;&#13;&#10;             WHEN st.url_namespace = &apos;&apos; THEN &apos;Default&apos;&#13;&#10;             ELSE st.url_namespace&#13;&#10;         END                     AS site_name ,&#13;&#10;         v.owner_id              AS view_owner_id ,&#13;&#10;         s.user_id               AS subscriber_user_id ,&#13;&#10;         su_sub.name             AS subscriber_sysname ,&#13;&#10;         dom_sub.name            AS subscriber_domain ,&#13;&#10;         su_sub.email            AS subscriber_email ,&#13;&#10;         l_sub.name              AS subscriber_license ,&#13;&#10;         su.email                AS owner_email ,&#13;&#10;         su.name                 AS owner_sysname ,&#13;&#10;         su.friendly_name        AS owner_friendly_name ,&#13;&#10;         sch.id                  AS schedule_id ,&#13;&#10;         sch.name                AS schedule_name ,&#13;&#10;         sch.priority            AS schedule_priority ,&#13;&#10;         sch.schedule_type       AS schedule_type ,&#13;&#10;         s.is_test ,&#13;&#10;         COALESCE(date_trunc(&apos;second&apos;, s.test_alert_timestamp), sch.run_next_at)&#13;&#10;                                 AS run_next_at ,&#13;&#10;         COALESCE(&#13;&#10;             /*&#13;&#10;              Give our best guess as to when a newly scheduled alert would have last run&#13;&#10;                We&apos;re basically making this up, but this is only used for timeout values on the first run&#13;&#10;             */&#13;&#10;             CASE&#13;&#10;                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL &apos;1 minute&apos;&#13;&#10;                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL &apos;1 day&apos;&#13;&#10;                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL &apos;7 days&apos;&#13;&#10;                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL &apos;30 days&apos;&#13;&#10;                 ELSE sch.run_next_at - INTERVAL &apos;1 day&apos; --default to a day ago&#13;&#10;             END ,&#13;&#10;             date_trunc(&apos;second&apos;, (s.test_alert_timestamp - interval &apos;30 minutes&apos;))&#13;&#10;             )                   AS ran_last_at ,           -- used for initial timeouts only&#13;&#10;         CAST(&apos;simple&apos; AS text)  AS alert_type              -- placeholder, ignore this&#13;&#10;    FROM (&#13;&#10;        SELECT&#13;&#10;            s.id ,&#13;&#10;            s.user_id ,&#13;&#10;            s.subject ,&#13;&#10;            false           is_test ,&#13;&#10;            sv.repository_url ,&#13;&#10;            s.schedule_id ,&#13;&#10;            NULL            test_alert_timestamp&#13;&#10;        FROM subscriptions s&#13;&#10;            LEFT JOIN subscriptions_views sv&#13;&#10;                   ON s.id = sv.subscription_id&#13;&#10;        UNION&#13;&#10;        SELECT&#13;&#10;            MIN((-1 * c.id))&#13;&#10;                            id ,&#13;&#10;            c.user_id ,&#13;&#10;            v.name          subject ,&#13;&#10;            true            is_test ,&#13;&#10;            v.repository_url ,&#13;&#10;            -1              schedule_id ,&#13;&#10;            MAX(c.updated_at)&#13;&#10;                            test_alert_timestamp&#13;&#10;        FROM comments c&#13;&#10;            INNER JOIN views v&#13;&#10;            ON c.commentable_id = v.id&#13;&#10;                AND c.commentable_type = &apos;View&apos;&#13;&#10;                AND c.user_id = v.owner_id&#13;&#10;                AND LOWER(c.comment) = &apos;test_alert&apos;&#13;&#10;            WHERE c.updated_at &gt;&gt; current_timestamp - interval &apos;5 minutes&apos;&#13;&#10;        GROUP BY c.user_id ,&#13;&#10;            v.name ,&#13;&#10;            v.repository_url&#13;&#10;        ) s&#13;&#10;        INNER JOIN users u_sub&#13;&#10;            ON s.user_id = u_sub.id&#13;&#10;        INNER JOIN system_users su_sub&#13;&#10;            ON u_sub.system_user_id = su_sub.id&#13;&#10;        INNER JOIN licensing_roles l_sub&#13;&#10;            ON u_sub.licensing_role_id = l_sub.id&#13;&#10;        INNER JOIN domains dom_sub&#13;&#10;            ON su_sub.domain_id = dom_sub.id&#13;&#10;        LEFT JOIN subscriptions_customized_views scv&#13;&#10;            ON s.id = scv.subscription_id&#13;&#10;        LEFT JOIN customized_views cv&#13;&#10;            ON scv.customized_view_id = cv.id&#13;&#10;        LEFT JOIN users u_cust&#13;&#10;            ON cv.creator_id = u_cust.id&#13;&#10;        LEFT JOIN system_users su_cust&#13;&#10;            ON u_cust.system_user_id = su_cust.id&#13;&#10;        LEFT JOIN schedules sch&#13;&#10;           ON s.schedule_id = sch.id&#13;&#10;        INNER JOIN views v&#13;&#10;           ON s.repository_url = v.repository_url&#13;&#10;               AND u_sub.site_id = v.site_id&#13;&#10;        INNER JOIN workbooks w&#13;&#10;           ON v.workbook_id = w.id&#13;&#10;        INNER JOIN sites st&#13;&#10;           ON v.site_id = st.id&#13;&#10;        INNER JOIN projects p&#13;&#10;           ON w.project_id = p.id&#13;&#10;        INNER JOIN users u&#13;&#10;            ON v.owner_id = u.id&#13;&#10;        INNER JOIN system_users su&#13;&#10;            ON u.system_user_id = su.id&#13;&#10;        INNER JOIN domains d&#13;&#10;            ON su.domain_id = d.id&#13;&#10;    WHERE 1 = 1&#13;&#10;        AND (&#13;&#10;                (s.is_test = true)  -- not scheduled, someone is testing an ad-hoc alert&#13;&#10;                OR&#13;&#10;                sch.active = &apos;f&apos;    -- only show alerts on disabled schedules&#13;&#10;            )&#13;&#10;        AND coalesce(su_sub.email, &apos;&apos;) &lt;&lt;&gt;&gt; &apos;&apos;              -- only accounts with valid emails (no service accts)&#13;&#10;    ORDER BY&#13;&#10;        sch.run_next_at ,&#13;&#10;        sch.priority DESC</relation>
+        <metadata-records>
+          <metadata-record class='column'>
+            <remote-name>subscription_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[subscription_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>subscription_id</remote-alias>
+            <ordinal>1</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>4</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>view_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[view_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>view_id</remote-alias>
+            <ordinal>2</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>customized_view_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[customized_view_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>customized_view_id</remote-alias>
+            <ordinal>3</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>view_name</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[view_name]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>view_name</remote-alias>
+            <ordinal>4</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>8190</width>
+            <contains-null>true</contains-null>
+            <cast-to-local-type>true</cast-to-local-type>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>view_url_suffix</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[view_url_suffix]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>view_url_suffix</remote-alias>
+            <ordinal>5</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>8190</width>
+            <contains-null>true</contains-null>
+            <cast-to-local-type>true</cast-to-local-type>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>workbook_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[workbook_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>workbook_id</remote-alias>
+            <ordinal>6</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>workbook_repository_url</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[workbook_repository_url]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>workbook_repository_url</remote-alias>
+            <ordinal>7</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>8190</width>
+            <contains-null>true</contains-null>
+            <cast-to-local-type>true</cast-to-local-type>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>project_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[project_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>project_id</remote-alias>
+            <ordinal>8</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>project_name</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[project_name]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>project_name</remote-alias>
+            <ordinal>9</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>site_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[site_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>site_id</remote-alias>
+            <ordinal>10</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>site_name</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[site_name]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>site_name</remote-alias>
+            <ordinal>11</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>view_owner_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[view_owner_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>view_owner_id</remote-alias>
+            <ordinal>12</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>subscriber_user_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[subscriber_user_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>subscriber_user_id</remote-alias>
+            <ordinal>13</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>4</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>subscriber_sysname</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[subscriber_sysname]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>subscriber_sysname</remote-alias>
+            <ordinal>14</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>subscriber_domain</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[subscriber_domain]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>subscriber_domain</remote-alias>
+            <ordinal>15</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>subscriber_email</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[subscriber_email]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>subscriber_email</remote-alias>
+            <ordinal>16</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>subscriber_license</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[subscriber_license]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>subscriber_license</remote-alias>
+            <ordinal>17</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>owner_email</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[owner_email]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>owner_email</remote-alias>
+            <ordinal>18</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>owner_sysname</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[owner_sysname]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>owner_sysname</remote-alias>
+            <ordinal>19</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>owner_friendly_name</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[owner_friendly_name]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>owner_friendly_name</remote-alias>
+            <ordinal>20</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>schedule_id</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[schedule_id]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>schedule_id</remote-alias>
+            <ordinal>21</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>schedule_name</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[schedule_name]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>schedule_name</remote-alias>
+            <ordinal>22</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>255</width>
+            <contains-null>true</contains-null>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+              <attribute datatype='string' name='TypeIsVarchar'>&quot;true&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>schedule_priority</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[schedule_priority]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>schedule_priority</remote-alias>
+            <ordinal>23</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>schedule_type</remote-name>
+            <remote-type>3</remote-type>
+            <local-name>[schedule_type]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>schedule_type</remote-alias>
+            <ordinal>24</ordinal>
+            <local-type>integer</local-type>
+            <aggregation>Sum</aggregation>
+            <precision>10</precision>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_INTEGER&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_SLONG&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>is_test</remote-name>
+            <remote-type>11</remote-type>
+            <local-name>[is_test]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>is_test</remote-alias>
+            <ordinal>25</ordinal>
+            <local-type>boolean</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_BIT&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_BIT&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>run_next_at</remote-name>
+            <remote-type>7</remote-type>
+            <local-name>[run_next_at]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>run_next_at</remote-alias>
+            <ordinal>26</ordinal>
+            <local-type>datetime</local-type>
+            <aggregation>Year</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_TYPE_TIMESTAMP&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_TYPE_TIMESTAMP&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>ran_last_at</remote-name>
+            <remote-type>7</remote-type>
+            <local-name>[ran_last_at]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>ran_last_at</remote-alias>
+            <ordinal>27</ordinal>
+            <local-type>datetime</local-type>
+            <aggregation>Year</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_TYPE_TIMESTAMP&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_TYPE_TIMESTAMP&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
+            <remote-name>alert_type</remote-name>
+            <remote-type>130</remote-type>
+            <local-name>[alert_type]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>alert_type</remote-alias>
+            <ordinal>28</ordinal>
+            <local-type>string</local-type>
+            <aggregation>Count</aggregation>
+            <width>8190</width>
+            <contains-null>true</contains-null>
+            <cast-to-local-type>true</cast-to-local-type>
+            <collation flag='0' name='LEN_RUS' />
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
+            </attributes>
+          </metadata-record>
+        </metadata-records>
+      </connection>
+      <aliases enabled='yes' />
+      <column aggregation='Sum' caption='viz_data_maxrows' datatype='integer' default-format='n0;-0' name='[Calculation_0630608185616497]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: &quot;Our giant bulk emailer alert needs to send mail to 2,000 people&quot; (Note: I don&apos;t recommend you use VizAlerts for that use case! But it&apos;s a fun example)&#13;&#10;//      IF [view_name] = &apos;Bulk Mailer&apos; THEN 10000&#13;&#10;//          ELSE [default_data_maxrows]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 4]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>The maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded. This applies to both Simple and Advanced alerts.&#10;&#10;The rationale in having this option is that an alert author may inadvertantly leave a filter off, resulting in a massive amount of data that could cause:&#10;&#10;-Large attachment sizes&#10;-Large email volumes sent to many people who shouldn&apos;t be receiving them&#10;-General Tableau Server resource drain</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='allowed_recipient_addresses' datatype='string' name='[Calculation_0880602155537439]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what To/CC/BCC address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address(es) listed in the &quot; Email To *&quot; and other recipient fields must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;    // It&apos;s generally recommended to keep the default setting, which will allow any alert to send mail to any &#13;&#10;    //     internal addresses, but not to any external addresses&#13;&#10;&#13;&#10;[Parameters].[Parameter 1]&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to send mail to their personal email accounts, but restrict everyone else to internal email:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE [default_allowed_recipient_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow specific VizAlerts to send mail to anyone, Admins to their personal accounts, and everyone else just to themselves:&#13;&#10;        //&#13;&#10;        // IF [workbook_repository_url] + &apos;/&apos; + [view_name] = &apos;VizAlerts_RecipientTests/ToCC&apos; THEN &apos;.*&apos;&#13;&#10;        // ELSEIF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE REPLACE([subscriber_email], &apos;.&apos;, &apos;\.&apos;) // Period must be escaped in regex&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Describes what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='force_refresh' datatype='boolean' name='[Calculation_1300811092148681]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='true' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Determines whether VizAlerts will force a data refresh on the requests it makes for view data and images. </run>
+            <run bold='true'>To ensure accurate alerting, this should always be set to true.</run>
+            <run>  There may be reasons we want to alter this in the future, or for power users to tweak it on an alert level, so I&apos;m leaving it in.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='schedule_frequency' datatype='string' name='[Calculation_1880608160023327]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='CASE [schedule_type]&#13;&#10;    WHEN 0 THEN &apos;Hourly&apos;&#13;&#10;    WHEN 1 THEN &apos;Daily&apos;&#13;&#10;    WHEN 2 THEN &apos;Weekly&apos;&#13;&#10;    WHEN 3 THEN &apos;Monthly&apos;&#13;&#10;    ELSE &apos;Unknown&apos;&#13;&#10;END' scope-isolation='false' />
+      </column>
+      <column caption='notify_subscriber_on_failure' datatype='boolean' name='[Calculation_2310608122723904]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;// Example: &quot;Don&apos;t notify me if my own alerts fail, but do for everyone else&quot;&#13;&#10;//      IF [owner_sysname] = &apos;mcoles&apos;&#13;&#10;//          THEN false&#13;&#10;//          ELSE [default_notify_subscriber_on_failure]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 6]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Determines whether or not a Subscriber should be emailed when their VizAlert fails to  process successfully, for whatever reason.&#10;</run>
+            <run bold='true'>&#10;Recommend leaving this &quot;true&quot;.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column aggregation='Sum' caption='timeout_s' datatype='integer' default-format='n0;-0' name='[Calculation_2380602155000967]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;//      The calculation below uses a method failry consistent with past VizAlerts behavior,&#13;&#10;//       namely that more frequently-running schedules are afforded shorter timeouts.&#13;&#10;//      But you can customize this however you want.&#13;&#10;&#13;&#10;CASE [Calculation_1880608160023327]&#13;&#10;    WHEN &apos;Hourly&apos; THEN [Parameters].[Parameter 3] // most people subscribe to their VizAlerts on hourly schedules, so let&apos;s use the default for that&#13;&#10;    WHEN &apos;Daily&apos; THEN 300&#13;&#10;    WHEN &apos;Weekly&apos; THEN 300&#13;&#10;    WHEN &apos;Monthly&apos; THEN 300&#13;&#10;    ELSE [Parameters].[Parameter 3]&#13;&#10;END' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>The number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;This timeout value will also apply to any content references within the VizAlert--but each will start the count over again, so it is not a cumulative timeout for </run>
+            <run italic='true'>all</run>
+            <run> work done within a single VizAlert.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column caption='allowed_from_addresses' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Describes what email address this VizAlert is able to send email from, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column datatype='integer' hidden='true' name='[Number of Records]' role='measure' type='quantitative' user:auto-column='numrec'>
+        <calculation class='tableau' formula='1' />
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[customized_view_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' caption='viz_png_height' datatype='integer' default-format='n0;-0' name='[data_retrieval_tries (copy 2)]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: For two of my Simple Alerts in particular, the viz sizes need customization. Set them to 3000 x 3000.&#13;&#10;&#13;&#10;// IF [view_name] = &apos;MyViz1&apos; OR [view_name] = &apos;MyViz2&apos;&#13;&#10;//     THEN 3000&#13;&#10;// ELSE [default_viz_png_height]&#13;&#10;// END&#13;&#10;&#13;&#10;[Parameters].[Parameter 5]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>If alert author does not specify an image height for the images used in their alert, use this value as the default.&#10;&#10;</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column aggregation='Sum' caption='data_retrieval_tries' datatype='integer' default-format='n0;-0' name='[data_retrieval_tries (copy)]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;// Example: &quot;Allow executive subscribers twice the normal number of tries so that we&apos;re more likely to process their alerts successfully!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Executive Project&apos;&#13;&#10;//          THEN 2 * [default_data_retrieval_tries]&#13;&#10;//          ELSE [default_data_retrieval_tries]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_timeout_s (copy)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>The number of tries to attempt to process a VizAlert request before considering it a failure.&#10;&#10;This same number of tries will apply to any content references within the VizAlert--but each attempt will start the count over again, so it is not a cumulative number of tries for </run>
+            <run italic='true'>all</run>
+            <run> work done within a single VizAlert.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column datatype='boolean' name='[is_test]' role='dimension' type='nominal'>
+        <desc>
+          <formatted-text>
+            <run>Indicates whether this VizAlert instance is an ad-hoc execution using the &quot;test_alert&quot; comment.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[project_id]' role='dimension' type='ordinal'>
+      </column>
+      <column datatype='datetime' default-format='*YYYY-mm-DD HH:MM:SS' name='[ran_last_at]' role='dimension' type='ordinal'>
+        <desc>
+          <formatted-text>
+            <run>This field is mostly just here as a placeholder--the data is not necessarily accurate.</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column datatype='datetime' default-format='*YYYY-mm-DD HH:MM:SS' name='[run_next_at]' role='dimension' type='ordinal'>
+        <desc>
+          <formatted-text>
+            <run>When the schedule the VizAlert lives on is set to run next</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_priority]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_type]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[site_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[subscriber_user_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[subscription_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[view_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[view_owner_id]' role='dimension' type='ordinal'>
+      </column>
+      <column aggregation='Sum' caption='viz_png_width' datatype='integer' default-format='n0;-0' name='[viz_png_height (copy)]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: For two of my Simple Alerts in particular, the viz sizes need customization. Set them to 3000 x 3000.&#13;&#10;&#13;&#10;// IF [view_name] = &apos;MyViz1&apos; OR [view_name] = &apos;MyViz2&apos;&#13;&#10;//     THEN 3000&#13;&#10;// ELSE [default_viz_png_width]&#13;&#10;// END&#13;&#10;&#13;&#10;[Parameters].[default_viz_png_height (copy)]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>If alert author does not specify an image width for the images used in their alert, use this value as the default.&#10;&#10;</run>
+          </formatted-text>
+        </desc>
+      </column>
+      <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[workbook_id]' role='dimension' type='ordinal'>
+      </column>
+      <folder name='Schedule' role='dimensions'>
+        <folder-item name='[Calculation_1880608160023327]' type='field' />
+        <folder-item name='[is_test]' type='field' />
+        <folder-item name='[ran_last_at]' type='field' />
+        <folder-item name='[run_next_at]' type='field' />
+        <folder-item name='[schedule_id]' type='field' />
+        <folder-item name='[schedule_name]' type='field' />
+        <folder-item name='[schedule_priority]' type='field' />
+        <folder-item name='[schedule_type]' type='field' />
+      </folder>
+      <folder name='Subscription' role='dimensions'>
+        <folder-item name='[subscriber_domain]' type='field' />
+        <folder-item name='[subscriber_email]' type='field' />
+        <folder-item name='[subscriber_license]' type='field' />
+        <folder-item name='[subscriber_sysname]' type='field' />
+        <folder-item name='[subscriber_user_id]' type='field' />
+        <folder-item name='[subscription_id]' type='field' />
+      </folder>
+      <folder name='Viz' role='dimensions'>
+        <folder-item name='[alert_type]' type='field' />
+        <folder-item name='[customized_view_id]' type='field' />
+        <folder-item name='[project_id]' type='field' />
+        <folder-item name='[project_name]' type='field' />
+        <folder-item name='[site_id]' type='field' />
+        <folder-item name='[site_name]' type='field' />
+        <folder-item name='[view_id]' type='field' />
+        <folder-item name='[view_name]' type='field' />
+        <folder-item name='[view_url_suffix]' type='field' />
+        <folder-item name='[workbook_id]' type='field' />
+        <folder-item name='[workbook_repository_url]' type='field' />
+      </folder>
+      <folder name='Viz Owner' role='dimensions'>
+        <folder-item name='[owner_email]' type='field' />
+        <folder-item name='[owner_friendly_name]' type='field' />
+        <folder-item name='[owner_sysname]' type='field' />
+        <folder-item name='[view_owner_id]' type='field' />
+      </folder>
+      <folder name='VizAlert Settings' role='dimensions'>
+        <folder-item name='[Calculation_0630608185616497]' type='field' />
+        <folder-item name='[Calculation_0880602155537439]' type='field' />
+        <folder-item name='[Calculation_1300811092148681]' type='field' />
+        <folder-item name='[Calculation_2310608122723904]' type='field' />
+        <folder-item name='[Calculation_2380602155000967]' type='field' />
+        <folder-item name='[Calculation_9040602154240465]' type='field' />
+        <folder-item name='[data_retrieval_tries (copy 2)]' type='field' />
+        <folder-item name='[data_retrieval_tries (copy)]' type='field' />
+        <folder-item name='[viz_png_height (copy)]' type='field' />
+      </folder>
+      <layout dim-ordering='alphabetic' dim-percentage='0.552846' measure-ordering='alphabetic' measure-percentage='0.128455' show-structure='true' />
+      <semantic-values>
+        <semantic-value key='[Country].[Name]' value='&quot;United States&quot;' />
+      </semantic-values>
+      <datasource-dependencies datasource='Parameters'>
+        <column caption='default_allowed_recipient_addresses' datatype='string' name='[Parameter 1]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*tableau\\.com|.*tableausoftware\\.com&quot;'>
+          <calculation class='tableau' formula='&quot;.*tableau\.com|.*tableausoftware\.com&quot;' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run bold='true'>allowed_recipient_addresses </run>
+              <run>calculation</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;vizalerts@tableau\\.com&quot;'>
+          <calculation class='tableau' formula='&quot;vizalerts@tableau\.com&quot;' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for describing what email address VizAlerts is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run bold='true'>allowed_from_address</run>
+              <run> calculation</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='default_timeout_s' datatype='integer' default-format='n0;-0' name='[Parameter 3]' param-domain-type='any' role='measure' type='quantitative' value='60'>
+          <calculation class='tableau' formula='60' />
+          <desc>
+            <formatted-text>
+              <run>System wide default for the number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> timeout_s </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='default_data_maxrows' datatype='integer' default-format='n0;-0' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='1000'>
+          <calculation class='tableau' formula='1000' />
+          <desc>
+            <formatted-text>
+              <run>System wide default for the maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run bold='true'>viz_data_maxrows</run>
+              <run> calculation.</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='default_viz_png_height' datatype='integer' default-format='n0;-0' name='[Parameter 5]' param-domain-type='any' role='measure' type='quantitative' value='1500'>
+          <calculation class='tableau' formula='1500' />
+          <desc>
+            <formatted-text>
+              <run>If alert author does not specify an image height, use this value as the default.  For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> viz_png_height</run>
+              <run> calculation.</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='default_notify_subscriber_on_failure' datatype='boolean' name='[Parameter 6]' param-domain-type='list' role='measure' type='nominal' value='true'>
+          <calculation class='tableau' formula='true' />
+          <desc>
+            <formatted-text>
+              <run>System-wide default for whether or not a Subscriber should be emailed when their VizAlert fails to  process successfully, for whatever reason. Recommend &quot;true&quot;.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> notify_subscriber_on_failure </run>
+              <run>calculation.</run>
+            </formatted-text>
+          </desc>
+          <members>
+            <member value='true' />
+            <member value='false' />
+          </members>
+        </column>
+        <column caption='default_data_retrieval_tries' datatype='integer' default-format='n0;-0' name='[default_timeout_s (copy)]' param-domain-type='any' role='measure' type='quantitative' value='2'>
+          <calculation class='tableau' formula='2' />
+          <desc>
+            <formatted-text>
+              <run>System wide default for the maximum number of tries that VizAlerts will attempt for any VizAlert.&#10;&#10;For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> data_retrieval_tries</run>
+              <run> calculation.</run>
+            </formatted-text>
+          </desc>
+        </column>
+        <column caption='default_viz_png_width' datatype='integer' default-format='n0;-0' name='[default_viz_png_height (copy)]' param-domain-type='any' role='measure' type='quantitative' value='1500'>
+          <calculation class='tableau' formula='1500' />
+          <desc>
+            <formatted-text>
+              <run>If alert author does not specify an image width, use this value as the default.  For more information, or to override this setting dynamically, see the</run>
+              <run bold='true'> viz_png_width</run>
+              <run> calculation.</run>
+            </formatted-text>
+          </desc>
+        </column>
+      </datasource-dependencies>
+    </datasource>
+  </datasources>
+  <worksheets>
+    <worksheet name='AlertList'>
+      <layout-options>
+        <caption>
+          <formatted-text>
+            <run>This view provides VizAlerts the information it needs to process all the VizAlerts created on Tableau Server, at the right times.&#10;&#10;It&apos;s intended to allow for flexible customization. In particular, you can flexibly define:&#10;&#10;timeout_s&#10;data_retrieval_tries&#10;(future)&#10;max_rows&#10;allowed_domains&#10;allow_from_spoofing&#10;author_is_allowed&#10;...&#10;&#10;Do NOT change the custom SQL unless you REALLY know what you are doing!</run>
+          </formatted-text>
+        </caption>
+      </layout-options>
+      <table>
+        <view>
+          <datasources>
+            <datasource caption='VizAlerts Alert List' name='postgres.42520.320455937501' />
+            <datasource name='Parameters' />
+          </datasources>
+          <datasource-dependencies datasource='postgres.42520.320455937501'>
+            <column aggregation='Sum' caption='viz_data_maxrows' datatype='integer' default-format='n0;-0' name='[Calculation_0630608185616497]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: &quot;Our giant bulk emailer alert needs to send mail to 2,000 people&quot; (Note: I don&apos;t recommend you use VizAlerts for that use case! But it&apos;s a fun example)&#13;&#10;//      IF [view_name] = &apos;Bulk Mailer&apos; THEN 10000&#13;&#10;//          ELSE [default_data_maxrows]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 4]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>The maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded. This applies to both Simple and Advanced alerts.&#10;&#10;The rationale in having this option is that an alert author may inadvertantly leave a filter off, resulting in a massive amount of data that could cause:&#10;&#10;-Large attachment sizes&#10;-Large email volumes sent to many people who shouldn&apos;t be receiving them&#10;-General Tableau Server resource drain</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='allowed_recipient_addresses' datatype='string' name='[Calculation_0880602155537439]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what To/CC/BCC address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address(es) listed in the &quot; Email To *&quot; and other recipient fields must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;    // It&apos;s generally recommended to keep the default setting, which will allow any alert to send mail to any &#13;&#10;    //     internal addresses, but not to any external addresses&#13;&#10;&#13;&#10;[Parameters].[Parameter 1]&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to send mail to their personal email accounts, but restrict everyone else to internal email:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE [default_allowed_recipient_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow specific VizAlerts to send mail to anyone, Admins to their personal accounts, and everyone else just to themselves:&#13;&#10;        //&#13;&#10;        // IF [workbook_repository_url] + &apos;/&apos; + [view_name] = &apos;VizAlerts_RecipientTests/ToCC&apos; THEN &apos;.*&apos;&#13;&#10;        // ELSEIF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE REPLACE([subscriber_email], &apos;.&apos;, &apos;\.&apos;) // Period must be escaped in regex&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Describes what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='force_refresh' datatype='boolean' name='[Calculation_1300811092148681]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='true' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Determines whether VizAlerts will force a data refresh on the requests it makes for view data and images. </run>
+                  <run bold='true'>To ensure accurate alerting, this should always be set to true.</run>
+                  <run>  There may be reasons we want to alter this in the future, or for power users to tweak it on an alert level, so I&apos;m leaving it in.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='schedule_frequency' datatype='string' name='[Calculation_1880608160023327]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='CASE [schedule_type]&#13;&#10;    WHEN 0 THEN &apos;Hourly&apos;&#13;&#10;    WHEN 1 THEN &apos;Daily&apos;&#13;&#10;    WHEN 2 THEN &apos;Weekly&apos;&#13;&#10;    WHEN 3 THEN &apos;Monthly&apos;&#13;&#10;    ELSE &apos;Unknown&apos;&#13;&#10;END' scope-isolation='false' />
+            </column>
+            <column caption='notify_subscriber_on_failure' datatype='boolean' name='[Calculation_2310608122723904]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;// Example: &quot;Don&apos;t notify me if my own alerts fail, but do for everyone else&quot;&#13;&#10;//      IF [owner_sysname] = &apos;mcoles&apos;&#13;&#10;//          THEN false&#13;&#10;//          ELSE [default_notify_subscriber_on_failure]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 6]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Determines whether or not a Subscriber should be emailed when their VizAlert fails to  process successfully, for whatever reason.&#10;</run>
+                  <run bold='true'>&#10;Recommend leaving this &quot;true&quot;.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column aggregation='Sum' caption='timeout_s' datatype='integer' default-format='n0;-0' name='[Calculation_2380602155000967]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;//      The calculation below uses a method failry consistent with past VizAlerts behavior,&#13;&#10;//       namely that more frequently-running schedules are afforded shorter timeouts.&#13;&#10;//      But you can customize this however you want.&#13;&#10;&#13;&#10;CASE [Calculation_1880608160023327]&#13;&#10;    WHEN &apos;Hourly&apos; THEN [Parameters].[Parameter 3] // most people subscribe to their VizAlerts on hourly schedules, so let&apos;s use the default for that&#13;&#10;    WHEN &apos;Daily&apos; THEN 300&#13;&#10;    WHEN &apos;Weekly&apos; THEN 300&#13;&#10;    WHEN &apos;Monthly&apos; THEN 300&#13;&#10;    ELSE [Parameters].[Parameter 3]&#13;&#10;END' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>The number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;This timeout value will also apply to any content references within the VizAlert--but each will start the count over again, so it is not a cumulative timeout for </run>
+                  <run italic='true'>all</run>
+                  <run> work done within a single VizAlert.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column caption='allowed_from_addresses' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Describes what email address this VizAlert is able to send email from, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column datatype='string' name='[alert_type]' role='dimension' type='nominal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[customized_view_id]' role='dimension' type='ordinal'>
+            </column>
+            <column aggregation='Sum' caption='viz_png_height' datatype='integer' default-format='n0;-0' name='[data_retrieval_tries (copy 2)]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: For two of my Simple Alerts in particular, the viz sizes need customization. Set them to 3000 x 3000.&#13;&#10;&#13;&#10;// IF [view_name] = &apos;MyViz1&apos; OR [view_name] = &apos;MyViz2&apos;&#13;&#10;//     THEN 3000&#13;&#10;// ELSE [default_viz_png_height]&#13;&#10;// END&#13;&#10;&#13;&#10;[Parameters].[Parameter 5]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>If alert author does not specify an image height for the images used in their alert, use this value as the default.&#10;&#10;</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column aggregation='Sum' caption='data_retrieval_tries' datatype='integer' default-format='n0;-0' name='[data_retrieval_tries (copy)]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;// Example: &quot;Allow executive subscribers twice the normal number of tries so that we&apos;re more likely to process their alerts successfully!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Executive Project&apos;&#13;&#10;//          THEN 2 * [default_data_retrieval_tries]&#13;&#10;//          ELSE [default_data_retrieval_tries]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_timeout_s (copy)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>The number of tries to attempt to process a VizAlert request before considering it a failure.&#10;&#10;This same number of tries will apply to any content references within the VizAlert--but each attempt will start the count over again, so it is not a cumulative number of tries for </run>
+                  <run italic='true'>all</run>
+                  <run> work done within a single VizAlert.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column datatype='boolean' name='[is_test]' role='dimension' type='nominal'>
+              <desc>
+                <formatted-text>
+                  <run>Indicates whether this VizAlert instance is an ad-hoc execution using the &quot;test_alert&quot; comment.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column-instance column='[Calculation_0630608185616497]' derivation='None' name='[none:Calculation_0630608185616497:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[Calculation_0880602155537439]' derivation='None' name='[none:Calculation_0880602155537439:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_1300811092148681]' derivation='None' name='[none:Calculation_1300811092148681:ok]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_1880608160023327]' derivation='None' name='[none:Calculation_1880608160023327:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_2310608122723904]' derivation='None' name='[none:Calculation_2310608122723904:nk]' pivot='key' type='nominal' />
+            <column-instance column='[Calculation_2380602155000967]' derivation='None' name='[none:Calculation_2380602155000967:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[Calculation_9040602154240465]' derivation='None' name='[none:Calculation_9040602154240465:nk]' pivot='key' type='nominal' />
+            <column-instance column='[alert_type]' derivation='None' name='[none:alert_type:nk]' pivot='key' type='nominal' />
+            <column-instance column='[customized_view_id]' derivation='None' name='[none:customized_view_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[data_retrieval_tries (copy 2)]' derivation='None' name='[none:data_retrieval_tries (copy 2):ok]' pivot='key' type='ordinal' />
+            <column-instance column='[data_retrieval_tries (copy)]' derivation='None' name='[none:data_retrieval_tries (copy):ok]' pivot='key' type='ordinal' />
+            <column-instance column='[is_test]' derivation='None' name='[none:is_test:nk]' pivot='key' type='nominal' />
+            <column-instance column='[owner_email]' derivation='None' name='[none:owner_email:nk]' pivot='key' type='nominal' />
+            <column-instance column='[owner_friendly_name]' derivation='None' name='[none:owner_friendly_name:nk]' pivot='key' type='nominal' />
+            <column-instance column='[owner_sysname]' derivation='None' name='[none:owner_sysname:nk]' pivot='key' type='nominal' />
+            <column-instance column='[project_id]' derivation='None' name='[none:project_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[project_name]' derivation='None' name='[none:project_name:nk]' pivot='key' type='nominal' />
+            <column-instance column='[ran_last_at]' derivation='None' name='[none:ran_last_at:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[run_next_at]' derivation='None' name='[none:run_next_at:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[run_next_at]' derivation='None' name='[none:run_next_at:qk]' pivot='key' type='quantitative' />
+            <column-instance column='[schedule_id]' derivation='None' name='[none:schedule_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[schedule_name]' derivation='None' name='[none:schedule_name:nk]' pivot='key' type='nominal' />
+            <column-instance column='[schedule_priority]' derivation='None' name='[none:schedule_priority:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[schedule_type]' derivation='None' name='[none:schedule_type:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[site_id]' derivation='None' name='[none:site_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[site_name]' derivation='None' name='[none:site_name:nk]' pivot='key' type='nominal' />
+            <column-instance column='[subscriber_domain]' derivation='None' name='[none:subscriber_domain:nk]' pivot='key' type='nominal' />
+            <column-instance column='[subscriber_email]' derivation='None' name='[none:subscriber_email:nk]' pivot='key' type='nominal' />
+            <column-instance column='[subscriber_license]' derivation='None' name='[none:subscriber_license:nk]' pivot='key' type='nominal' />
+            <column-instance column='[subscriber_sysname]' derivation='None' name='[none:subscriber_sysname:nk]' pivot='key' type='nominal' />
+            <column-instance column='[subscriber_user_id]' derivation='None' name='[none:subscriber_user_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[subscription_id]' derivation='None' name='[none:subscription_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[view_id]' derivation='None' name='[none:view_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[view_name]' derivation='None' name='[none:view_name:nk]' pivot='key' type='nominal' />
+            <column-instance column='[view_owner_id]' derivation='None' name='[none:view_owner_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[view_url_suffix]' derivation='None' name='[none:view_url_suffix:nk]' pivot='key' type='nominal' />
+            <column-instance column='[viz_png_height (copy)]' derivation='None' name='[none:viz_png_height (copy):ok]' pivot='key' type='ordinal' />
+            <column-instance column='[workbook_id]' derivation='None' name='[none:workbook_id:ok]' pivot='key' type='ordinal' />
+            <column-instance column='[workbook_repository_url]' derivation='None' name='[none:workbook_repository_url:nk]' pivot='key' type='nominal' />
+            <column datatype='string' name='[owner_email]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='string' name='[owner_friendly_name]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='string' name='[owner_sysname]' role='dimension' type='nominal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[project_id]' role='dimension' type='ordinal'>
+            </column>
+            <column datatype='string' name='[project_name]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='datetime' default-format='*YYYY-mm-DD HH:MM:SS' name='[ran_last_at]' role='dimension' type='ordinal'>
+              <desc>
+                <formatted-text>
+                  <run>This field is mostly just here as a placeholder--the data is not necessarily accurate.</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column datatype='datetime' default-format='*YYYY-mm-DD HH:MM:SS' name='[run_next_at]' role='dimension' type='ordinal'>
+              <desc>
+                <formatted-text>
+                  <run>When the schedule the VizAlert lives on is set to run next</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_id]' role='dimension' type='ordinal'>
+            </column>
+            <column datatype='string' name='[schedule_name]' role='dimension' type='nominal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_priority]' role='dimension' type='ordinal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_type]' role='dimension' type='ordinal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[site_id]' role='dimension' type='ordinal'>
+            </column>
+            <column datatype='string' name='[site_name]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='string' name='[subscriber_domain]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='string' name='[subscriber_email]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='string' name='[subscriber_license]' role='dimension' type='nominal'>
+            </column>
+            <column datatype='string' name='[subscriber_sysname]' role='dimension' type='nominal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[subscriber_user_id]' role='dimension' type='ordinal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[subscription_id]' role='dimension' type='ordinal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[view_id]' role='dimension' type='ordinal'>
+            </column>
+            <column datatype='string' name='[view_name]' role='dimension' type='nominal'>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[view_owner_id]' role='dimension' type='ordinal'>
+            </column>
+            <column datatype='string' name='[view_url_suffix]' role='dimension' type='nominal'>
+            </column>
+            <column aggregation='Sum' caption='viz_png_width' datatype='integer' default-format='n0;-0' name='[viz_png_height (copy)]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: For two of my Simple Alerts in particular, the viz sizes need customization. Set them to 3000 x 3000.&#13;&#10;&#13;&#10;// IF [view_name] = &apos;MyViz1&apos; OR [view_name] = &apos;MyViz2&apos;&#13;&#10;//     THEN 3000&#13;&#10;// ELSE [default_viz_png_width]&#13;&#10;// END&#13;&#10;&#13;&#10;[Parameters].[default_viz_png_height (copy)]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>If alert author does not specify an image width for the images used in their alert, use this value as the default.&#10;&#10;</run>
+                </formatted-text>
+              </desc>
+            </column>
+            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[workbook_id]' role='dimension' type='ordinal'>
+            </column>
+            <column datatype='string' name='[workbook_repository_url]' role='dimension' type='nominal'>
+            </column>
+          </datasource-dependencies>
+          <filter class='categorical' column='[postgres.42520.320455937501].[none:schedule_name:nk]'>
+            <groupfilter function='member' level='[none:schedule_name:nk]' member='&quot;Аlerts – Every 15 Minutes&quot;' user:ui-domain='database' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <filter class='categorical' column='[postgres.42520.320455937501].[none:view_name:nk]'>
+            <groupfilter function='member' level='[none:view_name:nk]' member='&quot;ToCC&quot;' user:ui-domain='relevant' user:ui-enumeration='inclusive' user:ui-marker='enumerate' />
+          </filter>
+          <slices>
+            <column>[postgres.42520.320455937501].[none:schedule_name:nk]</column>
+            <column>[postgres.42520.320455937501].[none:view_name:nk]</column>
+          </slices>
+          <aggregation value='true' />
+        </view>
+        <style>
+          <style-rule element='header'>
+            <format attr='width' field='[postgres.42520.320455937501].[none:run_next_at:ok]' value='188' />
+            <format attr='width' field='[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]' value='300' />
+          </style-rule>
+        </style>
+        <panes>
+          <pane>
+            <view>
+              <breakdown value='auto' />
+            </view>
+            <mark class='Automatic' />
+            <encodings>
+              <lod column='[postgres.42520.320455937501].[none:is_test:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:ran_last_at:qk]' />
+              <lod column='[postgres.42520.320455937501].[none:run_next_at:qk]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_1880608160023327:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:schedule_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:schedule_name:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:schedule_priority:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:schedule_type:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:subscriber_domain:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:subscriber_email:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:subscriber_license:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:subscriber_sysname:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:subscriber_user_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:subscription_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:alert_type:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:customized_view_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:project_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:project_name:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:site_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:site_name:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:view_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:view_name:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:view_url_suffix:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:workbook_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:workbook_repository_url:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:owner_email:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:owner_friendly_name:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:owner_sysname:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:view_owner_id:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_9040602154240465:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:data_retrieval_tries (copy):ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_1300811092148681:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_2310608122723904:nk]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_2380602155000967:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_0630608185616497:ok]' />
+              <lod column='[postgres.42520.320455937501].[none:data_retrieval_tries (copy 2):ok]' />
+              <lod column='[postgres.42520.320455937501].[none:viz_png_height (copy):ok]' />
+            </encodings>
+          </pane>
+        </panes>
+        <rows>([postgres.42520.320455937501].[none:subscription_id:ok] / ([postgres.42520.320455937501].[none:view_name:nk] / ([postgres.42520.320455937501].[none:subscriber_sysname:nk] / ([postgres.42520.320455937501].[none:schedule_id:ok] / ([postgres.42520.320455937501].[none:run_next_at:ok] / [postgres.42520.320455937501].[none:Calculation_0880602155537439:nk])))))</rows>
+        <cols></cols>
+      </table>
+    </worksheet>
+  </worksheets>
+  <windows>
+    <window class='schema' source-height='21' />
+    <window auto-hidden='0' class='worksheet' maximized='1' name='AlertList'>
+      <cards>
+        <edge name='left'>
+          <strip size='171'>
+            <card type='pages' />
+            <card type='filters' />
+            <card type='marks' />
+          </strip>
+        </edge>
+        <edge name='top'>
+          <strip size='31'>
+            <card type='columns' />
+          </strip>
+          <strip size='31'>
+            <card type='rows' />
+          </strip>
+        </edge>
+        <edge name='bottom'>
+          <strip size='199'>
+            <card type='caption' />
+          </strip>
+        </edge>
+        <edge name='right'>
+          <strip size='300'>
+            <card param='[postgres.42520.320455937501].[none:schedule_name:nk]' type='filter' />
+            <card mode='type_in' param='[Parameters].[Parameter 1]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 2]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 3]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[default_timeout_s (copy)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 4]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[default_viz_png_height (copy)]' type='parameter' />
+            <card mode='type_in' param='[Parameters].[Parameter 5]' type='parameter' />
+            <card mode='compact' param='[Parameters].[Parameter 6]' type='parameter' />
+          </strip>
+        </edge>
+      </cards>
+      <highlight>
+        <color-one-way>
+          <field>[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]</field>
+          <field>[postgres.42520.320455937501].[none:Calculation_1880608160023327:nk]</field>
+          <field>[postgres.42520.320455937501].[none:Calculation_2380602155000967:ok]</field>
+          <field>[postgres.42520.320455937501].[none:alert_type:nk]</field>
+          <field>[postgres.42520.320455937501].[none:ran_last_at:ok]</field>
+          <field>[postgres.42520.320455937501].[none:run_next_at:ok]</field>
+          <field>[postgres.42520.320455937501].[none:schedule_name:nk]</field>
+          <field>[postgres.42520.320455937501].[none:subscriber_sysname:nk]</field>
+          <field>[postgres.42520.320455937501].[none:subscription_id:ok]</field>
+          <field>[postgres.42520.320455937501].[none:view_name:nk]</field>
+          <field>[postgres.42520.320455937501].[yr:ran_last_at:ok]</field>
+        </color-one-way>
+      </highlight>
+    </window>
+  </windows>
+  <thumbnails>
+    <thumbnail height='64' name='AlertList' width='192'>
+      iVBORw0KGgoAAAANSUhEUgAAAMAAAABACAYAAABMbHjfAAAACXBIWXMAAA7DAAAOwwHHb6hk
+      AAAE1UlEQVR4nO3aT0jTfxzH8eeWjma0cIf+YIXGqkP559CxS9egrKAUoWDgRQkCoUMthJo1
+      qcNUDI9FUQgVdqougV7qUBA0o0xqRsiyQzRr5Z+v+/wO8fP36+cvBPPn+Pl+Pa7f7/b9fD7s
+      uX332XzOOYeIUf5CD0CkkBSAmKYAxDQFIKYpADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYp
+      ADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYpADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYp
+      ADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYpADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYp
+      ADFNAYhpCkBMK5rvhFevXi3FOEQKwuecc4UehEih6BZITFMAYpoCENMUgJg27y7QfF6+fMnZ
+      s2fZv38/DQ0NeJ5HR0cHT58+JZ/Ps27dOs6fP08oFFqM8S4LU1NTHD9+nM+fP885VlVVxZkz
+      Z3752LGxMdrb28lkMuTzecLhMLFYjE2bNgHw5s0bEokE4+PjAGzevJnW1lat/6+4Bcrn8+7R
+      o0euvr7eHT582N24ccM559yzZ89cXV2d6+3tdcPDw66urs51dXUt9DLL3tDQkItGoy6bzc57
+      7vj4uDt27Jjr7u52ExMTbnJy0iWTSReNRl0ul3MjIyOuvr7e9fX1uenpaZfL5dzJkyddS0uL
+      m5mZWYLZ/P8s+BNgeHiYzs5OVqxYgfvbTmpNTQ29vb0AfPz4EZ/PRzab/f1SDfn06RPxeJzR
+      0VH8fj9Hjhzh0KFDDAwMUFJSQlNTE37/j7vX5uZm7t+/z8TEBH19fezYsYMDBw4AUFRURCwW
+      o7+/n6mpKVauXFnIaS2qgYEBrl+/TjAYZGxsjEgkQkVFBQ8fPsTn8xGPxykvLyeZTPLkyROC
+      wSAdHR2Ulpb+vL4LHYDf72fbtm20tLT863HP87h8+TIzMzOsX79+wRO1xjlHT08PwWCQK1eu
+      cPr0aW7dusXz589JpVJs37599sUPEAgEqK2tJRQKkU6nqays/On51qxZQ21t7bJ68f/p69ev
+      HDx4kK6uLtLpNB8+fODatWts2bKF27dv8/btWwYHB0kmk6xdu5Y7d+7MWd8FBxCJRDh37hyr
+      V6+ec+zq1as0NDQwNDTEhQsXaGxs/K2JWjI9Pc3o6Ch79+5l1apVVFZWUl5ezuDgIDU1Nbx+
+      /Zp8Pj97vud5nDp1isePH7N161ZSqdRPz/flyxeam5tJp9NLPZX/XFFREbt27SIcDlNaWsqe
+      PXsIBAJUVFTgeR6ZTIaSkhLKysq4dOkSjY2Nc9Z30XeB3r17x4MHD/D7/cTjcSKRyGJfYlkr
+      Li6mrKyMe/fukcvlSKVSjIyMsHPnTnbv3k0ul6Onp4fJyUm+f/9Od3c379+/p7q6mn379vHi
+      xQvu3r2L53lks1ni8Tg+n4+NGzcWempLbsOGDXz79o1MJkNnZydtbW1z1ve3d4H+qb+/f/Yd
+      KhaLAfPvbMhffD4fTU1NxONxotHo7HeAqqoqANrb22lra+Po0aMAhMNhEokEoVCIUChEa2sr
+      Fy9e5ObNm8CPXaBEIkFxcXHB5lQokUiE6upqTpw4QSAQIJFIzFlf/RdITNMPYWKaAhDT/gBh
+      DkAoHBAVKgAAAABJRU5ErkJggg==
+    </thumbnail>
+  </thumbnails>
+</workbook>

@@ -17,9 +17,9 @@ hostname = os.getenv("COMPUTERNAME")
 cwd      = os.getcwd()
 
 # log formatter
-formatter       = u"%(asctime)s - [%(levelname)s] - %(funcName)s - %(message)s"
+formatter       = u"%(threadName)s - %(asctime)s - [%(levelname)s] - %(funcName)s - %(message)s"
 min_formatter   = u"%(asctime)s - [%(levelname)s] - %(message)s"
-extra_formatter = u"%(asctime)s - [%(thread)d] - %(levelname)s - %(module)s.%(funcName)s - %(message)s"
+extra_formatter = u"%(threadName)s - %(asctime)s - [%(thread)d] - %(levelname)s - %(module)s.%(funcName)s - %(message)s"
 
 # file log rotation constants
 max_size    =  20*1024*1024  # in Bytes (5 MB)
