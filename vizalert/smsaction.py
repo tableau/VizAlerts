@@ -228,9 +228,9 @@ def get_e164numbers(sms_numbers, iso2countrycode):
         try:
             e164_number = smsnumber_to_e164(sms_number, iso2countrycode)
             if e164_number not in e164_numbers:
-                e164_numbers.append()
+                e164_numbers.append(e164_number)
         except Exception as e:
-            raise UserWarning(e.errormessage)
+            raise UserWarning(e.message)
 
     return e164_numbers
 
@@ -240,27 +240,35 @@ def smsnumber_to_e164(smsnumber, iso2countrycode):
        Raises exception if it can't, returns the E.164 number as a string, if it can """
 
     try:
-        if smsnumber.startswith('+'):
-            smsnumber_obj = phonenumbers.parse(smsnumber)
-        else:
-            # country code not specified in number, so pass it in
-            smsnumber_obj = phonenumbers.parse(smsnumber, iso2countrycode)
-    except phonenumbers.NumberParseException as e:
-        errormessage = u'SMS Unable to parse number {}. Error: {}'.format(smsnumber, e.message)
-        log.logger.error(errormessage)
-        raise UserWarning(errormessage)
+        log.logger.debug(u'Converting {} to E.164 format, country code {}'.format(smsnumber, iso2countrycode))
 
-    if not phonenumbers.is_possible_number(smsnumber_obj):
-        errormessage = u'SMS Number is not possibly valid: {}.'.format(smsnumber)
-        log.logger.error(errormessage)
-        raise UserWarning(errormessage)
+        try:
+            if smsnumber.startswith('+'):
+                smsnumber_obj = phonenumbers.parse(smsnumber)
+            else:
+                # country code not specified in number, so pass it in
+                smsnumber_obj = phonenumbers.parse(smsnumber, iso2countrycode)
+        except phonenumbers.NumberParseException as e:
+            errormessage = u'SMS Unable to parse number {}. Error: {}'.format(smsnumber, e.message)
+            log.logger.error(errormessage)
+            raise UserWarning(errormessage)
 
-    if not phonenumbers.is_valid_number(smsnumber_obj):
-        errormessage = u'SMS Number is not valid: {}.'.format(smsnumber)
-        log.logger.error(errormessage)
-        raise UserWarning(errormessage)
+        try:
+            if not phonenumbers.is_possible_number(smsnumber_obj):
+                errormessage = u'SMS Number is not possibly valid: {}.'.format(smsnumber)
+                log.logger.error(errormessage)
+                raise UserWarning(errormessage)
+        except phonenumbers.NumberParseException as e:
+            errormessage = u'SMS Unable to parse number {}. Error: {}'.format(smsnumber, e.message)
+            log.logger.error(errormessage)
+            raise UserWarning(errormessage)
 
-    try:
+        if not phonenumbers.is_valid_number(smsnumber_obj):
+            errormessage = u'SMS Number is not valid: {}.'.format(smsnumber)
+            log.logger.error(errormessage)
+            raise UserWarning(errormessage)
+
+
         e164_number = phonenumbers.format_number(smsnumber_obj, phonenumbers.PhoneNumberFormat.E164)
         if not e164_number:
             errormessage = u'SMS number {} could not be converted to E.164 for an unknown reason.'.format(smsnumber)
@@ -270,6 +278,5 @@ def smsnumber_to_e164(smsnumber, iso2countrycode):
         # all good, return it!
         return e164_number
     except Exception as e:
-        errormessage = u'Exception thrown converting SMS number {} to E.164. Error: {}'.format(smsnumber, e.message)
-        log.logger.error(errormessage)
-        raise UserWarning(errormessage)
+        log.logger.error(e.message)
+        return None

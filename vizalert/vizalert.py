@@ -761,7 +761,7 @@ class VizAlert:
 
                         # author wants to send an email
                         #  use string value for maximum safety. all other values are ignored, currently
-                        if row[EMAIL_ACTION_FIELDKEY] == '1':
+                        if row[email_action_fieldname] == '1':
                             # make sure we set the "from" address if the viz did not provide it
                             if email_from_fieldname:
                                 email_from = row[email_from_fieldname]
@@ -779,149 +779,146 @@ class VizAlert:
                             else:
                                 email_bcc = None
 
-                            if row[email_action_fieldname] == '1':
-                                log.logger.debug(u'Starting email action')
+                            # Append header row, if provided
+                            if email_header_fieldname and consolidate_email_ctr == 0:
+                                log.logger.debug(u'Appending body header')
+                                body.append(row[email_header_fieldname])
 
-                                # Append header row, if provided
-                                if email_header_fieldname and consolidate_email_ctr == 0:
-                                    log.logger.debug(u'Appending body header')
-                                    body.append(row[email_header_fieldname])
+                            # If rows are being consolidated, consolidate all with same recipients & subject
+                            if email_consolidate_fieldname:
+                                # could put a test in here for mixing consolidated and non-consolidated emails in
+                                #   the same trigger view, would also need to check the sort in get_unique_vizdata
 
-                                # If rows are being consolidated, consolidate all with same recipients & subject
-                                if email_consolidate_fieldname:
-                                    # could put a test in here for mixing consolidated and non-consolidated emails in
-                                    #   the same trigger view, would also need to check the sort in get_unique_vizdata
+                                log.logger.debug(
+                                    u'Consolidate value is true, row index is {}, rowcount is {}'.format(i, rowcount_unique))
 
-                                    log.logger.debug(
-                                        u'Consolidate value is true, row index is {}, rowcount is {}'.format(i, rowcount_unique))
+                                # test for end of iteration--if done, take what we have so far and send it
+                                if i + 1 == rowcount_unique:
+                                    log.logger.debug(u'Last email in set reached, sending consolidated email')
+                                    log.logger.info(u'Sending email to {}, CC {}, BCC {}, subject {}'.format(
+                                        row[email_to_fieldname], email_cc, email_bcc, row[email_subject_fieldname]))
 
-                                    # test for end of iteration--if done, take what we have so far and send it
-                                    if i + 1 == rowcount_unique:
-                                        log.logger.debug(u'Last email in set reached, sending consolidated email')
-                                        log.logger.info(u'Sending email to {}, CC {}, BCC {}, subject {}'.format(
-                                            row[email_to_fieldname], email_cc, email_bcc, row[email_subject_fieldname]))
+                                    try:  # remove this later??
+                                        body, inlineattachments = self.append_body_and_inlineattachments(
+                                            body, inlineattachments, row, vizcompleterefs)
+                                        appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
-                                        try:  # remove this later??
-                                            body, inlineattachments = self.append_body_and_inlineattachments(
-                                                body, inlineattachments, row, vizcompleterefs)
-                                            appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
-
-                                            # send the email
-                                            emailaction.send_email(email_from, row[email_to_fieldname],
-                                                                   row[email_subject_fieldname],
-                                                       u''.join(body), email_cc, email_bcc, inlineattachments, appendattachments)
-                                        except Exception as e:
-                                            errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
-                                            log.logger.error(errormessage)
-                                            self.error_list.append(errormessage)
-                                            raise UserWarning(errormessage)
-
-                                        # reset variables for next email
-                                        body = []
-                                        inlineattachments = []
-                                        consolidate_email_ctr = 0
-                                        appendattachments = []
-                                    else:
-                                        # This isn't the end, and we're consolidating rows, so test to see if the next row needs
-                                        # to be a new email
-
-                                        this_row_recipients = []
-                                        next_row_recipients = []
-
-                                        this_row_recipients.append(row[email_subject_fieldname])
-                                        this_row_recipients.append(row[email_to_fieldname])
-                                        this_row_recipients.append(email_from)
-
-                                        # check if we're sending an email at all in the next row
-                                        next_row_email_action = data[i + 1][EMAIL_ACTION_FIELDKEY]
-                                        next_row_recipients.append(data[i + 1][email_subject_fieldname])
-                                        next_row_recipients.append(data[i + 1][email_to_fieldname])
-
-                                        if email_from_fieldname:
-                                            next_row_recipients.append(data[i + 1][email_from_fieldname])
-                                        else:
-                                            next_row_recipients.append(email_from)
-
-                                        if email_cc_fieldname:
-                                            this_row_recipients.append(email_cc)
-                                            next_row_recipients.append(data[i + 1][email_cc_fieldname])
-
-                                        if email_bcc_fieldname:
-                                            this_row_recipients.append(email_bcc)
-                                            next_row_recipients.append(data[i + 1][email_bcc_fieldname])
-
-                                        # Now compare the data from the rows
-                                        if this_row_recipients == next_row_recipients and next_row_email_action:
-                                            log.logger.debug(u'Next row matches recips and subject, appending body & attachments')
-                                            body.append(row[email_body_fieldname])
-                                            if self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name and \
-                                                    len(row[self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name]) > 0:
-                                                appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
-                                            consolidate_email_ctr += 1
-                                        else:
-                                            log.logger.debug(u'Next row does not match recips and subject, sending consolidated email')
-                                            log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
-                                                row[email_to_fieldname],
-                                                email_cc,
-                                                email_bcc,
-                                                row[email_subject_fieldname]))
-
-                                            body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments,
-                                                                                                        row, vizcompleterefs)
-                                            appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
-
-                                            # send the email
-                                            try:
-                                                emailaction.send_email(email_from, row[email_to_fieldname],
-                                                                       row[email_subject_fieldname],
-                                                           u''.join(body), email_cc, email_bcc, inlineattachments,
-                                                           appendattachments)
-                                            except Exception as e:
-                                                errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
-                                                log.logger.error(errormessage)
-                                                self.error_list.append(errormessage)
-                                                raise UserWarning(errormessage)
-
-                                            body = []
-                                            consolidate_email_ctr = 0
-                                            inlineattachments = []
-                                            appendattachments = []
-                                else:
-                                    # emails are not being consolidated, so send the email
-                                    log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
-                                        row[email_to_fieldname],
-                                        email_cc,
-                                        email_bcc,
-                                        row[email_subject_fieldname]))
-
-                                    consolidate_email_ctr = 0  # I think this is redundant now...
-                                    body = []
-
-                                    # add the header if needed
-                                    if email_header_fieldname:
-                                        body.append(row[email_header_fieldname])
-
-                                    body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments, row,
-                                                                                                vizcompleterefs)
-                                    appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
-
-                                    try:
+                                        # send the email
                                         emailaction.send_email(email_from, row[email_to_fieldname],
                                                                row[email_subject_fieldname],
-                                                               u''.join(body),
-                                                               email_cc,
-                                                               email_bcc,
-                                                               inlineattachments,
-                                                               appendattachments)
+                                                   u''.join(body), email_cc, email_bcc, inlineattachments, appendattachments)
                                     except Exception as e:
                                         errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                         log.logger.error(errormessage)
                                         self.error_list.append(errormessage)
                                         raise UserWarning(errormessage)
 
-                                    inlineattachments = []
+                                    # reset variables for next email
                                     body = []
+                                    inlineattachments = []
+                                    consolidate_email_ctr = 0
                                     appendattachments = []
+                                else:
+                                    # This isn't the end, and we're consolidating rows, so test to see if the next row needs
+                                    # to be a new email
+
+                                    this_row_recipients = []
+                                    next_row_recipients = []
+
+                                    this_row_recipients.append(row[email_subject_fieldname])
+                                    this_row_recipients.append(row[email_to_fieldname])
+                                    this_row_recipients.append(email_from)
+
+                                    # check if we're sending an email at all in the next row
+                                    next_row_email_action = data[i + 1][email_action_fieldname]
+                                    next_row_recipients.append(data[i + 1][email_subject_fieldname])
+                                    next_row_recipients.append(data[i + 1][email_to_fieldname])
+
+                                    if email_from_fieldname:
+                                        next_row_recipients.append(data[i + 1][email_from_fieldname])
+                                    else:
+                                        next_row_recipients.append(email_from)
+
+                                    if email_cc_fieldname:
+                                        this_row_recipients.append(email_cc)
+                                        next_row_recipients.append(data[i + 1][email_cc_fieldname])
+
+                                    if email_bcc_fieldname:
+                                        this_row_recipients.append(email_bcc)
+                                        next_row_recipients.append(data[i + 1][email_bcc_fieldname])
+
+                                    # Now compare the data from the rows
+                                    if this_row_recipients == next_row_recipients and next_row_email_action:
+                                        log.logger.debug(u'Next row matches recips and subject, appending body & attachments')
+                                        body.append(row[email_body_fieldname])
+                                        if self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name and \
+                                                len(row[self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name]) > 0:
+                                            appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
+                                        consolidate_email_ctr += 1
+                                    else:
+                                        log.logger.debug(u'Next row does not match recips and subject, sending consolidated email')
+                                        log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
+                                            row[email_to_fieldname],
+                                            email_cc,
+                                            email_bcc,
+                                            row[email_subject_fieldname]))
+
+                                        body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments,
+                                                                                                    row, vizcompleterefs)
+                                        appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
+
+                                        # send the email
+                                        try:
+                                            emailaction.send_email(email_from, row[email_to_fieldname],
+                                                                   row[email_subject_fieldname],
+                                                       u''.join(body), email_cc, email_bcc, inlineattachments,
+                                                       appendattachments)
+                                        except Exception as e:
+                                            errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
+                                            log.logger.error(errormessage)
+                                            self.error_list.append(errormessage)
+                                            raise UserWarning(errormessage)
+
+                                        body = []
+                                        consolidate_email_ctr = 0
+                                        inlineattachments = []
+                                        appendattachments = []
+                            else:
+                                # emails are not being consolidated, so send the email
+                                log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
+                                    row[email_to_fieldname],
+                                    email_cc,
+                                    email_bcc,
+                                    row[email_subject_fieldname]))
+
+                                consolidate_email_ctr = 0  # I think this is redundant now...
+                                body = []
+
+                                # add the header if needed
+                                if email_header_fieldname:
+                                    body.append(row[email_header_fieldname])
+
+                                body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments, row,
+                                                                                            vizcompleterefs)
+                                appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
+
+                                try:
+                                    emailaction.send_email(email_from, row[email_to_fieldname],
+                                                           row[email_subject_fieldname],
+                                                           u''.join(body),
+                                                           email_cc,
+                                                           email_bcc,
+                                                           inlineattachments,
+                                                           appendattachments)
+                                except Exception as e:
+                                    errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
+                                    log.logger.error(errormessage)
+                                    self.error_list.append(errormessage)
+                                    raise UserWarning(errormessage)
+
+                                inlineattachments = []
+                                body = []
+                                appendattachments = []
                         # we're not performing any actions this round.
                         #   Make sure we reset our variables again
                         else:
@@ -955,15 +952,17 @@ class VizAlert:
                             else:
                                 sms_from = config.configs['smsaction.from_number']
 
-                            log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
-                                sms_to,
-                                sms_from,
-                                sms_message))
-
                             sms_message = smsaction.sms_append_body(sms_message, vizcompleterefs, self)
+
+                            log.logger.debug(u'Converting phone number list {} to E.164'.format(sms_to))
 
                             # make list of all SMS addresses - they already went through 1st validation
                             smsaddresses = smsaction.get_e164numbers(sms_to, self.phone_country_code)
+
+                            log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
+                                smsaddresses,
+                                sms_from,
+                                sms_message))
 
                             # send the message
                             for smsaddress in smsaddresses:
