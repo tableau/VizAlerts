@@ -87,7 +87,7 @@ def send_sms(sms_from, sms_to, msgbody=None):
         errormessage = u'Could not send SMS message to {} with body {}, error {}'.format(sms_to, msgbody, e)
         log.logger.error(errormessage)
         return e
-    
+
     return None
 
 
@@ -95,11 +95,10 @@ def sms_append_body(body, vizcompleterefs, alert):
     """Generic function for filling SMS body text with hyperlink references
         for inline attachments and hyperlink text"""
 
-    log.logger.debug(u'Replacing SMS text with exact content references for hyperlinks')
-
     # find all distinct content references in the email body list
     # so we can replace each with an inline image or hyperlink text
-    foundcontent = re.findall(u"VIZ_LINK\(.*?\)", ' '.join(body))
+    foundcontent = re.findall(u'VIZ_LINK\(.*?\)', ' '.join(body))
+
     foundcontentset = set(foundcontent)
     vizrefs = list(foundcontentset)
 
@@ -112,9 +111,8 @@ def sms_append_body(body, vizcompleterefs, alert):
                 replacestring = alert.get_view_url(vizcompleterefs[vizref]['view_url_suffix'])
                 replaceresult = vizalert.replace_in_list(body, vizref, replacestring)
 
-                if replaceresult['foundstring'] == True:
+                if replaceresult['foundstring']:
                     body = replaceresult['outlist']
-
     return body
 
 

@@ -17,9 +17,9 @@ import fileinput
 import codecs
 from Queue import Queue
 import threading
+from operator import attrgetter
 
 # local modules
-#import tabUtil
 import vizalert
 from vizalert import tabhttp
 from vizalert import config
@@ -56,15 +56,6 @@ class VizAlertWorker(threading.Thread):
                                     alert.site_name,
                                     alert.customized_view_id,
                                     alert.view_name))
-
-                # check for unlicensed user
-                if alert.subscriber_license == 'Unlicensed':
-                    errormessage = u'VizAlerts was unable to process this alert: User {} is unlicensed.'.format(
-                        alert.subscriber_sysname)
-                    log.logger.error(errormessage)
-                    alert.error_list.append(errormessage)
-                    alert.alert_failure()
-                    continue
 
                 # process the alert
                 try:
@@ -146,7 +137,7 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
         """Iterate through the list of applicable alerts, and process each"""
 
         alert_queue = Queue()
-        for alert in alerts:
+        for alert in sorted(alerts, key=attrgetter('priority')):
             log.logger.debug('Queueing subscription id {} for processing'.format(alert.subscription_id))
             alert_queue.put(alert)
 
@@ -319,10 +310,10 @@ def get_alerts():
 
             alert.schedule_name = line['schedule_name']
 
-            if line['schedule_priority'] == '':
-                alert.schedule_priority = -1
+            if line['priority'] == '':
+                alert.priority = -1
             else:
-                alert.schedule_priority = int(line['schedule_priority'])
+                alert.priority = int(line['priority'])
 
             if line['schedule_type'] == '':
                 alert.schedule_type = -1
@@ -367,20 +358,15 @@ def get_alerts():
                         alert.ran_last_at = str(linedict['ran_last_at'])
 
                         # if the run_next_at date is greater for this alert since last we checked, mark it to run now
-                        # the last condition ensures the alert doesn't run simply due to a schedule switch
+                        # the schedule condition ensures the alert doesn't run simply due to a schedule switch
                         # (note that CHANGING a schedule will still trigger the alert check...to be fixed later
                         if (
                                     (datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
                                              != datetime.datetime.strptime(str(linedict['run_next_at']),
                                                                            "%Y-%m-%d %H:%M:%S") \
-                                             and \
-                                                 str(alert.schedule_id) == str(linedict['schedule_id']))
-                                or
-                                    (alert.is_test and \
-                                                 datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
-                                                     != datetime.datetime.strptime(str(linedict['ran_last_at']),
-                                                                                   "%Y-%m-%d %H:%M:%S"))
-                        # test alerts run immediately if never executed before
+                                             and str(alert.schedule_id) == str(linedict['schedule_id']))
+                                # test alerts are handled differently
+                                and not alert.is_test
                         ):
 
                             # For a test, run_next_at is anchored to the most recent comment, so use it as last run time
@@ -408,6 +394,9 @@ def get_alerts():
             persist_sub_ids.append(alert.subscription_id)
         for alert in alerts:
             if alert.subscription_id not in persist_sub_ids:
+                # if this is a test alert, and we haven't seen it before, run that puppy now!
+                if alert.is_test:
+                    execalerts.append(alert)
                 persistalerts.append(alert)
 
         # write the next run times to file

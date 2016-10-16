@@ -229,7 +229,7 @@ class VizAlert:
         self.schedule_frequency = u''
         self.schedule_id = -1
         self.schedule_name = u''
-        self.schedule_priority = -1
+        self.priority = -1
         self.schedule_type = -1
         self.site_id = -1
         self.subscriber_email = u''
@@ -253,31 +253,31 @@ class VizAlert:
 
         # General
         self.action_field_dict[GENERAL_SORTORDER_FIELDKEY] = \
-            ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Sort.Order.~')
+            ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Sort.Order')
 
         # Email Action fields
         self.action_field_dict[EMAIL_ACTION_FIELDKEY] = \
-            ActionField(EMAIL_ACTION_FIELDKEY, EMAIL_ACTION_TYPE, True, True, u' ?Email.Action.\*')
+            ActionField(EMAIL_ACTION_FIELDKEY, EMAIL_ACTION_TYPE, True, True, u' ?Email.Action')
         self.action_field_dict[EMAIL_SUBJECT_FIELDKEY] = \
-            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject.\*')
+            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject')
         self.action_field_dict[EMAIL_TO_FIELDKEY] = \
-            ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To.\*')
+            ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To')
         self.action_field_dict[EMAIL_FROM_FIELDKEY] = \
-            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From.~')
+            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From')
         self.action_field_dict[EMAIL_CC_FIELDKEY] = \
-            ActionField(EMAIL_CC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.CC.~')
+            ActionField(EMAIL_CC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.CC')
         self.action_field_dict[EMAIL_BCC_FIELDKEY] = \
-            ActionField(EMAIL_BCC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.BCC.~')
+            ActionField(EMAIL_BCC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.BCC')
         self.action_field_dict[EMAIL_BODY_FIELDKEY] = \
-            ActionField(EMAIL_BODY_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Body.\*')
+            ActionField(EMAIL_BODY_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Body')
         self.action_field_dict[EMAIL_HEADER_FIELDKEY] = \
-            ActionField(EMAIL_HEADER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Header.~')
+            ActionField(EMAIL_HEADER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Header')
         self.action_field_dict[EMAIL_FOOTER_FIELDKEY] = \
-            ActionField(EMAIL_FOOTER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Footer.~')
+            ActionField(EMAIL_FOOTER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Footer')
         self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY] = \
-            ActionField(EMAIL_ATTACHMENT_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Attachment.~')
+            ActionField(EMAIL_ATTACHMENT_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Attachment')
         self.action_field_dict[EMAIL_CONSOLIDATE_FIELDKEY] = \
-            ActionField(EMAIL_CONSOLIDATE_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Consolidate.~')
+            ActionField(EMAIL_CONSOLIDATE_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Consolidate')
 
         # SMS Action fields
         self.action_field_dict[SMS_ACTION_FIELDKEY] = \
@@ -491,7 +491,7 @@ class VizAlert:
                             if not self.action_field_dict[action_flag].has_match():
                                 self.action_field_dict[action_field].error_list.append(
                                     u'Could not find action flag field {}, which is necessary for {} actions.'.format(
-                                        action_flag,
+                                        self.action_field_dict[action_flag].get_user_facing_fieldname(),
                                         self.action_field_dict[action_field].action_type))
 
                             # may not use "Email Consolidate" field for anything but email actions
@@ -628,6 +628,34 @@ class VizAlert:
             Parse and validate the fields
             Identify and download all content references
             Perform all actions as instructed by the alert  """
+
+        # do a bit of pre-validation first
+        # check for unlicensed user
+        if self.subscriber_license == 'Unlicensed':
+
+            if self.subscriber_sysname == self.owner_sysname:
+                # if they are the owner, this may be an advanced alert, so we should notify the admin
+                errormessage = u'VizAlerts was unable to process this alert: User {} is unlicensed.'.format(
+                    self.subscriber_sysname)
+                log.logger.error(errormessage)
+                self.error_list.append(errormessage)
+                self.alert_failure()
+                return
+            else:
+                # they're not the owner, so this is a simple alert. just ignore them and log that we did.
+                errormessage = u'Ignoring subscription_id {}: User {} is unlicensed.'.format(
+                    self.subscription_id)
+                log.logger.error(errormessage)
+                self.error_list.append(errormessage)
+                return
+
+        # if this is a test alert, and they're not the owner, tell them what's up
+        if self.is_test and self.subscriber_sysname != self.owner_sysname:
+            errormessage = u'You must be the owner of the viz in order to test the alert.'
+            log.logger.error(errormessage)
+            self.error_list.append(errormessage)
+            self.alert_failure()
+            return
 
         # get the CSV data from the alert trigger
         log.logger.debug(u'Starting to download trigger data')
@@ -937,6 +965,8 @@ class VizAlert:
                     sms_from_fieldname = self.action_field_dict[SMS_FROM_FIELDKEY].field_name
                     sms_message_fieldname = self.action_field_dict[SMS_MESSAGE_FIELDKEY].field_name
 
+                    sms_message = []  # list to support future header, footer, and consolidate features
+
                     # Process each row of data
                     for i, row in enumerate(data):
 
@@ -944,7 +974,7 @@ class VizAlert:
                         #  use string value for maximum safety. all other values are ignored, currently
                         if row[sms_action_fieldname] == '1':
                             sms_to = row[sms_to_fieldname]
-                            sms_message = row[sms_message_fieldname]
+                            sms_message.append(row[sms_message_fieldname])
 
                             # not sure if author used this field
                             if sms_from_fieldname:
@@ -966,7 +996,7 @@ class VizAlert:
 
                             # send the message
                             for smsaddress in smsaddresses:
-                                errormessage = smsaction.send_sms(sms_from, smsaddress, sms_message)
+                                errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
                                 if errormessage:
                                     self.error_list.append(u'Could not send SMS, error: {}'.format(errormessage))
 
@@ -1522,6 +1552,7 @@ def replace_in_list(inlist, findstr, replacestr):
 
     outlist = []
     foundstring = False
+
     for item in inlist:
         if item.find(findstr) != -1:
             foundstring = True

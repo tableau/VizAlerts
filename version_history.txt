@@ -11,6 +11,7 @@ Version 2.0.0
 -Fixed defect where SSL certificate was not being validated
 -Added config options around SSL certificate validation
 -Improved error handling
+-Improved alert test timeliness
 -Restructured code for more modularity and for future features
 =================================
 
