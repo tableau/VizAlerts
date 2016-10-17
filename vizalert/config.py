@@ -28,7 +28,6 @@ valid_conf_keys = \
     'smsaction.enable',
     'smsaction.account_id',
     'smsaction.auth_token',
-    'smsaction.from_number',
     'smsaction.provider',
     'smtp.address.from',
     'smtp.address.to',
@@ -109,11 +108,6 @@ def validate_conf(configfile):
     if localconfigs['smsaction.provider']:
         if not localconfigs['smsaction.account_id']:
             errormessage = u'Configuration value smsaction.account_id must be set to enable SMS messaging'
-            print errormessage
-            log.logger.error(errormessage)
-            sys.exit(1)
-        if not localconfigs['smsaction.from_number']:
-            errormessage = u'Configuration value smsaction.from_number must be set to enable SMS messaging'
             print errormessage
             log.logger.error(errormessage)
             sys.exit(1)

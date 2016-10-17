@@ -255,12 +255,8 @@ def get_alerts():
             # SMS actions
             alert.action_enabled_sms = int(line['action_enabled_sms'])
             alert.allowed_recipient_numbers = line['allowed_recipient_numbers']
-            alert.allowed_from_number = line['allowed_from_number']
+            alert.from_number = line['from_number']
             alert.phone_country_code = line['phone_country_code']
-            
-            # File actions
-            alert.action_enabled_file = int(line['action_enabled_file'])
-            alert.allowed_filepath = line['allowed_filepath']
 
             alert.data_retrieval_tries = int(line['data_retrieval_tries'])
 

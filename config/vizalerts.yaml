@@ -41,10 +41,8 @@ trusted.clientip: null                          # IP address of THIS host. Only 
 # SMS Settings
 smsaction.enable: false                         # use these settings to enable SMS messages. If false, we won't even check them, and all SMS attempts will fail
 smsaction.provider: twilio                      # the only allowed provider currently is twilio
-smsaction.from_number: '+###########'           # Default outbound phone number for SMS alerts with country code, area code, and number
-                                                    #  Must be in E.164 format, e.g. '+12068675309'
-smsaction.account_id: ''                        # Account ID, for Twilio this is the account SID from http://twilio.com/user/account
-smsaction.auth_token: ''                        # Auth token, for Twilio http://twilio.com/user/account
+smsaction.account_id: ''                        # account ID, for Twilio this is the account SID from http://twilio.com/user/account
+smsaction.auth_token: ''                        # auth token, for Twilio http://twilio.com/user/account
                                                     # This can either be a plaintext password enclosed in quotes, e.g. 'eyJ0eXAiOiJKV1QiLCJhbGciO...'
                                                     # OR it can be a valid path to a .txt file containing the auth token, e.g. 'c:\users\mcoles\authtoken.txt'
 

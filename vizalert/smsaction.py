@@ -64,7 +64,12 @@ def send_sms(sms_from, sms_to, msgbody=None):
 
     # now to send the message
     try:
-        message = smsclient.messages.create(body=msgbody, to=sms_to, from_=sms_from)
+        if sms_from.startswith('+'):
+            # kinda kloogy, but if we think it's an E.164 number, assume it is...
+            message = smsclient.messages.create(body=msgbody, to=sms_to, from_=sms_from)
+        else:
+            # if not, assume it must be a message service SID
+            message = smsclient.messages.create(body=msgbody, to=sms_to, messaging_service_sid=sms_from)
 
         # this may never happen since the Twilio REST API throws exceptions, it's a failsafe check
         if message.status == 'failed':
@@ -116,8 +121,7 @@ def sms_append_body(body, vizcompleterefs, alert):
     return body
 
 
-def validate_smsnumbers(vizdata, sms_to_fieldname, sms_from_fieldname, allowed_recipient_numbers, allowed_from_number,
-                        iso2countrycode):
+def validate_smsnumbers(vizdata, sms_to_fieldname, allowed_recipient_numbers, iso2countrycode):
     """Loops through the viz data for an Advanced Alert and returns a list of dicts
         containing any errors found in recipients"""
 
@@ -127,21 +131,13 @@ def validate_smsnumbers(vizdata, sms_to_fieldname, sms_from_fieldname, allowed_r
     try:
         for row in vizdata:
             result = smsnumbers_are_invalid(row[sms_to_fieldname],
-                                            False,  # empty string not acceptable as a From number
+                                            False,  # empty string not acceptable as a To number
                                             iso2countrycode,
                                             allowed_recipient_numbers)
             if result:
                 errorlist.append(
                     {'Row': rownum, 'Field': sms_to_fieldname, 'Value': result['number'], 'Error': result['errormessage']})
 
-            if sms_from_fieldname:
-                result = smsnumbers_are_invalid(row[sms_from_fieldname],
-                                                False,  # empty string not acceptable as a From number
-                                                iso2countrycode,
-                                                allowed_from_number)
-                if result:
-                    errorlist.append({'Row': rownum, 'Field': sms_from_fieldname, 'Value': result['number'],
-                                      'Error': result['errormessage']})
             rownum += 1
     except Exception as e:
         errormessage = u'Encountered error validating SMS numbers. Error: {}'.format(e.message)

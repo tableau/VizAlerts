@@ -1,15 +1,15 @@
 <?xml version='1.0' encoding='utf-8' ?>
 
-<workbook source-platform='win' version='8.3' xml:base='http://yourserver' xmlns:user='http://www.tableausoftware.com/xml/user'>
+<workbook source-platform='win' version='8.3' xml:base='https://your-server' xmlns:user='http://www.tableausoftware.com/xml/user'>
   <!-- build 8300.15.0909.2330                                -->
-  <repository-location id='VizAlerts' path='/workbooks' revision='2.1' />
+  <repository-location derived-from='https://your-server/workbooks/VizAlerts?rev=1.0' id='VizAlerts' path='/workbooks' revision='1.5' />
   <preferences>
   </preferences>
   <datasources>
     <datasource hasconnection='false' inline='true' name='Parameters' version='8.3'>
       <aliases enabled='yes' />
-      <column caption='default_allowed_recipient_addresses' datatype='string' name='[Parameter 1]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*tableau\\.com|.*tableausoftware\\.com&quot;'>
-        <calculation class='tableau' formula='&quot;.*tableau\.com|.*tableausoftware\.com&quot;' />
+      <column caption='default_allowed_recipient_addresses' datatype='string' name='[Parameter 1]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*yourdomain\\.com&quot;'>
+        <calculation class='tableau' formula='&quot;.*yourdomain\.com&quot;' />
         <desc>
           <formatted-text>
             <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -18,8 +18,8 @@
           </formatted-text>
         </desc>
       </column>
-      <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;vizalerts@tableau\\.com&quot;'>
-        <calculation class='tableau' formula='&quot;vizalerts@tableau\.com&quot;' />
+      <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+        <calculation class='tableau' formula='&quot;.*&quot;' />
         <desc>
           <formatted-text>
             <run>System-wide default for describing what email address a VizAlert is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -38,8 +38,8 @@
           </formatted-text>
         </desc>
       </column>
-      <column caption='default_data_maxrows' datatype='integer' default-format='n0;-0' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='1000'>
-        <calculation class='tableau' formula='1000' />
+      <column caption='default_data_maxrows' datatype='integer' default-format='n0;-0' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='10000'>
+        <calculation class='tableau' formula='10000' />
         <desc>
           <formatted-text>
             <run>System wide default for the maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -72,7 +72,7 @@
           <member value='false' />
         </members>
       </column>
-      <column caption='default_action_enabled_email' datatype='integer' datatype-customized='true' name='[Parameter 7]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+      <column caption='default_action_enabled_email' datatype='integer' name='[Parameter 7]' param-domain-type='list' role='measure' type='quantitative' value='1'>
         <calculation class='tableau' formula='1' />
         <desc>
           <formatted-text>
@@ -88,24 +88,10 @@
           <member value='1' />
         </members>
       </column>
-      <column caption='default_fileshare_base' datatype='string' name='[Parameter 8]' param-domain-type='any' role='measure' type='nominal' value='&quot;\\\\\\\\myshare\\\\&quot;'>
-        <calculation class='tableau' formula='&quot;\\\\myshare\\&quot;' />
-        <desc>
-          <formatted-text>
-            <run>This is the </run>
-            <run bold='true'>base</run>
-            <run> fileshare that VizAlerts will use to perform File Actions. It is used in the </run>
-            <run bold='true'>allowed_filepath</run>
-            <run> calculation, which is a regex string that defines which fileshare(s) a VizAlert may perform File Actions within.&#10;&#10;See the </run>
-            <run bold='true'>allowed_filepath </run>
-            <run>calculation for more details.</run>
-          </formatted-text>
-        </desc>
-      </column>
       <column caption='schedule_name_filter' datatype='string' name='[Parameter 9]' param-domain-type='any' role='measure' type='nominal' value='&quot;lert&quot;'>
         <calculation class='tableau' formula='&quot;lert&quot;' />
       </column>
-      <column caption='default_action_enabled_sms' datatype='integer' datatype-customized='true' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+      <column caption='default_action_enabled_sms' datatype='integer' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
         <calculation class='tableau' formula='1' />
         <desc>
           <formatted-text>
@@ -121,7 +107,7 @@
           <member value='0' />
         </members>
       </column>
-      <column caption='default_allowed_recipient_numbers' datatype='string' datatype-customized='true' name='[default_action_enabled_sms (copy 2)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+      <column caption='default_allowed_recipient_numbers' datatype='string' name='[default_action_enabled_sms (copy 2)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
         <calculation class='tableau' formula='&quot;.*&quot;' />
         <desc>
           <formatted-text>
@@ -645,32 +631,18 @@
           <member alias='Zimbabwe' value='&quot;ZW&quot;' />
         </members>
       </column>
-      <column caption='default_action_enabled_file' datatype='integer' datatype-customized='true' name='[default_action_enabled_sms (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
-        <calculation class='tableau' formula='1' />
+      <column caption='default_from_number' datatype='string' name='[default_allowed_recipient_numbers (copy)]' param-domain-type='any' role='measure' type='nominal' value='&quot;+10268675309&quot;'>
+        <calculation class='tableau' formula='&quot;+10268675309&quot;' />
         <desc>
           <formatted-text>
-            <run>System-wide default for whether or not a Subscriber should be allowed to operated on </run>
-            <run bold='true'>files </run>
-            <run>(at all)</run>
-            <run bold='true'>Æ </run>
-            <run>with VizAlerts.&#10;&#10;1 = true, allowed to act on files (subject to other restrictions in the settings)&#10;0 = false, no file actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
-            <run bold='true'> action_enabled_file </run>
-            <run>calculation.</run>
-          </formatted-text>
-        </desc>
-        <members>
-          <member value='1' />
-          <member value='0' />
-        </members>
-      </column>
-      <column caption='default_allowed_from_number' datatype='string' datatype-customized='true' name='[default_allowed_recipient_numbers (copy)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
-        <calculation class='tableau' formula='&quot;.*&quot;' />
-        <desc>
-          <formatted-text>
-            <run>System-wide default for describing what phone numbers this VizAlert is able to send SMS messages </run>
-            <run bold='true'>from</run>
-            <run>, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
-            <run bold='true'>allowed_from_numbers </run>
+            <run>System-wide default for describing what Twilio phone number </run>
+            <run bold='true'>or </run>
+            <run>Message Service SID a VizAlert will use to send SMS messages </run>
+            <run bold='true'>from.</run>
+            <run>&#10;&#10;If a phone number is used, it must be in E1.64 format, e.g. &quot;+12068675309&quot;.&#10;If a Message Service SID is used, it must be the full string, e.g. &quot;</run>
+            <run fontname='Courier New,courier'>MG9752274e9e519418a7406176694466fa</run>
+            <run>&quot;&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run bold='true'>from_number </run>
             <run>calculation.</run>
           </formatted-text>
         </desc>
@@ -715,14 +687,10 @@
         <folder-item name='[default_action_enabled_sms (copy 3)]' type='field' />
         <folder-item name='[default_allowed_recipient_numbers (copy)]' type='field' />
       </folder>
-      <folder name='3 - File Action Default Settings' role='parameters'>
-        <folder-item name='[Parameter 8]' type='field' />
-        <folder-item name='[default_action_enabled_sms (copy)]' type='field' />
-      </folder>
     </datasource>
     <datasource caption='VizAlerts Alert List' inline='true' name='postgres.42520.320455937501' version='8.3'>
-      <connection class='postgres' dbname='workgroup' odbc-native-protocol='yes' port='8060' server='your-tableau-repository' server-oauth='' username='readonly' workgroup-auth-mode='prompt'>
-        <relation name='Alerts' type='text'>SELECT&#13;&#10;         s.id                    AS subscription_id ,&#13;&#10;         v.id                    AS view_id ,&#13;&#10;         cv.id                   AS customized_view_id ,&#13;&#10;         COALESCE(v.name || &apos;/&apos; || cv.url_id ,&#13;&#10;        v.name)              AS view_name ,&#13;&#10;         COALESCE(w.repository_url || &apos;/&apos; || v.sheet_id || &apos;/&apos; || su_cust.name || &apos;@&apos; || d.name || &apos;/&apos; || cv.url_id ,&#13;&#10;             w.repository_url || &apos;/&apos; || v.sheet_id)         -- determine URL for a customized view&#13;&#10;                                 AS view_url_suffix ,&#13;&#10;         w.id                    AS workbook_id ,&#13;&#10;         w.repository_url        AS workbook_repository_url ,&#13;&#10;         p.id                    AS project_id ,&#13;&#10;         p.name                  AS project_name ,&#13;&#10;         st.id                   AS site_id ,&#13;&#10;         CASE&#13;&#10;             WHEN st.url_namespace IS NULL THEN &apos;Default&apos;&#13;&#10;             WHEN st.url_namespace = &apos;&apos; THEN &apos;Default&apos;&#13;&#10;             ELSE st.url_namespace&#13;&#10;         END                     AS site_name ,&#13;&#10;         v.owner_id              AS view_owner_id ,&#13;&#10;         s.user_id               AS subscriber_user_id ,&#13;&#10;         su_sub.name             AS subscriber_sysname ,&#13;&#10;         dom_sub.name            AS subscriber_domain ,&#13;&#10;         su_sub.email            AS subscriber_email ,&#13;&#10;         l_sub.name              AS subscriber_license ,&#13;&#10;         su.email                AS owner_email ,&#13;&#10;         su.name                 AS owner_sysname ,&#13;&#10;         su.friendly_name        AS owner_friendly_name ,&#13;&#10;         sch.id                  AS schedule_id ,&#13;&#10;         sch.name                AS schedule_name ,&#13;&#10;         sch.priority            AS schedule_priority ,&#13;&#10;         sch.schedule_type       AS schedule_type ,&#13;&#10;         s.is_test ,&#13;&#10;         COALESCE(date_trunc(&apos;second&apos;, s.test_alert_timestamp), sch.run_next_at)&#13;&#10;                                 AS run_next_at ,&#13;&#10;         COALESCE(&#13;&#10;             /*&#13;&#10;              Give our best guess as to when a newly scheduled alert would have last run&#13;&#10;                We&apos;re basically making this up, but this is only used for timeout values on the first run&#13;&#10;             */&#13;&#10;             CASE&#13;&#10;                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL &apos;1 minute&apos;&#13;&#10;                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL &apos;1 day&apos;&#13;&#10;                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL &apos;7 days&apos;&#13;&#10;                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL &apos;30 days&apos;&#13;&#10;                 ELSE sch.run_next_at - INTERVAL &apos;1 day&apos; --default to a day ago&#13;&#10;             END ,&#13;&#10;             date_trunc(&apos;second&apos;, (s.test_alert_timestamp - interval &apos;30 minutes&apos;))&#13;&#10;             )                   AS ran_last_at ,           -- used for initial timeouts only&#13;&#10;         CAST(&apos;simple&apos; AS text)  AS alert_type              -- placeholder, ignore this&#13;&#10;    FROM (&#13;&#10;        SELECT&#13;&#10;            s.id ,&#13;&#10;            s.user_id ,&#13;&#10;            s.subject ,&#13;&#10;            false           is_test ,&#13;&#10;            sv.repository_url ,&#13;&#10;            s.schedule_id ,&#13;&#10;            NULL            test_alert_timestamp&#13;&#10;        FROM subscriptions s&#13;&#10;            LEFT JOIN subscriptions_views sv&#13;&#10;                   ON s.id = sv.subscription_id&#13;&#10;        UNION&#13;&#10;        SELECT&#13;&#10;            MIN((-1 * c.id))&#13;&#10;                            id ,&#13;&#10;            c.user_id ,&#13;&#10;            v.name          subject ,&#13;&#10;            true            is_test ,&#13;&#10;            v.repository_url ,&#13;&#10;            -1              schedule_id ,&#13;&#10;            MAX(c.updated_at)&#13;&#10;                            test_alert_timestamp&#13;&#10;        FROM comments c&#13;&#10;            INNER JOIN views v&#13;&#10;            ON c.commentable_id = v.id&#13;&#10;                AND c.commentable_type = &apos;View&apos;&#13;&#10;                AND c.user_id = v.owner_id&#13;&#10;                AND LOWER(c.comment) = &apos;test_alert&apos;&#13;&#10;            WHERE c.updated_at &gt;&gt; current_timestamp - interval &apos;5 minutes&apos;&#13;&#10;        GROUP BY c.user_id ,&#13;&#10;            v.name ,&#13;&#10;            v.repository_url&#13;&#10;        ) s&#13;&#10;        INNER JOIN users u_sub&#13;&#10;            ON s.user_id = u_sub.id&#13;&#10;        INNER JOIN system_users su_sub&#13;&#10;            ON u_sub.system_user_id = su_sub.id&#13;&#10;        INNER JOIN licensing_roles l_sub&#13;&#10;            ON u_sub.licensing_role_id = l_sub.id&#13;&#10;        INNER JOIN domains dom_sub&#13;&#10;            ON su_sub.domain_id = dom_sub.id&#13;&#10;        LEFT JOIN subscriptions_customized_views scv&#13;&#10;            ON s.id = scv.subscription_id&#13;&#10;        LEFT JOIN customized_views cv&#13;&#10;            ON scv.customized_view_id = cv.id&#13;&#10;        LEFT JOIN users u_cust&#13;&#10;            ON cv.creator_id = u_cust.id&#13;&#10;        LEFT JOIN system_users su_cust&#13;&#10;            ON u_cust.system_user_id = su_cust.id&#13;&#10;        LEFT JOIN schedules sch&#13;&#10;           ON s.schedule_id = sch.id&#13;&#10;        INNER JOIN views v&#13;&#10;           ON s.repository_url = v.repository_url&#13;&#10;               AND u_sub.site_id = v.site_id&#13;&#10;        INNER JOIN workbooks w&#13;&#10;           ON v.workbook_id = w.id&#13;&#10;        INNER JOIN sites st&#13;&#10;           ON v.site_id = st.id&#13;&#10;        INNER JOIN projects p&#13;&#10;           ON w.project_id = p.id&#13;&#10;        INNER JOIN users u&#13;&#10;            ON v.owner_id = u.id&#13;&#10;        INNER JOIN system_users su&#13;&#10;            ON u.system_user_id = su.id&#13;&#10;        INNER JOIN domains d&#13;&#10;            ON su.domain_id = d.id&#13;&#10;    WHERE 1 = 1&#13;&#10;        AND (&#13;&#10;                (s.is_test = true)  -- not scheduled, someone is testing an ad-hoc alert&#13;&#10;                OR&#13;&#10;                sch.active = &apos;f&apos;    -- only show alerts on disabled schedules&#13;&#10;            )&#13;&#10;        AND coalesce(su_sub.email, &apos;&apos;) &lt;&lt;&gt;&gt; &apos;&apos;              -- only accounts with valid emails (no service accts)&#13;&#10;    ORDER BY&#13;&#10;        sch.run_next_at ,&#13;&#10;        sch.priority DESC</relation>
+      <connection class='postgres' dbname='workgroup' odbc-native-protocol='yes' port='8060' server='your-repo-server' server-oauth='' username='readonly' workgroup-auth-mode='prompt'>
+        <relation name='Alerts' type='text'>SELECT&#13;&#10;         s.id                    AS subscription_id ,&#13;&#10;         v.id                    AS view_id ,&#13;&#10;         cv.id                   AS customized_view_id ,&#13;&#10;         COALESCE(v.name || &apos;/&apos; || cv.url_id ,&#13;&#10;        v.name)              AS view_name ,&#13;&#10;         COALESCE(w.repository_url || &apos;/&apos; || v.sheet_id || &apos;/&apos; || su_cust.name || &apos;@&apos; || d.name || &apos;/&apos; || cv.url_id ,&#13;&#10;             w.repository_url || &apos;/&apos; || v.sheet_id)         -- determine URL for a customized view&#13;&#10;                                 AS view_url_suffix ,&#13;&#10;         w.id                    AS workbook_id ,&#13;&#10;         w.repository_url        AS workbook_repository_url ,&#13;&#10;         p.id                    AS project_id ,&#13;&#10;         p.name                  AS project_name ,&#13;&#10;         st.id                   AS site_id ,&#13;&#10;         CASE&#13;&#10;             WHEN st.url_namespace IS NULL THEN &apos;Default&apos;&#13;&#10;             WHEN st.url_namespace = &apos;&apos; THEN &apos;Default&apos;&#13;&#10;             ELSE st.url_namespace&#13;&#10;         END                     AS site_name ,&#13;&#10;         v.owner_id              AS view_owner_id ,&#13;&#10;         s.user_id               AS subscriber_user_id ,&#13;&#10;         su_sub.name             AS subscriber_sysname ,&#13;&#10;         dom_sub.name            AS subscriber_domain ,&#13;&#10;         su_sub.email            AS subscriber_email ,&#13;&#10;         l_sub.name              AS subscriber_license ,&#13;&#10;         su.email                AS owner_email ,&#13;&#10;         su.name                 AS owner_sysname ,&#13;&#10;         su.friendly_name        AS owner_friendly_name ,&#13;&#10;         sch.id                  AS schedule_id ,&#13;&#10;         sch.name                AS schedule_name ,&#13;&#10;         sch.priority            AS schedule_priority ,&#13;&#10;         sch.schedule_type       AS schedule_type ,&#13;&#10;         s.is_test ,&#13;&#10;         COALESCE(date_trunc(&apos;second&apos;, s.test_alert_timestamp), sch.run_next_at)&#13;&#10;                                 AS run_next_at ,&#13;&#10;         COALESCE(&#13;&#10;             /*&#13;&#10;              Give our best guess as to when a newly scheduled alert would have last run&#13;&#10;                We&apos;re basically making this up, but this is only used for timeout values on the first run&#13;&#10;             */&#13;&#10;             CASE&#13;&#10;                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL &apos;1 minute&apos;&#13;&#10;                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL &apos;1 day&apos;&#13;&#10;                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL &apos;7 days&apos;&#13;&#10;                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL &apos;30 days&apos;&#13;&#10;                 ELSE sch.run_next_at - INTERVAL &apos;1 day&apos; --default to a day ago&#13;&#10;             END ,&#13;&#10;             date_trunc(&apos;second&apos;, (s.test_alert_timestamp - interval &apos;30 minutes&apos;))&#13;&#10;             )                   AS ran_last_at ,           -- used for initial timeouts only&#13;&#10;         CAST(&apos;simple&apos; AS text)  AS alert_type              -- placeholder, ignore this&#13;&#10;    FROM (&#13;&#10;        SELECT&#13;&#10;            s.id ,&#13;&#10;            s.user_id ,&#13;&#10;            s.subject ,&#13;&#10;            false           is_test ,&#13;&#10;            sv.repository_url ,&#13;&#10;            s.schedule_id ,&#13;&#10;            NULL            test_alert_timestamp&#13;&#10;        FROM subscriptions s&#13;&#10;            LEFT JOIN subscriptions_views sv&#13;&#10;                   ON s.id = sv.subscription_id&#13;&#10;        UNION&#13;&#10;        SELECT&#13;&#10;            MIN((-1 * c.id))&#13;&#10;                            id ,&#13;&#10;            c.user_id ,&#13;&#10;            v.name          subject ,&#13;&#10;            true            is_test ,&#13;&#10;            v.repository_url ,&#13;&#10;            -1              schedule_id ,&#13;&#10;            MAX(c.updated_at)&#13;&#10;                            test_alert_timestamp&#13;&#10;        FROM comments c&#13;&#10;            INNER JOIN views v&#13;&#10;            ON c.commentable_id = v.id&#13;&#10;                AND c.commentable_type = &apos;View&apos;&#13;&#10;                AND LOWER(c.comment) = &apos;test_alert&apos;&#13;&#10;            WHERE c.updated_at &gt;&gt; current_timestamp - interval &apos;5 minutes&apos;&#13;&#10;        GROUP BY c.user_id ,&#13;&#10;            v.name ,&#13;&#10;            v.repository_url&#13;&#10;        ) s&#13;&#10;        INNER JOIN users u_sub&#13;&#10;            ON s.user_id = u_sub.id&#13;&#10;        INNER JOIN system_users su_sub&#13;&#10;            ON u_sub.system_user_id = su_sub.id&#13;&#10;        INNER JOIN licensing_roles l_sub&#13;&#10;            ON u_sub.licensing_role_id = l_sub.id&#13;&#10;        INNER JOIN domains dom_sub&#13;&#10;            ON su_sub.domain_id = dom_sub.id&#13;&#10;        LEFT JOIN subscriptions_customized_views scv&#13;&#10;            ON s.id = scv.subscription_id&#13;&#10;        LEFT JOIN customized_views cv&#13;&#10;            ON scv.customized_view_id = cv.id&#13;&#10;        LEFT JOIN users u_cust&#13;&#10;            ON cv.creator_id = u_cust.id&#13;&#10;        LEFT JOIN system_users su_cust&#13;&#10;            ON u_cust.system_user_id = su_cust.id&#13;&#10;        LEFT JOIN schedules sch&#13;&#10;           ON s.schedule_id = sch.id&#13;&#10;        INNER JOIN views v&#13;&#10;           ON s.repository_url = v.repository_url&#13;&#10;               AND u_sub.site_id = v.site_id&#13;&#10;        INNER JOIN workbooks w&#13;&#10;           ON v.workbook_id = w.id&#13;&#10;        INNER JOIN sites st&#13;&#10;           ON v.site_id = st.id&#13;&#10;        INNER JOIN projects p&#13;&#10;           ON w.project_id = p.id&#13;&#10;        INNER JOIN users u&#13;&#10;            ON v.owner_id = u.id&#13;&#10;        INNER JOIN system_users su&#13;&#10;            ON u.system_user_id = su.id&#13;&#10;        INNER JOIN domains d&#13;&#10;            ON su.domain_id = d.id&#13;&#10;    WHERE 1 = 1&#13;&#10;        AND (&#13;&#10;                (s.is_test = true)  -- not scheduled, someone is testing an ad-hoc alert&#13;&#10;                OR&#13;&#10;                sch.active = &apos;f&apos;    -- only show alerts on disabled schedules&#13;&#10;            )&#13;&#10;        AND coalesce(su_sub.email, &apos;&apos;) &lt;&lt;&gt;&gt; &apos;&apos;              -- only accounts with valid emails (no service accts)&#13;&#10;    ORDER BY&#13;&#10;        sch.run_next_at ,&#13;&#10;        sch.priority DESC</relation>
         <metadata-records>
           <metadata-record class='column'>
             <remote-name>subscription_id</remote-name>
@@ -784,7 +752,6 @@
             <width>8190</width>
             <contains-null>true</contains-null>
             <cast-to-local-type>true</cast-to-local-type>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -802,7 +769,6 @@
             <width>8190</width>
             <contains-null>true</contains-null>
             <cast-to-local-type>true</cast-to-local-type>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -836,7 +802,6 @@
             <width>8190</width>
             <contains-null>true</contains-null>
             <cast-to-local-type>true</cast-to-local-type>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -869,7 +834,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -903,7 +867,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -953,7 +916,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -971,7 +933,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -989,7 +950,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1007,7 +967,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1025,7 +984,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1043,7 +1001,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1061,7 +1018,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1095,7 +1051,6 @@
             <aggregation>Count</aggregation>
             <width>255</width>
             <contains-null>true</contains-null>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1191,7 +1146,6 @@
             <width>8190</width>
             <contains-null>true</contains-null>
             <cast-to-local-type>true</cast-to-local-type>
-            <collation flag='0' name='LEN_RUS' />
             <attributes>
               <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_WLONGVARCHAR&quot;</attribute>
               <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_WCHAR&quot;</attribute>
@@ -1200,6 +1154,14 @@
         </metadata-records>
       </connection>
       <aliases enabled='yes' />
+      <column aggregation='Sum' caption='priority' datatype='integer' name='[Calculation_0491015131514267]' role='dimension' type='ordinal'>
+        <calculation class='tableau' formula='// Determines the processing order of alerts run by VizAlerts. &#13;&#10;// This calculation can be modified to customize the priority of certain alerts if need be.&#13;&#10;//    Must be an integer of 0 or greater&#13;&#10;// Default is the priority assigned to the Subscription schedules in Tableau server&#13;&#10;&#13;&#10;[schedule_priority]' scope-isolation='false' />
+        <desc>
+          <formatted-text>
+            <run>Determines the processing order of alerts run by VizAlerts.&#10;Must be an integer of 0 or larger.&#10;&#10;Lower values are higher priority. This calc can be edited to customize priority.</run>
+          </formatted-text>
+        </desc>
+      </column>
       <column aggregation='Sum' caption='viz_data_maxrows' datatype='integer' default-format='n0;-0' name='[Calculation_0630608185616497]' role='dimension' type='ordinal'>
         <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: &quot;Our giant bulk emailer alert needs to send mail to 2,000 people&quot; (Note: I don&apos;t recommend you use VizAlerts for that use case! But it&apos;s a fun example)&#13;&#10;//      IF [view_name] = &apos;Bulk Mailer&apos; THEN 10000&#13;&#10;//          ELSE [default_data_maxrows]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 4]' scope-isolation='false' />
         <desc>
@@ -1248,18 +1210,8 @@
           </formatted-text>
         </desc>
       </column>
-      <column caption='allowed_filepath' datatype='string' name='[Calculation_5091007085156600]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// Use this calculation to define what file paths an alert can perform file actions within. Must be a valid regular expression.&#13;&#10;&#13;&#10;    // The idea here is that the administrator sets up a file share used by VizAlerts. The account you are running the scheduled task under &#13;&#10;    // must have full owner rights on that it. Within that share, each Tableau Server user would have their own folder that their own alerts &#13;&#10;    // can read/write/modify.&#13;&#10;    //&#13;&#10;    // So, if the share you set up is \\myshare, then user &quot;jdrummey&quot;&apos;s VizAlerts could do anything they like to \\myshare\jdrummey, and any file or folder within it.&#13;&#10;    //&#13;&#10;    // Because this is a regex pattern, you must escape the backslash &quot;\&quot; character by using it twice.&#13;&#10;    //   To configure things as described above, the default_fileshare_base would be \\\\myshare\\, and this calculation would &#13;&#10;    //   result in the final string being \\\\myshare\\jdrummey\\.*&#13;&#10;    //&#13;&#10;    //       To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;&#13;&#10;[Parameters].[Parameter 8] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to write files to any folder in the VizAlerts share, but restrict everyone else to just their own folder:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN [default_fileshare_base] + &apos;.*&apos; &#13;&#10;        // ELSE [default_fileshare_base] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;        // END' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>Describes what file path(s) this VizAlert is able to perform </run>
-            <run bold='true'>any</run>
-            <run> file action on (read/write/modify), defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
-          </formatted-text>
-        </desc>
-      </column>
       <column caption='is_valid_schedule' datatype='boolean' name='[Calculation_5911012080139041]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(schedule_name, [Parameters].[Parameter 9])' scope-isolation='false' />
+        <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(LOWER(schedule_name), LOWER([Parameters].[Parameter 9]))' scope-isolation='false' />
         <desc>
           <formatted-text>
             <run>Determines which Tableau Server subscription schedules are reserved for VizAlerts.&#10;&#10;Note that only </run>
@@ -1297,14 +1249,6 @@
           </formatted-text>
         </desc>
       </column>
-      <column caption='action_enabled_file' datatype='integer' default-format='n0;-0' name='[action_enabled_sms (copy)]' role='dimension' type='ordinal'>
-        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may act on files&#13;&#10;    // 0 = false, no file actions are allowed&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any file actions to be performed unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_file]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy)]' scope-isolation='false' />
-        <desc>
-          <formatted-text>
-            <run>This is simply a boolean value that denotes whether or not a VizAlert is able to act on any files. Files it attempts to act on will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
-          </formatted-text>
-        </desc>
-      </column>
       <column caption='phone_country_code' datatype='string' name='[allowed_from_number (copy)]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='// Use this calculation to define what coutry phone numbers should be assumed to be from.&#13;&#10;//  Must be a valid ISO Alpha-2 code, e.g. US, GB, DE, etc (see http://bit.ly/1MObR9o)&#13;&#10;&#13;&#10;    // Alert authors may send SMS messages using a variety of phone number formats.&#13;&#10;    //    Some formats don&apos;t include country code, and messaging services can have trouble with them.&#13;&#10;    //    Therefore, if the phone number a user wants to message is not in the E.164 format (e.g. +15107488230),&#13;&#10;    //    we will assume that their number is from this country, and it will be validated and converted accordingly.&#13;&#10;    //       So this field is ignored entirely if the author uses the full E.164 format.&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy 3)]' scope-isolation='false' />
         <desc>
@@ -1329,19 +1273,17 @@
           </formatted-text>
         </desc>
       </column>
-      <column caption='allowed_from_number' datatype='string' name='[allowed_recipient_numbers (copy)]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert can send messages from. Must be a valid regular expression.&#13;&#10;    // The numbers listed in the &quot; SMS From *&quot; and field (converted to E.164 format) must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^\+12068675309$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[default_allowed_recipient_numbers (copy)]' scope-isolation='false' />
+      <column caption='from_number' datatype='string' name='[allowed_recipient_numbers (copy)]' role='dimension' type='nominal'>
+        <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert will send messages from.&#13;&#10;//  Must be a valid E.164 phone number, associated with your Twilio account, or a Twilio Message Service SID&#13;&#10;&#13;&#10;// This value can be dynamically changed in order to ensure different alerts use different From numbers or message services.&#13;&#10;// If the value here is not an E.164 number, it&apos;s assumed that it&apos;s a Message Service SID.&#13;&#10;&#13;&#10;[Parameters].[default_allowed_recipient_numbers (copy)]&#13;&#10;&#13;&#10;&#13;&#10;// A dynamic example:&#13;&#10;    // Allocate separate phone numbers to different alerts, based on which department built it, using Projects&#13;&#10;        //    &#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;+102068675309&apos;&#13;&#10;        // ELSEIF [project_name] = &apos;Development&apos; THEN &apos;+1467855990&apos;&#13;&#10;        // ELSEIF [project_name] = &apos;Operations&apos; THEN &apos;MG9752274e9e519418a7406176694466fa&apos; // Ops needed a full Message Service&#13;&#10;        // ELSE [default_from_number]&#13;&#10;        // END' scope-isolation='false' />
         <desc>
           <formatted-text>
-            <run>Describes what phone numbers this VizAlert is able to send messages </run>
+            <run>Specifies which Twilio phone number </run>
+            <run bold='true'>or </run>
+            <run>Message Service SID a VizAlert will use to send SMS messages </run>
             <run bold='true'>from</run>
-            <run>, defined as a regular expression.&#10;&#10;The Twilio account used for VizAlerts </run>
-            <run bold='true'>must </run>
-            <run>be the owner of any &quot;SMS From *&quot; numbers specified.&#10;&#10;The </run>
-            <run italic='true'>E.164 version</run>
-            <run> of whatever number(s) are specified in the &quot;SMS From *&quot; field in an alert are what will be evaluated against this regex, </run>
-            <run italic='true'>not</run>
-            <run> the raw text the alert author used.&#10;&#10;Example: An alert author wishes to send an SMS from their personal number, &quot;(206) 867-5309&quot;. VizAlerts converts it to the E.164 format, adding the default country code &quot;1&quot; specified in this config file:&#10;&#10;+12068675309&#10;&#10;This is the final form which will be evaluated against the regex from the allowed_from_number field, which simplifies the administration somewhat.&#10;&#10;See http://bit.ly/2doiLuP (Twilio) for more information on E.164.</run>
+            <run>.&#10;&#10;If a phone number is used, it must be in E1.64 format, e.g. &quot;+12068675309&quot;.&#10;If a Message Service SID is used, it must be the full string, e.g. &quot;</run>
+            <run fontname='Courier New,courier'>MG9752274e9e519418a7406176694466fa</run>
+            <run>&quot;&#10;&#10;There must be one and only one number per alert (no delimited lists)&#10;&#10;This calc can be customized such that different alerts sent SMS messages from different numbers. Edit the calc for examples.</run>
           </formatted-text>
         </desc>
       </column>
@@ -1415,6 +1357,7 @@
       <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[workbook_id]' role='dimension' type='ordinal'>
       </column>
       <folder name='0 - General Settings' role='dimensions'>
+        <folder-item name='[Calculation_0491015131514267]' type='field' />
         <folder-item name='[Calculation_0630608185616497]' type='field' />
         <folder-item name='[Calculation_1300811092148681]' type='field' />
         <folder-item name='[Calculation_2310608122723904]' type='field' />
@@ -1433,10 +1376,6 @@
         <folder-item name='[allowed_from_number (copy)]' type='field' />
         <folder-item name='[allowed_recipient_addresses (copy)]' type='field' />
         <folder-item name='[allowed_recipient_numbers (copy)]' type='field' />
-      </folder>
-      <folder name='3 - File Action Settings' role='dimensions'>
-        <folder-item name='[Calculation_5091007085156600]' type='field' />
-        <folder-item name='[action_enabled_sms (copy)]' type='field' />
       </folder>
       <folder name='Schedule' role='dimensions'>
         <folder-item name='[Calculation_1880608160023327]' type='field' />
@@ -1476,13 +1415,13 @@
         <folder-item name='[owner_sysname]' type='field' />
         <folder-item name='[view_owner_id]' type='field' />
       </folder>
-      <layout dim-ordering='alphabetic' dim-percentage='0.598374' measure-ordering='alphabetic' measure-percentage='0.0699187' show-structure='true' />
+      <layout dim-ordering='alphabetic' dim-percentage='0.579819' measure-ordering='alphabetic' measure-percentage='0.115964' show-structure='true' />
       <semantic-values>
         <semantic-value key='[Country].[Name]' value='&quot;United States&quot;' />
       </semantic-values>
       <datasource-dependencies datasource='Parameters'>
-        <column caption='default_allowed_recipient_addresses' datatype='string' name='[Parameter 1]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*tableau\\.com|.*tableausoftware\\.com&quot;'>
-          <calculation class='tableau' formula='&quot;.*tableau\.com|.*tableausoftware\.com&quot;' />
+        <column caption='default_allowed_recipient_addresses' datatype='string' name='[Parameter 1]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*yourdomain\\.com&quot;'>
+          <calculation class='tableau' formula='&quot;.*yourdomain\.com&quot;' />
           <desc>
             <formatted-text>
               <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -1511,8 +1450,8 @@
             </formatted-text>
           </desc>
         </column>
-        <column caption='default_data_maxrows' datatype='integer' default-format='n0;-0' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='1000'>
-          <calculation class='tableau' formula='1000' />
+        <column caption='default_data_maxrows' datatype='integer' default-format='n0;-0' name='[Parameter 4]' param-domain-type='any' role='measure' type='quantitative' value='10000'>
+          <calculation class='tableau' formula='10000' />
           <desc>
             <formatted-text>
               <run>System wide default for the maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -1545,7 +1484,7 @@
             <member value='false' />
           </members>
         </column>
-        <column caption='default_action_enabled_email' datatype='integer' datatype-customized='true' name='[Parameter 7]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+        <column caption='default_action_enabled_email' datatype='integer' name='[Parameter 7]' param-domain-type='list' role='measure' type='quantitative' value='1'>
           <calculation class='tableau' formula='1' />
           <desc>
             <formatted-text>
@@ -1561,24 +1500,10 @@
             <member value='1' />
           </members>
         </column>
-        <column caption='default_fileshare_base' datatype='string' name='[Parameter 8]' param-domain-type='any' role='measure' type='nominal' value='&quot;\\\\\\\\myshare\\\\&quot;'>
-          <calculation class='tableau' formula='&quot;\\\\myshare\\&quot;' />
-          <desc>
-            <formatted-text>
-              <run>This is the </run>
-              <run bold='true'>base</run>
-              <run> fileshare that VizAlerts will use to perform File Actions. It is used in the </run>
-              <run bold='true'>allowed_filepath</run>
-              <run> calculation, which is a regex string that defines which fileshare(s) a VizAlert may perform File Actions within.&#10;&#10;See the </run>
-              <run bold='true'>allowed_filepath </run>
-              <run>calculation for more details.</run>
-            </formatted-text>
-          </desc>
-        </column>
         <column caption='schedule_name_filter' datatype='string' name='[Parameter 9]' param-domain-type='any' role='measure' type='nominal' value='&quot;lert&quot;'>
           <calculation class='tableau' formula='&quot;lert&quot;' />
         </column>
-        <column caption='default_action_enabled_sms' datatype='integer' datatype-customized='true' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
+        <column caption='default_action_enabled_sms' datatype='integer' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
           <calculation class='tableau' formula='1' />
           <desc>
             <formatted-text>
@@ -1594,7 +1519,7 @@
             <member value='0' />
           </members>
         </column>
-        <column caption='default_allowed_recipient_numbers' datatype='string' datatype-customized='true' name='[default_action_enabled_sms (copy 2)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
+        <column caption='default_allowed_recipient_numbers' datatype='string' name='[default_action_enabled_sms (copy 2)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
           <calculation class='tableau' formula='&quot;.*&quot;' />
           <desc>
             <formatted-text>
@@ -2118,32 +2043,18 @@
             <member alias='Zimbabwe' value='&quot;ZW&quot;' />
           </members>
         </column>
-        <column caption='default_action_enabled_file' datatype='integer' datatype-customized='true' name='[default_action_enabled_sms (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
-          <calculation class='tableau' formula='1' />
+        <column caption='default_from_number' datatype='string' name='[default_allowed_recipient_numbers (copy)]' param-domain-type='any' role='measure' type='nominal' value='&quot;+10268675309&quot;'>
+          <calculation class='tableau' formula='&quot;+10268675309&quot;' />
           <desc>
             <formatted-text>
-              <run>System-wide default for whether or not a Subscriber should be allowed to operated on </run>
-              <run bold='true'>files </run>
-              <run>(at all)</run>
-              <run bold='true'>Æ </run>
-              <run>with VizAlerts.&#10;&#10;1 = true, allowed to act on files (subject to other restrictions in the settings)&#10;0 = false, no file actions are allowed&#10;&#10;For more information, or to override this setting dynamically, see the</run>
-              <run bold='true'> action_enabled_file </run>
-              <run>calculation.</run>
-            </formatted-text>
-          </desc>
-          <members>
-            <member value='1' />
-            <member value='0' />
-          </members>
-        </column>
-        <column caption='default_allowed_from_number' datatype='string' datatype-customized='true' name='[default_allowed_recipient_numbers (copy)]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
-          <calculation class='tableau' formula='&quot;.*&quot;' />
-          <desc>
-            <formatted-text>
-              <run>System-wide default for describing what phone numbers this VizAlert is able to send SMS messages </run>
-              <run bold='true'>from</run>
-              <run>, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
-              <run bold='true'>allowed_from_numbers </run>
+              <run>System-wide default for describing what Twilio phone number </run>
+              <run bold='true'>or </run>
+              <run>Message Service SID a VizAlert will use to send SMS messages </run>
+              <run bold='true'>from.</run>
+              <run>&#10;&#10;If a phone number is used, it must be in E1.64 format, e.g. &quot;+12068675309&quot;.&#10;If a Message Service SID is used, it must be the full string, e.g. &quot;</run>
+              <run fontname='Courier New,courier'>MG9752274e9e519418a7406176694466fa</run>
+              <run>&quot;&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run bold='true'>from_number </run>
               <run>calculation.</run>
             </formatted-text>
           </desc>
@@ -2186,6 +2097,7 @@
           </formatted-text>
         </caption>
       </layout-options>
+      <repository-location derived-from='https://alpo/workbooks/VizAlerts/AlertList?rev=' id='AlertList' path='/workbooks/VizAlerts' revision='' />
       <table>
         <view>
           <datasources>
@@ -2193,6 +2105,14 @@
             <datasource name='Parameters' />
           </datasources>
           <datasource-dependencies datasource='postgres.42520.320455937501'>
+            <column aggregation='Sum' caption='priority' datatype='integer' name='[Calculation_0491015131514267]' role='dimension' type='ordinal'>
+              <calculation class='tableau' formula='// Determines the processing order of alerts run by VizAlerts. &#13;&#10;// This calculation can be modified to customize the priority of certain alerts if need be.&#13;&#10;//    Must be an integer of 0 or greater&#13;&#10;// Default is the priority assigned to the Subscription schedules in Tableau server&#13;&#10;&#13;&#10;[schedule_priority]' scope-isolation='false' />
+              <desc>
+                <formatted-text>
+                  <run>Determines the processing order of alerts run by VizAlerts.&#10;Must be an integer of 0 or larger.&#10;&#10;Lower values are higher priority. This calc can be edited to customize priority.</run>
+                </formatted-text>
+              </desc>
+            </column>
             <column aggregation='Sum' caption='viz_data_maxrows' datatype='integer' default-format='n0;-0' name='[Calculation_0630608185616497]' role='dimension' type='ordinal'>
               <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;&#13;&#10;// Example: &quot;Our giant bulk emailer alert needs to send mail to 2,000 people&quot; (Note: I don&apos;t recommend you use VizAlerts for that use case! But it&apos;s a fun example)&#13;&#10;//      IF [view_name] = &apos;Bulk Mailer&apos; THEN 10000&#13;&#10;//          ELSE [default_data_maxrows]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 4]' scope-isolation='false' />
               <desc>
@@ -2241,18 +2161,8 @@
                 </formatted-text>
               </desc>
             </column>
-            <column caption='allowed_filepath' datatype='string' name='[Calculation_5091007085156600]' role='dimension' type='nominal'>
-              <calculation class='tableau' formula='// Use this calculation to define what file paths an alert can perform file actions within. Must be a valid regular expression.&#13;&#10;&#13;&#10;    // The idea here is that the administrator sets up a file share used by VizAlerts. The account you are running the scheduled task under &#13;&#10;    // must have full owner rights on that it. Within that share, each Tableau Server user would have their own folder that their own alerts &#13;&#10;    // can read/write/modify.&#13;&#10;    //&#13;&#10;    // So, if the share you set up is \\myshare, then user &quot;jdrummey&quot;&apos;s VizAlerts could do anything they like to \\myshare\jdrummey, and any file or folder within it.&#13;&#10;    //&#13;&#10;    // Because this is a regex pattern, you must escape the backslash &quot;\&quot; character by using it twice.&#13;&#10;    //   To configure things as described above, the default_fileshare_base would be \\\\myshare\\, and this calculation would &#13;&#10;    //   result in the final string being \\\\myshare\\jdrummey\\.*&#13;&#10;    //&#13;&#10;    //       To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;&#13;&#10;[Parameters].[Parameter 8] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to write files to any folder in the VizAlerts share, but restrict everyone else to just their own folder:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN [default_fileshare_base] + &apos;.*&apos; &#13;&#10;        // ELSE [default_fileshare_base] + [subscriber_sysname] + &apos;\\.*&apos;&#13;&#10;        // END' scope-isolation='false' />
-              <desc>
-                <formatted-text>
-                  <run>Describes what file path(s) this VizAlert is able to perform </run>
-                  <run bold='true'>any</run>
-                  <run> file action on (read/write/modify), defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
-                </formatted-text>
-              </desc>
-            </column>
             <column caption='is_valid_schedule' datatype='boolean' name='[Calculation_5911012080139041]' role='dimension' type='nominal'>
-              <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(schedule_name, [Parameters].[Parameter 9])' scope-isolation='false' />
+              <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(LOWER(schedule_name), LOWER([Parameters].[Parameter 9]))' scope-isolation='false' />
               <desc>
                 <formatted-text>
                   <run>Determines which Tableau Server subscription schedules are reserved for VizAlerts.&#10;&#10;Note that only </run>
@@ -2287,14 +2197,6 @@
                 </formatted-text>
               </desc>
             </column>
-            <column caption='action_enabled_file' datatype='integer' default-format='n0;-0' name='[action_enabled_sms (copy)]' role='dimension' type='ordinal'>
-              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may act on files&#13;&#10;    // 0 = false, no file actions are allowed&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any file actions to be performed unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_file]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[default_action_enabled_sms (copy)]' scope-isolation='false' />
-              <desc>
-                <formatted-text>
-                  <run>This is simply a boolean value that denotes whether or not a VizAlert is able to act on any files. Files it attempts to act on will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
-                </formatted-text>
-              </desc>
-            </column>
             <column datatype='string' name='[alert_type]' role='dimension' type='nominal'>
             </column>
             <column caption='phone_country_code' datatype='string' name='[allowed_from_number (copy)]' role='dimension' type='nominal'>
@@ -2321,19 +2223,17 @@
                 </formatted-text>
               </desc>
             </column>
-            <column caption='allowed_from_number' datatype='string' name='[allowed_recipient_numbers (copy)]' role='dimension' type='nominal'>
-              <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert can send messages from. Must be a valid regular expression.&#13;&#10;    // The numbers listed in the &quot; SMS From *&quot; and field (converted to E.164 format) must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^\+12068675309$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[default_allowed_recipient_numbers (copy)]' scope-isolation='false' />
+            <column caption='from_number' datatype='string' name='[allowed_recipient_numbers (copy)]' role='dimension' type='nominal'>
+              <calculation class='tableau' formula='// Use this calculation to define what phone numbers an alert will send messages from.&#13;&#10;//  Must be a valid E.164 phone number, associated with your Twilio account, or a Twilio Message Service SID&#13;&#10;&#13;&#10;// This value can be dynamically changed in order to ensure different alerts use different From numbers or message services.&#13;&#10;// If the value here is not an E.164 number, it&apos;s assumed that it&apos;s a Message Service SID.&#13;&#10;&#13;&#10;[Parameters].[default_allowed_recipient_numbers (copy)]&#13;&#10;&#13;&#10;&#13;&#10;// A dynamic example:&#13;&#10;    // Allocate separate phone numbers to different alerts, based on which department built it, using Projects&#13;&#10;        //    &#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;+102068675309&apos;&#13;&#10;        // ELSEIF [project_name] = &apos;Development&apos; THEN &apos;+1467855990&apos;&#13;&#10;        // ELSEIF [project_name] = &apos;Operations&apos; THEN &apos;MG9752274e9e519418a7406176694466fa&apos; // Ops needed a full Message Service&#13;&#10;        // ELSE [default_from_number]&#13;&#10;        // END' scope-isolation='false' />
               <desc>
                 <formatted-text>
-                  <run>Describes what phone numbers this VizAlert is able to send messages </run>
+                  <run>Specifies which Twilio phone number </run>
+                  <run bold='true'>or </run>
+                  <run>Message Service SID a VizAlert will use to send SMS messages </run>
                   <run bold='true'>from</run>
-                  <run>, defined as a regular expression.&#10;&#10;The Twilio account used for VizAlerts </run>
-                  <run bold='true'>must </run>
-                  <run>be the owner of any &quot;SMS From *&quot; numbers specified.&#10;&#10;The </run>
-                  <run italic='true'>E.164 version</run>
-                  <run> of whatever number(s) are specified in the &quot;SMS From *&quot; field in an alert are what will be evaluated against this regex, </run>
-                  <run italic='true'>not</run>
-                  <run> the raw text the alert author used.&#10;&#10;Example: An alert author wishes to send an SMS from their personal number, &quot;(206) 867-5309&quot;. VizAlerts converts it to the E.164 format, adding the default country code &quot;1&quot; specified in this config file:&#10;&#10;+12068675309&#10;&#10;This is the final form which will be evaluated against the regex from the allowed_from_number field, which simplifies the administration somewhat.&#10;&#10;See http://bit.ly/2doiLuP (Twilio) for more information on E.164.</run>
+                  <run>.&#10;&#10;If a phone number is used, it must be in E1.64 format, e.g. &quot;+12068675309&quot;.&#10;If a Message Service SID is used, it must be the full string, e.g. &quot;</run>
+                  <run fontname='Courier New,courier'>MG9752274e9e519418a7406176694466fa</run>
+                  <run>&quot;&#10;&#10;There must be one and only one number per alert (no delimited lists)&#10;&#10;This calc can be customized such that different alerts sent SMS messages from different numbers. Edit the calc for examples.</run>
                 </formatted-text>
               </desc>
             </column>
@@ -2364,18 +2264,17 @@
                 </formatted-text>
               </desc>
             </column>
+            <column-instance column='[Calculation_0491015131514267]' derivation='None' name='[none:Calculation_0491015131514267:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_0630608185616497]' derivation='None' name='[none:Calculation_0630608185616497:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_0880602155537439]' derivation='None' name='[none:Calculation_0880602155537439:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_1300811092148681]' derivation='None' name='[none:Calculation_1300811092148681:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_1880608160023327]' derivation='None' name='[none:Calculation_1880608160023327:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_2310608122723904]' derivation='None' name='[none:Calculation_2310608122723904:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_2380602155000967]' derivation='None' name='[none:Calculation_2380602155000967:ok]' pivot='key' type='ordinal' />
-            <column-instance column='[Calculation_5091007085156600]' derivation='None' name='[none:Calculation_5091007085156600:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_5911012080139041]' derivation='None' name='[none:Calculation_5911012080139041:nk]' pivot='key' type='nominal' />
             <column-instance column='[Calculation_7731007071204722]' derivation='None' name='[none:Calculation_7731007071204722:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_9040602154240465]' derivation='None' name='[none:Calculation_9040602154240465:nk]' pivot='key' type='nominal' />
             <column-instance column='[action_enabled_email (copy)]' derivation='None' name='[none:action_enabled_email (copy):ok]' pivot='key' type='ordinal' />
-            <column-instance column='[action_enabled_sms (copy)]' derivation='None' name='[none:action_enabled_sms (copy):ok]' pivot='key' type='ordinal' />
             <column-instance column='[alert_type]' derivation='None' name='[none:alert_type:nk]' pivot='key' type='nominal' />
             <column-instance column='[allowed_from_number (copy)]' derivation='None' name='[none:allowed_from_number (copy):nk]' pivot='key' type='nominal' />
             <column-instance column='[allowed_recipient_addresses (copy)]' derivation='None' name='[none:allowed_recipient_addresses (copy):nk]' pivot='key' type='nominal' />
@@ -2394,7 +2293,6 @@
             <column-instance column='[run_next_at]' derivation='None' name='[none:run_next_at:qk]' pivot='key' type='quantitative' />
             <column-instance column='[schedule_id]' derivation='None' name='[none:schedule_id:ok]' pivot='key' type='ordinal' />
             <column-instance column='[schedule_name]' derivation='None' name='[none:schedule_name:nk]' pivot='key' type='nominal' />
-            <column-instance column='[schedule_priority]' derivation='None' name='[none:schedule_priority:ok]' pivot='key' type='ordinal' />
             <column-instance column='[schedule_type]' derivation='None' name='[none:schedule_type:ok]' pivot='key' type='ordinal' />
             <column-instance column='[site_id]' derivation='None' name='[none:site_id:ok]' pivot='key' type='ordinal' />
             <column-instance column='[site_name]' derivation='None' name='[none:site_name:nk]' pivot='key' type='nominal' />
@@ -2438,8 +2336,6 @@
             <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_id]' role='dimension' type='ordinal'>
             </column>
             <column datatype='string' name='[schedule_name]' role='dimension' type='nominal'>
-            </column>
-            <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_priority]' role='dimension' type='ordinal'>
             </column>
             <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[schedule_type]' role='dimension' type='ordinal'>
             </column>
@@ -2508,7 +2404,6 @@
               <lod column='[postgres.42520.320455937501].[none:Calculation_1880608160023327:nk]' />
               <lod column='[postgres.42520.320455937501].[none:schedule_id:ok]' />
               <lod column='[postgres.42520.320455937501].[none:schedule_name:nk]' />
-              <lod column='[postgres.42520.320455937501].[none:schedule_priority:ok]' />
               <lod column='[postgres.42520.320455937501].[none:schedule_type:ok]' />
               <lod column='[postgres.42520.320455937501].[none:subscriber_domain:nk]' />
               <lod column='[postgres.42520.320455937501].[none:subscriber_email:nk]' />
@@ -2542,11 +2437,10 @@
               <lod column='[postgres.42520.320455937501].[none:viz_png_height (copy):ok]' />
               <lod column='[postgres.42520.320455937501].[none:Calculation_7731007071204722:ok]' />
               <lod column='[postgres.42520.320455937501].[none:action_enabled_email (copy):ok]' />
-              <lod column='[postgres.42520.320455937501].[none:action_enabled_sms (copy):ok]' />
-              <lod column='[postgres.42520.320455937501].[none:Calculation_5091007085156600:nk]' />
               <lod column='[postgres.42520.320455937501].[none:allowed_recipient_addresses (copy):nk]' />
               <lod column='[postgres.42520.320455937501].[none:allowed_recipient_numbers (copy):nk]' />
               <lod column='[postgres.42520.320455937501].[none:allowed_from_number (copy):nk]' />
+              <lod column='[postgres.42520.320455937501].[none:Calculation_0491015131514267:ok]' />
             </encodings>
           </pane>
         </panes>
@@ -2560,8 +2454,9 @@
     <window auto-hidden='0' class='worksheet' maximized='1' name='AlertList'>
       <cards>
         <edge name='left'>
-          <strip size='100'>
+          <strip size='238'>
             <card type='filters' />
+            <card type='marks' />
           </strip>
           <strip size='235'>
             <card mode='type_in' param='[Parameters].[Parameter 9]' type='parameter' />
@@ -2576,8 +2471,6 @@
             <card mode='type_in' param='[Parameters].[default_action_enabled_sms (copy 3)]' type='parameter' />
             <card mode='type_in' param='[Parameters].[default_action_enabled_sms (copy 2)]' type='parameter' />
             <card mode='type_in' param='[Parameters].[default_allowed_recipient_numbers (copy)]' type='parameter' />
-            <card mode='compact' param='[Parameters].[default_action_enabled_sms (copy)]' type='parameter' />
-            <card mode='type_in' param='[Parameters].[Parameter 8]' type='parameter' />
           </strip>
         </edge>
         <edge name='top'>
@@ -2596,6 +2489,7 @@
       </cards>
       <highlight>
         <color-one-way>
+          <field>[postgres.42520.320455937501].[none:Calculation_0491015131514267:ok]</field>
           <field>[postgres.42520.320455937501].[none:Calculation_0880602155537439:nk]</field>
           <field>[postgres.42520.320455937501].[none:Calculation_1880608160023327:nk]</field>
           <field>[postgres.42520.320455937501].[none:Calculation_2380602155000967:ok]</field>
@@ -2617,32 +2511,464 @@
     </window>
   </windows>
   <thumbnails>
-    <thumbnail height='64' name='AlertList' width='192'>
-      iVBORw0KGgoAAAANSUhEUgAAAMAAAABACAYAAABMbHjfAAAACXBIWXMAAA7DAAAOwwHHb6hk
-      AAAE1UlEQVR4nO3aT0jTfxzH8eeWjma0cIf+YIXGqkP559CxS9egrKAUoWDgRQkCoUMthJo1
-      qcNUDI9FUQgVdqougV7qUBA0o0xqRsiyQzRr5Z+v+/wO8fP36+cvBPPn+Pl+Pa7f7/b9fD7s
-      uX332XzOOYeIUf5CD0CkkBSAmKYAxDQFIKYpADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYp
-      ADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYpADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYp
-      ADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYpADFNAYhpCkBMUwBimgIQ0xSAmKYAxDQFIKYp
-      ADFNAYhpCkBMK5rvhFevXi3FOEQKwuecc4UehEih6BZITFMAYpoCENMUgJg27y7QfF6+fMnZ
-      s2fZv38/DQ0NeJ5HR0cHT58+JZ/Ps27dOs6fP08oFFqM8S4LU1NTHD9+nM+fP885VlVVxZkz
-      Z3752LGxMdrb28lkMuTzecLhMLFYjE2bNgHw5s0bEokE4+PjAGzevJnW1lat/6+4Bcrn8+7R
-      o0euvr7eHT582N24ccM559yzZ89cXV2d6+3tdcPDw66urs51dXUt9DLL3tDQkItGoy6bzc57
-      7vj4uDt27Jjr7u52ExMTbnJy0iWTSReNRl0ul3MjIyOuvr7e9fX1uenpaZfL5dzJkyddS0uL
-      m5mZWYLZ/P8s+BNgeHiYzs5OVqxYgfvbTmpNTQ29vb0AfPz4EZ/PRzab/f1SDfn06RPxeJzR
-      0VH8fj9Hjhzh0KFDDAwMUFJSQlNTE37/j7vX5uZm7t+/z8TEBH19fezYsYMDBw4AUFRURCwW
-      o7+/n6mpKVauXFnIaS2qgYEBrl+/TjAYZGxsjEgkQkVFBQ8fPsTn8xGPxykvLyeZTPLkyROC
-      wSAdHR2Ulpb+vL4LHYDf72fbtm20tLT863HP87h8+TIzMzOsX79+wRO1xjlHT08PwWCQK1eu
-      cPr0aW7dusXz589JpVJs37599sUPEAgEqK2tJRQKkU6nqays/On51qxZQ21t7bJ68f/p69ev
-      HDx4kK6uLtLpNB8+fODatWts2bKF27dv8/btWwYHB0kmk6xdu5Y7d+7MWd8FBxCJRDh37hyr
-      V6+ec+zq1as0NDQwNDTEhQsXaGxs/K2JWjI9Pc3o6Ch79+5l1apVVFZWUl5ezuDgIDU1Nbx+
-      /Zp8Pj97vud5nDp1isePH7N161ZSqdRPz/flyxeam5tJp9NLPZX/XFFREbt27SIcDlNaWsqe
-      PXsIBAJUVFTgeR6ZTIaSkhLKysq4dOkSjY2Nc9Z30XeB3r17x4MHD/D7/cTjcSKRyGJfYlkr
-      Li6mrKyMe/fukcvlSKVSjIyMsHPnTnbv3k0ul6Onp4fJyUm+f/9Od3c379+/p7q6mn379vHi
-      xQvu3r2L53lks1ni8Tg+n4+NGzcWempLbsOGDXz79o1MJkNnZydtbW1z1ve3d4H+qb+/f/Yd
-      KhaLAfPvbMhffD4fTU1NxONxotHo7HeAqqoqANrb22lra+Po0aMAhMNhEokEoVCIUChEa2sr
-      Fy9e5ObNm8CPXaBEIkFxcXHB5lQokUiE6upqTpw4QSAQIJFIzFlf/RdITNMPYWKaAhDT/gBh
-      DkAoHBAVKgAAAABJRU5ErkJggg==
+    <thumbnail height='192' name='AlertList' width='192'>
+      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
+      u7ubtra2l7x6T5tWN27coKysjJWVFQYGBkRWgcPhECn2LpeLmZkZKisrv7ERlkgk+PLLL7HZ
+      bPj9/n0rBd+Gra0tBgYGhDf+i2JtbY1bt24xPz+P1+sVs/QvuhHW2dnJ8PAwiUSCe/fuMTk5
+      yaFDh+jq6qKwsJDx8XF6e3vJyckRY+s3btzg0KFDdHd309/fj9lsJi8vj0QiIdJcbt68KZpq
+      6XSaTz/9lPHxcSwWC4ODg0iShMlkQpIkenp6iMfjzM3NMTw8LEQxd+7cwWq1kkgk6O3tZWho
+      aM9U6l8SjUb3F8S0t7cTi8WE6uq7ulFIksTy8rIoeUUiET755BMaGhqw2WwEg0ERnJwZmd7d
+      3aW/v59PPvkErVbLpUuXGB0dxWg0cvXqVZxOJ7m5ubz55pu43W4+//xzYbE4PDyMVqvlV7/6
+      1dcs9ba3t/n973+PQqFAp9PR3NzM2NgYR44cIRQK4ff7MRgMIuAhnU5TWVnJ4uIi9fX1XLhw
+      4cC2S3FxMW+//TY3btwQzb6XYVt56dIlNjc3efjwIdXV1QDY7XZ2dnYIBALioM2ciB6PB7/f
+      TygUIhaL8frrrzMzM0N5eTlbW1sEAgEikQgul0toUORyOVevXmVkZESkAZnNZhGRlFHAzc3N
+      CUno3Nwcm5ubvPHGG/zxj3+kqakJi8XC8vKySJT5SxQKxf59gJWVFbq7u7l69Sq//OUvX8Cm
+      /OspKSlhbm5OdAhjsRjhcJhkMkl+fj51dXV7VGGpVIpIJEJ1dTWVlZVMTU2JmvPdu3eZn58X
+      TTKXy0UoFOLq1as8efIEi8VCbW3tM5t+mQP60KFDnD59moWFBerr6zlx4gQ+n4+33noLu91O
+      IBAQiSlqtZpwOEwwGDzw7TI+Ps7p06f50Y9+xMWLF0VA3IskEongdDo5d+6c2IYmk0mE2+Xm
+      5nL+/Hm++OILbt++TU5ODoWFhchkMiRJIp1Os7W1RWdnJ/n5+ZhMJlQqFb/85S8pKytjcnIS
+      mUwmdOhtbW1CqZdphGWiu65du8Zbb71Fb28vDQ0Neyw8U6nUN9p5qlSq5z8C6fV6TCYThYWF
+      eL3efc+kF4kkSQQCAbRaLfX19cK5bXNzk5KSEiHMyM/PR6PRYLfbiUaj4hZsMBior69nc3OT
+      oqIivve971FbW4vT6RRzKAaDgdHRUU6ePIlKpcJoNKJUKoU7nMlkQiaTkUwmCYfDQn+r0+lw
+      u93i9jw5OUlraytGo5Hc3FwkScJisRCPxykoKDjQ5Ei73Y7VagXA5/OJ4Lj92v4Hxeeff04s
+      FsNkMgk54okTJwiHwxQXF6NUKpmcnOTixYucPHkSjUaDz+ejsrISt9vN7OwsV65c4dixY6jV
+      ajFa0dfXx/b2Nh0dHcTjcT777DPUajUFBQWk02n0ej07Ozvk5OQQj8fRarUsLS0xMTFBW1sb
+      Ozs7KBQKnjx5wsmTJ3G73Xi9Xs6cOfNM/UfWGS5LFrLOcFlecbLOcFleabKPQFleafYtgyaT
+      SRKJBGq1mmQyKazDX7YgRpIkksmk8J9JpVKirpt5088ktMhkMvF76XR6X/F75m9mcnwP0vI9
+      nU7vWccXhSRJwo5FLpeLZJsXLfjPBFhnbE4AES6esThJJBJPwyf+twKTTCZFkEUmr+EvP4vH
+      46TTaXGMxeNxccxlytyZ/ZTRrUuStOd7f5tjdt+t9fDhQ2ZnZykpKcHr9eLxePjFL37x0kei
+      k8kk//Ef/8Hbb7/N0tISMzMzXLt2DY1Gw9TUFA6HA51Oh8FgwOPx8Pd///cEg0FWVlZE+S1j
+      G5KXl4fBYCAYDHLz5k1R7Tl//jxer5fi4mJ2dnYAsFgsX9twyWSSzc1N4OnGLywsFJoESZLw
+      eDyk02msVivf//73SSQSmEwmtra2KCwsPFBnuOXlZQYGBvD5fGJd29vbRQD1i6Kzs5NwOIzB
+      YGB1dRVJkvi7v/s7PvvsM3784x8zMjJCNBqltbWVlpYW/H4/77zzDv/yL//CrVu3iEajnD17
+      lsOHD+P1enn33Xf51a9+xUcffURtbS1nz54F4ObNmwSDQS5fvkxfXx/t7e1UVlai0Wj4+OOP
+      aWtrE8s/ceIEer2ezs5O5HI5BoMBt9tNNBrlH/7hH/ZkPPw5z3WGu3z5svAD+ulPf8q//du/
+      fWfNMJVKxczMDE6nk1QqxZ/+9Ceam5t58uSJqP3a7XbRmAkEAlitVpEQUldXx+TkJBqNhn/9
+      139lZWWFhoYGTp06RTAY5IsvvsBsNtPf38/a2hoGg4F//Md//FrYhMfj4eOPP0apVFJUVIRW
+      q2VjY4Njx47hcDgoLS1lcXERmUzGu+++C0BVVRUbGxt0dHSInXsQVFdXC2WWUqkU6fQv+gT4
+      4Q9/yMzMDE+ePKGlpQW5XI7X68VisRCLxUQ3N2PRKJfLsVgsRKNRdDodV65cYXR0lMOHD4vP
+      EokEeXl5eL1eYrEYRqORn//85zx48AC1Wk1ZWRmAuNpbLBZR44/H4wQCAXHnf/PNN3n33Xdp
+      a2vDYDDgcrn2PQGe6wzX09ODy+Xi8uXL/OY3v+H111//zgQxhYWFzM3NoVarxRfNyONycnKE
+      IOMvKS8vp7S0FJ/Px6lTp2hpaeHu3bu4XC5cLhfBYJDOzk4SiQRNTU34fD5KS0spLy/f1x7G
+      YrFQUVFBc3MzgUCA4uJi4VvZ0NCA3+8nHo9jNBq5dOkS5eXlVFdXMzc3d6DbJBgMcv/+fc6f
+      P09VVRWXLl3C6XQe6DKexfT0NH6/n7NnzxIKhQgEAphMJnJzc1EoFJSUlHDp0iV6e3u5ffs2
+      kiSh1WpFBtjOzo7Y7hk3OUmSaG9vp6GhgaWlJdLpNA8ePKCiooKKigrRVS4qKkKn04mf6+rq
+      uHLlCjMzMxQXF5NKpQiHwxiNRnFBMBgM+34XuVzO/wDyQNQw1tRylwAAAABJRU5ErkJggg==
     </thumbnail>
   </thumbnails>
 </workbook>

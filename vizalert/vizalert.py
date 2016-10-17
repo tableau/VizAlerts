@@ -30,7 +30,6 @@ VIZLINK_PLACEHOLDER = u'VIZ_LINK()'  # special string for embedding HTML links i
 
 # reserved strings for Advanced Alerts arguments
 EXPORTFILENAME_ARGUMENT = u'filename'
-EXPORTFILEPATH_ARGUMENT = u'exportfilepath'
 MERGEPDF_ARGUMENT = u'mergepdf'
 VIZLINK_ARGUMENT = u'vizlink'
 RAWLINK_ARGUMENT = u'rawlink'
@@ -56,25 +55,12 @@ EMAIL_CONSOLIDATE_FIELDKEY = u'Email Consolidate'
 # SMS Action fields
 SMS_ACTION_FIELDKEY = u'SMS Action'
 SMS_TO_FIELDKEY = u'SMS To'
-SMS_FROM_FIELDKEY = u'SMS From'
 SMS_MESSAGE_FIELDKEY = u'SMS Message'
-
-# File Copy Action fields
-FILE_COPY_ACTION_FIELDKEY = u'File Copy Action'
-FILE_COPY_TO_FIELDKEY = u'File Copy To'
-FILE_COPY_FROM_FIELDKEY = u'File Copy From'
-
-# File Delete action fields
-FILE_DELETE_ACTION_FIELDKEY = u'File Delete Action'
-FILE_DELETE_TARGET_FIELDKEY = u'File Delete Target'
-
 
 # reserved strings for Action Types
 GENERAL_ACTION_TYPE = u'General'
 EMAIL_ACTION_TYPE = u'Email'
 SMS_ACTION_TYPE = u'SMS'
-FILE_COPY_ACTION_TYPE = u'File Copy'
-FILE_DELETE_ACTION_TYPE = u'File Delete'
 
 # reserved strings for alert_types
 SIMPLE_ALERT = u'simple'
@@ -208,12 +194,8 @@ class VizAlert:
         # sms action config
         self.action_enabled_sms = 0
         self.allowed_recipient_numbers = u''
-        self.allowed_from_number = u''
+        self.from_number = u''
         self.phone_country_code = ''
-
-        # file action config
-        self.action_enabled_file = 0
-        self.allowed_filepath = u''
 
         # alert metadata
         self.alert_type = SIMPLE_ALERT
@@ -284,24 +266,8 @@ class VizAlert:
             ActionField(SMS_ACTION_FIELDKEY, SMS_ACTION_TYPE, True, True, u' ?SMS.Action.\*')
         self.action_field_dict[SMS_TO_FIELDKEY] = \
             ActionField(SMS_TO_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.To.\*')
-        self.action_field_dict[SMS_FROM_FIELDKEY] = \
-            ActionField(SMS_FROM_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.From.~')  # do we have a from?
         self.action_field_dict[SMS_MESSAGE_FIELDKEY] = \
             ActionField(SMS_MESSAGE_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.Message.\*')
-
-        # File Copy Action fields
-        self.action_field_dict[FILE_COPY_ACTION_FIELDKEY] = \
-            ActionField(FILE_COPY_ACTION_FIELDKEY, FILE_COPY_ACTION_TYPE, True, True, u' ?File.Copy.Action.\*')
-        self.action_field_dict[FILE_COPY_TO_FIELDKEY] = \
-            ActionField(FILE_COPY_TO_FIELDKEY, FILE_COPY_ACTION_TYPE, True, False, u' ?File.Copy.To.\*')
-        self.action_field_dict[FILE_COPY_FROM_FIELDKEY] = \
-            ActionField(FILE_COPY_FROM_FIELDKEY, FILE_COPY_ACTION_TYPE, True, False, u' ?File.Copy.From.\*')
-
-        # File Delete action fields
-        self.action_field_dict[FILE_DELETE_ACTION_FIELDKEY] = \
-            ActionField(FILE_DELETE_ACTION_FIELDKEY, FILE_DELETE_ACTION_TYPE, True, True, u' ?File.Delete.Action.\*')
-        self.action_field_dict[FILE_DELETE_TARGET_FIELDKEY] = \
-            ActionField(FILE_DELETE_TARGET_FIELDKEY, FILE_DELETE_ACTION_TYPE, True, False, u' ?File.Delete.Target.\*')
 
     def get_action_flag_field(self, action_type):
         """Return the appropriate action field representing an aciton flag based on the type
@@ -467,12 +433,6 @@ class VizAlert:
                                     u'SMS actions cannot be processed right now--no valid client. '
                                     u'Please contact your administrator.')
 
-                        # file copy actions
-                        if self.action_field_dict[action_field].action_type == FILE_COPY_ACTION_TYPE \
-                                and not self.action_enabled_file:
-                            self.action_field_dict[action_field].error_list.append(
-                                u'File actions are not allowed for this alert, per administrative settings')
-
                         # multiple matches are not allowed--we need to be sure which field to use for what
                         if len(self.action_field_dict[action_field].match_list) > 1:
                             self.action_field_dict[action_field].error_list.append(
@@ -596,9 +556,7 @@ class VizAlert:
                 numbererrors = smsaction.validate_smsnumbers(
                                                             self.trigger_data,
                                                             self.action_field_dict[SMS_TO_FIELDKEY].field_name,
-                                                            self.action_field_dict[SMS_FROM_FIELDKEY].field_name,
                                                             self.allowed_recipient_numbers,
-                                                            self.allowed_from_number,
                                                             self.phone_country_code)
                 if numbererrors:
                     errormessage = u'Invalid SMS numbers found: {}'.format(numbererrors)
@@ -962,7 +920,6 @@ class VizAlert:
                     # get the field names we'll need
                     sms_action_fieldname = self.action_field_dict[SMS_ACTION_FIELDKEY].field_name
                     sms_to_fieldname = self.action_field_dict[SMS_TO_FIELDKEY].field_name
-                    sms_from_fieldname = self.action_field_dict[SMS_FROM_FIELDKEY].field_name
                     sms_message_fieldname = self.action_field_dict[SMS_MESSAGE_FIELDKEY].field_name
 
                     sms_message = []  # list to support future header, footer, and consolidate features
@@ -974,13 +931,8 @@ class VizAlert:
                         #  use string value for maximum safety. all other values are ignored, currently
                         if row[sms_action_fieldname] == '1':
                             sms_to = row[sms_to_fieldname]
+                            sms_from = self.from_number  # currently only supporting admin-set numbers
                             sms_message.append(row[sms_message_fieldname])
-
-                            # not sure if author used this field
-                            if sms_from_fieldname:
-                                sms_from = row[sms_from_fieldname]
-                            else:
-                                sms_from = config.configs['smsaction.from_number']
 
                             sms_message = smsaction.sms_append_body(sms_message, vizcompleterefs, self)
 
@@ -1098,7 +1050,7 @@ class VizAlert:
                 vizstring = re.match(u'VIZ_.*?\((.*?)\)', vizref)
 
                 # vizstring may contain reference to the viz plus advanced alert parameters like
-                # a filename or exportpathname.
+                # a filename
 
                 # if there is no delimiter then at this point we know the vizstring
                 # is just a viz to use
@@ -1173,18 +1125,6 @@ class VizAlert:
                                             'formatstring'].lower()
                                     else:
                                         vizcompleterefs[vizref]['filename'] = filename
-
-                                # just getting the export filepath for now, will use it in a later update
-                                if element.startswith(EXPORTFILEPATH_ARGUMENT):
-                                    exportfilepath = re.match(EXPORTFILEPATH_ARGUMENT + u'=(.*)', element).group(1)
-                                    exportfilepath = posixpath.normpath(exportfilepath)
-
-                                    if os.path.isabs(filename) or '../' in exportfilepath or '..\\' in exportfilepath:
-                                        errormessage = u'Found an invalid or non-allowed export file path: ' \
-                                                       u'{} for content reference {}'.format(exportfilepath, vizref)
-                                        self.error_list.append(errormessage)
-                                        raise ValueError(errormessage)
-                                    vizcompleterefs[vizref]['exportfilepath'] = exportfilepath
 
                                 # looking for mergepdf
                                 if element.startswith(MERGEPDF_ARGUMENT) and vizcompleterefs[vizref][
