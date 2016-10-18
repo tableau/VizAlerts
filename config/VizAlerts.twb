@@ -12,14 +12,14 @@
         <calculation class='tableau' formula='&quot;.*yourdomain\.com&quot;' />
         <desc>
           <formatted-text>
-            <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/cc/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
             <run bold='true'>allowed_recipient_addresses </run>
             <run>calculation</run>
           </formatted-text>
         </desc>
       </column>
-      <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
-        <calculation class='tableau' formula='&quot;.*&quot;' />
+      <column caption='default_allowed_from_address' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;vizalerts@yourdomain\\.com&quot;'>
+        <calculation class='tableau' formula='&quot;vizalerts@yourdomain\.com&quot;' />
         <desc>
           <formatted-text>
             <run>System-wide default for describing what email address a VizAlert is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -1223,14 +1223,16 @@
         </desc>
       </column>
       <column caption='action_enabled_email' datatype='integer' default-format='n0;-0' name='[Calculation_7731007071204722]' role='dimension' type='ordinal'>
-        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send email&#13;&#10;    // 0 = false, no email may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any email to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_email]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 7]' scope-isolation='false' />
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send email&#13;&#10;    // 0 = false, no email may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any bulk emails to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_email]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 7]' scope-isolation='false' />
         <desc>
           <formatted-text>
-            <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any emails. Emails it attempts to send will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+            <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any emails through an Advanced Alert. Emails it attempts to send will still be restricted by the other settings you define.&#10;</run>
+            <run bold='true'>&#10;Note: </run>
+            <run>Simple Alerts are still allowed. To prevent a user from even that, you must filter their content out of the view entirely&#10;&#10;See examples in the calculation.</run>
           </formatted-text>
         </desc>
       </column>
-      <column caption='allowed_from_addresses' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
+      <column caption='allowed_from_address' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
         <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
         <desc>
           <formatted-text>
@@ -1424,14 +1426,14 @@
           <calculation class='tableau' formula='&quot;.*yourdomain\.com&quot;' />
           <desc>
             <formatted-text>
-              <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/cc/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
               <run bold='true'>allowed_recipient_addresses </run>
               <run>calculation</run>
             </formatted-text>
           </desc>
         </column>
-        <column caption='default_allowed_from_addresses' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;.*&quot;'>
-          <calculation class='tableau' formula='&quot;.*&quot;' />
+        <column caption='default_allowed_from_address' datatype='string' name='[Parameter 2]' param-domain-type='any' role='measure' type='nominal' value='&quot;vizalerts@yourdomain\\.com&quot;'>
+          <calculation class='tableau' formula='&quot;vizalerts@yourdomain\.com&quot;' />
           <desc>
             <formatted-text>
               <run>System-wide default for describing what email address a VizAlert is able to send email from, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
@@ -2174,14 +2176,16 @@
               </desc>
             </column>
             <column caption='action_enabled_email' datatype='integer' default-format='n0;-0' name='[Calculation_7731007071204722]' role='dimension' type='ordinal'>
-              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send email&#13;&#10;    // 0 = false, no email may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any email to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_email]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 7]' scope-isolation='false' />
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;    // 1 = true, the alert may send email&#13;&#10;    // 0 = false, no email may be sent&#13;&#10;&#13;&#10;// Example: &quot;Don&apos;t allow any bulk emails to be sent unless it&apos;s from a VizAlert in my own Server Administration project!&quot;&#13;&#10;//&#13;&#10;//      IF [project_name] = &apos;Server Administration&apos;&#13;&#10;//          THEN 1&#13;&#10;//          ELSE [default_action_enabled_email]&#13;&#10;//      END&#13;&#10;&#13;&#10;[Parameters].[Parameter 7]' scope-isolation='false' />
               <desc>
                 <formatted-text>
-                  <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any emails. Emails it attempts to send will still be restricted by the other settings you define.&#10;&#10;See examples in the calculation.</run>
+                  <run>This is simply a boolean value that denotes whether or not a VizAlert is able to send any emails through an Advanced Alert. Emails it attempts to send will still be restricted by the other settings you define.&#10;</run>
+                  <run bold='true'>&#10;Note: </run>
+                  <run>Simple Alerts are still allowed. To prevent a user from even that, you must filter their content out of the view entirely&#10;&#10;See examples in the calculation.</run>
                 </formatted-text>
               </desc>
             </column>
-            <column caption='allowed_from_addresses' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
+            <column caption='allowed_from_address' datatype='string' name='[Calculation_9040602154240465]' role='dimension' type='nominal'>
               <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
               <desc>
                 <formatted-text>

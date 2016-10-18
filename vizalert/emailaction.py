@@ -281,7 +281,7 @@ def get_mimetype(filename):
 
 
 def validate_addresses(vizdata,
-                       allowed_from_addresses,
+                       allowed_from_address,
                        allowed_recipient_addresses,
                        email_to_field,
                        email_from_field,
@@ -301,7 +301,7 @@ def validate_addresses(vizdata,
                 {'Row': rownum, 'Field': email_to_field, 'Value': result['address'], 'Error': result['errormessage']})
         if email_from_field:
             result = addresses_are_invalid(row[email_from_field], False,
-                                           allowed_from_addresses)  # empty string not acceptable as a From address
+                                           allowed_from_address)  # empty string not acceptable as a From address
             if result:
                 errorlist.append({'Row': rownum, 'Field': email_from_field, 'Value': result['address'],
                                   'Error': result['errormessage']})

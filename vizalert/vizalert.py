@@ -38,6 +38,7 @@ ARGUMENT_DELIMITER = u'|'
 # reserved strings for Action Field names (used as keys)
 # General use fields
 GENERAL_SORTORDER_FIELDKEY = u'Sort Order'
+CONSOLIDATE_LINES_FIELDKEY = u'Consolidate Lines'
 
 # Email Action fields
 EMAIL_ACTION_FIELDKEY = u'Email Action'
@@ -50,12 +51,13 @@ EMAIL_BODY_FIELDKEY = u'Email Body'
 EMAIL_ATTACHMENT_FIELDKEY = u'Email Attachment'
 EMAIL_HEADER_FIELDKEY = u'Email Header'
 EMAIL_FOOTER_FIELDKEY = u'Email Footer'
-EMAIL_CONSOLIDATE_FIELDKEY = u'Email Consolidate'
 
 # SMS Action fields
 SMS_ACTION_FIELDKEY = u'SMS Action'
 SMS_TO_FIELDKEY = u'SMS To'
 SMS_MESSAGE_FIELDKEY = u'SMS Message'
+SMS_HEADER_FIELDKEY = u'SMS Header'
+SMS_FOOTER_FIELDKEY = u'SMS Footer'
 
 # reserved strings for Action Types
 GENERAL_ACTION_TYPE = u'General'
@@ -188,7 +190,7 @@ class VizAlert:
 
         # email action config
         self.action_enabled_email = 0
-        self.allowed_from_addresses = u''
+        self.allowed_from_address = u''
         self.allowed_recipient_addresses = u''
 
         # sms action config
@@ -236,6 +238,8 @@ class VizAlert:
         # General
         self.action_field_dict[GENERAL_SORTORDER_FIELDKEY] = \
             ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Sort.Order')
+        self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY] = \
+            ActionField(CONSOLIDATE_LINES_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*.Consolidate')
 
         # Email Action fields
         self.action_field_dict[EMAIL_ACTION_FIELDKEY] = \
@@ -258,8 +262,6 @@ class VizAlert:
             ActionField(EMAIL_FOOTER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Footer')
         self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY] = \
             ActionField(EMAIL_ATTACHMENT_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Attachment')
-        self.action_field_dict[EMAIL_CONSOLIDATE_FIELDKEY] = \
-            ActionField(EMAIL_CONSOLIDATE_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Consolidate')
 
         # SMS Action fields
         self.action_field_dict[SMS_ACTION_FIELDKEY] = \
@@ -268,6 +270,10 @@ class VizAlert:
             ActionField(SMS_TO_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.To.\*')
         self.action_field_dict[SMS_MESSAGE_FIELDKEY] = \
             ActionField(SMS_MESSAGE_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.Message.\*')
+        self.action_field_dict[SMS_HEADER_FIELDKEY] = \
+            ActionField(SMS_HEADER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Header.\*')
+        self.action_field_dict[SMS_FOOTER_FIELDKEY] = \
+            ActionField(SMS_FOOTER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Footer.\*')
 
     def get_action_flag_field(self, action_type):
         """Return the appropriate action field representing an aciton flag based on the type
@@ -386,9 +392,14 @@ class VizAlert:
 
             log.logger.debug(u'searching for action fields')
 
+            # collect all the action flags we found
+            action_flags = []
+            for i, found_flag in self.action_field_dict.iteritems():
+                if found_flag.is_action_flag and found_flag.has_match():
+                    action_flags.append(found_flag.name)
+
             # did we find at least one action flag?
-            if any(i.is_action_flag and i.has_match()
-                   for key, i in self.action_field_dict.iteritems()):
+            if len(action_flags) > 0:
 
                 self.alert_type = ADVANCED_ALERT  # we know this is an advanced alert now
                 log.logger.debug(u'Advanced alert detected')
@@ -454,15 +465,15 @@ class VizAlert:
                                         self.action_field_dict[action_flag].get_user_facing_fieldname(),
                                         self.action_field_dict[action_field].action_type))
 
-                            # may not use "Email Consolidate" field for anything but email actions
+                            # may not use "Email Consolidate" field on both Email and SMS at the same time
                             #   Might revisit in the future, but for now it's too confusing to support in anything else
-                            if self.action_field_dict[action_field].name == EMAIL_CONSOLIDATE_FIELDKEY and \
-                                    any(i.is_action_flag and i.has_match() and i.action_type != EMAIL_ACTION_TYPE
-                                        for key, i in self.action_field_dict.iteritems()):
+                            if self.action_field_dict[action_field].name == CONSOLIDATE_LINES_FIELDKEY and \
+                                    EMAIL_ACTION_FIELDKEY in action_flags and SMS_ACTION_FIELDKEY in action_flags:
                                 self.action_field_dict[action_field].error_list.append(
-                                    u'{} may not be used with any action except {}'.format(
+                                    u'{} may not be used with both {} and {}'.format(
                                         self.action_field_dict[action_field].name,
-                                        self.action_field_dict[action_flag].action_type))
+                                        EMAIL_ACTION_FIELDKEY,
+                                        SMS_ACTION_FIELDKEY))
 
                     else:  # the field has no matches
                         # missing fields that are required
@@ -537,7 +548,7 @@ class VizAlert:
                 log.logger.debug(u'Validating email addresses')
                 addresserrors = emailaction.validate_addresses(
                                                             self.trigger_data,
-                                                            self.allowed_from_addresses, 
+                                                            self.allowed_from_address,
                                                             self.allowed_recipient_addresses,
                                                             self.action_field_dict[EMAIL_TO_FIELDKEY].field_name,
                                                             self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name,
@@ -561,7 +572,7 @@ class VizAlert:
                 if numbererrors:
                     errormessage = u'Invalid SMS numbers found: {}'.format(numbererrors)
                     log.logger.error(errormessage)
-                    trigger_data_errors.extend(errormessage)
+                    trigger_data_errors.extend(numbererrors)
 
 
             ##################################################################
@@ -621,7 +632,7 @@ class VizAlert:
         self.download_trigger_data()
 
         if self.trigger_data_rowcount == 0:
-            log.logger.debug(u'Nothing to do! No rows in trigger data from file {}'.format(self.trigger_data_file))
+            log.logger.info(u'Nothing to do! No rows in trigger data from file {}'.format(self.trigger_data_file))
         else:
             log.logger.debug(u'Got trigger data, now parsing fields')
 
@@ -720,6 +731,9 @@ class VizAlert:
                 data = self.get_unique_vizdata()
                 rowcount_unique = len(data)
 
+                # determine whether we're consolidating lines
+                consolidate_lines_fieldname = self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name
+
                 # process emails
                 if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name:
                     log.logger.debug(u'Processing emails')
@@ -733,7 +747,6 @@ class VizAlert:
                     email_subject_fieldname = self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name
                     email_body_fieldname = self.action_field_dict[EMAIL_BODY_FIELDKEY].field_name
                     email_header_fieldname = self.action_field_dict[EMAIL_HEADER_FIELDKEY].field_name
-                    email_consolidate_fieldname = self.action_field_dict[EMAIL_CONSOLIDATE_FIELDKEY].field_name
 
                     # iterate through the rows and send emails accordingly
                     consolidate_email_ctr = 0
@@ -765,13 +778,14 @@ class VizAlert:
                             else:
                                 email_bcc = None
 
-                            # Append header row, if provided
+                            # Append header row, if provided -- but only if this is the first consolidation iteration
+                            #  (for non-consoidated setting, each row will always be the first iteration)
                             if email_header_fieldname and consolidate_email_ctr == 0:
                                 log.logger.debug(u'Appending body header')
                                 body.append(row[email_header_fieldname])
 
                             # If rows are being consolidated, consolidate all with same recipients & subject
-                            if email_consolidate_fieldname:
+                            if consolidate_lines_fieldname:
                                 # could put a test in here for mixing consolidated and non-consolidated emails in
                                 #   the same trigger view, would also need to check the sort in get_unique_vizdata
 
@@ -877,13 +891,6 @@ class VizAlert:
                                     email_bcc,
                                     row[email_subject_fieldname]))
 
-                                consolidate_email_ctr = 0  # I think this is redundant now...
-                                body = []
-
-                                # add the header if needed
-                                if email_header_fieldname:
-                                    body.append(row[email_header_fieldname])
-
                                 body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments, row,
                                                                                             vizcompleterefs)
                                 appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
@@ -902,8 +909,9 @@ class VizAlert:
                                     self.error_list.append(errormessage)
                                     raise UserWarning(errormessage)
 
-                                inlineattachments = []
                                 body = []
+                                consolidate_email_ctr = 0
+                                inlineattachments = []
                                 appendattachments = []
                         # we're not performing any actions this round.
                         #   Make sure we reset our variables again
@@ -921,7 +929,9 @@ class VizAlert:
                     sms_action_fieldname = self.action_field_dict[SMS_ACTION_FIELDKEY].field_name
                     sms_to_fieldname = self.action_field_dict[SMS_TO_FIELDKEY].field_name
                     sms_message_fieldname = self.action_field_dict[SMS_MESSAGE_FIELDKEY].field_name
+                    sms_header_fieldname = self.action_field_dict[SMS_HEADER_FIELDKEY].field_name
 
+                    consolidate_sms_ctr = 0
                     sms_message = []  # list to support future header, footer, and consolidate features
 
                     # Process each row of data
@@ -932,29 +942,124 @@ class VizAlert:
                         if row[sms_action_fieldname] == '1':
                             sms_to = row[sms_to_fieldname]
                             sms_from = self.from_number  # currently only supporting admin-set numbers
-                            sms_message.append(row[sms_message_fieldname])
 
-                            sms_message = smsaction.sms_append_body(sms_message, vizcompleterefs, self)
+                            # Append header row, if provided - only for the first consolidation iteration
+                            #   if lines aren't being consolidated, each row will always be the first iteration
+                            if sms_header_fieldname and consolidate_sms_ctr == 0:
+                                sms_message.append(row[sms_header_fieldname])
 
-                            log.logger.debug(u'Converting phone number list {} to E.164'.format(sms_to))
+                            # If rows are being consolidated, consolidate the message text where it's being sent
+                            #  to the same recipients
+                            if consolidate_lines_fieldname:
+                                # could put a test in here for mixing consolidated and non-consolidated emails in
+                                #   the same trigger view, would also need to check the sort in get_unique_vizdata
 
-                            # make list of all SMS addresses - they already went through 1st validation
-                            smsaddresses = smsaction.get_e164numbers(sms_to, self.phone_country_code)
+                                log.logger.debug(
+                                    u'Consolidate value is true, row index is {}, rowcount is {}'.format(i, rowcount_unique))
 
-                            log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
-                                smsaddresses,
-                                sms_from,
-                                sms_message))
+                                # test for end of iteration--if done, take what we have so far and send it
+                                if i + 1 == rowcount_unique:
 
-                            # send the message
-                            for smsaddress in smsaddresses:
-                                errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                if errormessage:
-                                    self.error_list.append(u'Could not send SMS, error: {}'.format(errormessage))
+                                    # finalize the message by adding any footers and replacing content references
+                                    sms_message = smsaction.sms_append_body(sms_message, vizcompleterefs, row, self)
 
-                                    # since we've had one failure, bail on the entire VizAlert
-                                    self.alert_failure()
-                                    return
+                                    log.logger.debug(u'Converting phone number list {} to E.164'.format(sms_to))
+
+                                    # make list of all SMS addresses - they already went through 1st validation
+                                    smsaddresses = smsaction.get_e164numbers(sms_to, self.phone_country_code)
+
+                                    log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
+                                        smsaddresses,
+                                        sms_from,
+                                        ''.join(sms_message)))
+
+                                    # send the message(s) (multiple  for multiple phone numbers)
+                                    for smsaddress in smsaddresses:
+                                        errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
+                                        if errormessage:
+                                            self.error_list.append(u'Could not send SMS, error: {}'.format(errormessage))
+
+                                            # since we've had one failure, bail on the entire VizAlert
+                                            self.alert_failure()
+                                            return
+
+                                    # reset variables for next email
+                                    sms_message = []
+                                    consolidate_sms_ctr = 0
+                                else:
+                                    # This isn't the end, and we're consolidating rows, so test to see
+                                    # if the next row needs to be a new SMS
+
+                                    this_row_sms_recipients = []
+                                    next_row_sms_recipients = []
+
+                                    this_row_sms_recipients.append(row[sms_to_fieldname])
+
+                                    # check if we're sending an email at all in the next row
+                                    next_row_sms_action = data[i + 1][sms_action_fieldname]
+                                    next_row_sms_recipients.append(data[i + 1][sms_to_fieldname])
+
+                                    # Now compare the data from the rows
+                                    if this_row_sms_recipients == next_row_sms_recipients and next_row_sms_action:
+                                        log.logger.debug(
+                                            u'Next row matches recips and subject, appending message')
+                                        sms_message.append(row[sms_message_fieldname])
+                                        consolidate_sms_ctr += 1
+                                    else:
+                                        log.logger.debug(u'Next row does not match sms_to values, sending consolidated sms')
+
+                                        # append the body and footer
+                                        sms_message = smsaction.sms_append_body(sms_message, vizcompleterefs, row, self)
+
+                                        # make list of all SMS addresses - they already went through 1st validation
+                                        smsaddresses = smsaction.get_e164numbers(sms_to, self.phone_country_code)
+
+                                        log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
+                                            smsaddresses,
+                                            sms_from,
+                                            ''.join(sms_message)))
+
+                                        # send the message(s) (multiple for multiple phone numbers)
+                                        for smsaddress in smsaddresses:
+                                            errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
+                                            if errormessage:
+                                                self.error_list.append(
+                                                    u'Could not send SMS, error: {}'.format(errormessage))
+
+                                                # since we've had one failure, bail on the entire VizAlert
+                                                self.alert_failure()
+                                                return
+                                        # reset the variables for the next message
+                                        sms_message = []
+                                        consolidate_sms_ctr = 0
+                            else:
+                                # we're not consolidating, so just send the SMS
+
+                                # append the body and footer
+                                sms_message = smsaction.sms_append_body(sms_message, vizcompleterefs, row, self)
+
+                                # make list of all SMS addresses - they already went through 1st validation
+                                smsaddresses = smsaction.get_e164numbers(sms_to, self.phone_country_code)
+
+                                log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
+                                    smsaddresses,
+                                    sms_from,
+                                    ''.join(sms_message)))
+
+                                # send the message(s) (multiple for multiple phone numbers)
+                                for smsaddress in smsaddresses:
+                                    errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
+                                    if errormessage:
+                                        self.error_list.append(
+                                            u'Could not send SMS, error: {}'.format(errormessage))
+
+                                        # since we've had one failure, bail on the entire VizAlert
+                                        self.alert_failure()
+                                        return
+                                # reset the variables for the next message
+                                sms_message = []
+                                consolidate_sms_ctr = 0
+
             else:
                 errormessage = u'Could not determine alert type, due to a bug in VizAlerts. ' \
                                u'Please contact the developers'
@@ -1232,7 +1337,7 @@ class VizAlert:
         #  MC: Shouldn't Sort Order prevail over these? Otherwise we potentially override the user's intent on how
         #   emails are consolidated...
         if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name \
-                and self.action_field_dict[EMAIL_CONSOLIDATE_FIELDKEY].field_name:
+                and self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name:
             log.logger.debug(u'Sorting by BCC')
             if self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name:
                 uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))

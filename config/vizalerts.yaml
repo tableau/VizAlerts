@@ -47,7 +47,7 @@ smsaction.auth_token: ''                        # auth token, for Twilio http://
                                                     # OR it can be a valid path to a .txt file containing the auth token, e.g. 'c:\users\mcoles\authtoken.txt'
 
 # Processing settings
-threads: 1                                      # Number of threads VizAlerts will use to process alerts
+threads: 2                                      # Number of threads VizAlerts will use to process alerts
                                                      # Higher = More alerts process at once, increased server load
                                                      # Lower = Fewer alerts processed at once, decreased server load
                                                      #    Content references within a single alert are processed serially

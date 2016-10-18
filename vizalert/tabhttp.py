@@ -73,7 +73,10 @@ def get_trusted_ticket(server, sitename, username, encrypt, certcheck=True, cert
                 response = urllib2.urlopen(request, cafile=certfile)
             else:
                 # We're either not using SSL, or just not validating the certificate
-                log.logger.debug('NOT using SSL and NOT verifying cert')
+                if encrypt:
+                    log.logger.debug('using SSL and NOT verifying cert')
+                else:
+                    log.logger.debug('NOT using SSL and NOT verifying cert')
                 context = ssl._create_unverified_context()
                 request = urllib2.Request(trustedurl, data)
                 response = urllib2.urlopen(request, context=context)

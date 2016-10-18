@@ -61,9 +61,9 @@ class VizAlertWorker(threading.Thread):
                 try:
                     alert.execute_alert()
                 except Exception as e:
-                    errormessage = u'Unable to export viewname {} as {}, error: {}'.format(alert.view_name,
-                                                                                           tabhttp.Format.CSV,
-                                                                                           e.message)
+                    errormessage = u'Unable to process alert {} as {}, error: {}'.format(alert.view_name,
+                                                                                         tabhttp.Format.CSV,
+                                                                                         e.message)
                     log.logger.error(errormessage)
                     alert.error_list.append(errormessage)
                     alert.alert_failure()
@@ -151,10 +151,10 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
         # loop until work is done
         while 1 == 1:
             if threading.active_count() == 1:
-                log.logger.debug('Worker threads have completed. Exiting')
+                log.logger.info('Worker threads have completed. Exiting')
                 return
             time.sleep(10)
-            log.logger.debug('Waiting on {} worker threads. Currently active threads:: {}'.format(threading.active_count() - 1,threading.enumerate()))
+            log.logger.info('Waiting on {} worker threads. Currently active threads:: {}'.format(threading.active_count() - 1,threading.enumerate()))
 
 
 def trusted_ticket_test():
@@ -249,7 +249,7 @@ def get_alerts():
 
             # Email actions
             alert.action_enabled_email = int(line['action_enabled_email'])
-            alert.allowed_from_addresses = line['allowed_from_addresses']
+            alert.allowed_from_address = line['allowed_from_address']
             alert.allowed_recipient_addresses = line['allowed_recipient_addresses']            
             
             # SMS actions

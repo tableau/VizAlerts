@@ -17,6 +17,9 @@ smsclient = None
 # regular expression used to split recipient number strings into separate phone numbers
 SMS_RECIP_SPLIT_REGEX = u'[;,]*'
 
+# appended to the bottom of all SMS messages, unless overidden
+# expecting smsfooter.format(subscriber_email)
+smsfooter = u'\r\rThis VizAlert SMS sent on behalf of {}'
 
 def get_sms_client():
     """Generic function get an SMS client object. This only works with Twilio at this time."""
@@ -96,9 +99,19 @@ def send_sms(sms_from, sms_to, msgbody=None):
     return None
 
 
-def sms_append_body(body, vizcompleterefs, alert):
-    """Generic function for filling SMS body text with hyperlink references
-        for inline attachments and hyperlink text"""
+def sms_append_body(body, vizcompleterefs, row, alert):
+    """Generic function for filling SMS body text with the body & footers from the csv
+        plus inserting content references"""
+    body.append(row[alert.action_field_dict[vizalert.SMS_MESSAGE_FIELDKEY].field_name])
+
+    # add the footer if needed
+    if alert.action_field_dict[vizalert.SMS_FOOTER_FIELDKEY].field_name:
+        body.append(row[alert.action_field_dict[vizalert.SMS_FOOTER_FIELDKEY].field_name].replace(
+            alert.DEFAULT_FOOTER,
+            smsfooter.format(alert.subscriber_email)))
+    else:
+        # no footer specified, add the default footer
+        body.append(smsfooter.format(alert.subscriber_email))
 
     # find all distinct content references in the email body list
     # so we can replace each with an inline image or hyperlink text
