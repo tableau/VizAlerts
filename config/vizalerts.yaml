@@ -38,8 +38,16 @@ trusted.useclientip: false                      # use clientip for trusted ticke
                                                     # This is optional. Please see http://onlinehelp.tableausoftware.com/current/server/en-us/trusted_auth_optional.htm
 trusted.clientip: null                          # IP address of THIS host. Only needed if trusted.useclientip is set to true. Otherwise, just leave it null.
 
+# SMS Settings
+smsaction.enable: false                         # use these settings to enable SMS messages. If false, we won't even check them, and all SMS attempts will fail
+smsaction.provider: twilio                      # the only allowed provider currently is twilio
+smsaction.account_id: ''                        # account ID, for Twilio this is the account SID from http://twilio.com/user/account
+smsaction.auth_token: ''                        # auth token, for Twilio http://twilio.com/user/account
+                                                    # This can either be a plaintext password enclosed in quotes, e.g. 'eyJ0eXAiOiJKV1QiLCJhbGciO...'
+                                                    # OR it can be a valid path to a .txt file containing the auth token, e.g. 'c:\users\mcoles\authtoken.txt'
+
 # Processing settings
-threads: 1                                      # Number of threads VizAlerts will use to process alerts
+threads: 2                                      # Number of threads VizAlerts will use to process alerts
                                                      # Higher = More alerts process at once, increased server load
                                                      # Lower = Fewer alerts processed at once, decreased server load
                                                      #    Content references within a single alert are processed serially
