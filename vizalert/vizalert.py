@@ -383,7 +383,6 @@ class VizAlert:
 
         try:
             # go through all possible fields and find matches
-            action_field_updates = []
             for key in self.action_field_dict:
                 for field in self.read_trigger_data().fieldnames:
                     if re.match(self.action_field_dict[key].pattern, field, re.IGNORECASE):
@@ -437,6 +436,7 @@ class VizAlert:
                             if not config.configs['smsaction.enable']:
                                 self.action_field_dict[action_field].error_list.append(
                                     u'SMS actions are not enabled, per administrative settings')
+                            if not self.action_enabled_sms:
                                 self.action_field_dict[action_field].error_list.append(
                                     u'SMS actions are not allowed for this alert, per administrative settings')
                             elif not smsaction.smsclient:
