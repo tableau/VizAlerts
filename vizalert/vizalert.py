@@ -265,15 +265,15 @@ class VizAlert:
 
         # SMS Action fields
         self.action_field_dict[SMS_ACTION_FIELDKEY] = \
-            ActionField(SMS_ACTION_FIELDKEY, SMS_ACTION_TYPE, True, True, u' ?SMS.Action.\*')
+            ActionField(SMS_ACTION_FIELDKEY, SMS_ACTION_TYPE, True, True, u' ?SMS.Action')
         self.action_field_dict[SMS_TO_FIELDKEY] = \
-            ActionField(SMS_TO_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.To.\*')
+            ActionField(SMS_TO_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.To')
         self.action_field_dict[SMS_MESSAGE_FIELDKEY] = \
-            ActionField(SMS_MESSAGE_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.Message.\*')
+            ActionField(SMS_MESSAGE_FIELDKEY, SMS_ACTION_TYPE, True, False, u' ?SMS.Message')
         self.action_field_dict[SMS_HEADER_FIELDKEY] = \
-            ActionField(SMS_HEADER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Header.\*')
+            ActionField(SMS_HEADER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Header')
         self.action_field_dict[SMS_FOOTER_FIELDKEY] = \
-            ActionField(SMS_FOOTER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Footer.\*')
+            ActionField(SMS_FOOTER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Footer')
 
     def get_action_flag_field(self, action_type):
         """Return the appropriate action field representing an aciton flag based on the type
@@ -630,6 +630,11 @@ class VizAlert:
         log.logger.debug(u'Starting to download trigger data')
 
         self.download_trigger_data()
+
+        # were there any problems? if so, bail
+        if len(self.error_list) > 0:
+            self.alert_failure()
+            return
 
         if self.trigger_data_rowcount == 0:
             log.logger.info(u'Nothing to do! No rows in trigger data from file {}'.format(self.trigger_data_file))

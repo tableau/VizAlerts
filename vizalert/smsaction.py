@@ -107,7 +107,7 @@ def sms_append_body(body, vizcompleterefs, row, alert):
     # add the footer if needed
     if alert.action_field_dict[vizalert.SMS_FOOTER_FIELDKEY].field_name:
         body.append(row[alert.action_field_dict[vizalert.SMS_FOOTER_FIELDKEY].field_name].replace(
-            alert.DEFAULT_FOOTER,
+            vizalert.DEFAULT_FOOTER,
             smsfooter.format(alert.subscriber_email)))
     else:
         # no footer specified, add the default footer
