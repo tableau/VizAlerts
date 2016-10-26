@@ -43,7 +43,7 @@ valid_conf_keys = \
     'trusted.clientip',
     'trusted.useclientip',
     'vizalerts.source.viz',
-    'vizalerts.viz.site']
+    'vizalerts.source.site']
 
 def validate_conf(configfile):
     """Import config values and do some basic validations"""
@@ -105,7 +105,22 @@ def validate_conf(configfile):
             sys.exit(1)
 
     # validate SMS settings
-    if localconfigs['smsaction.provider']:
+    if localconfigs['smsaction.enable']:
+
+        # check for a valid provider
+        if not localconfigs['smsaction.provider']:
+            errormessage = u'Configuration value smsaction.provider must be set to enable SMS messaging'
+            print errormessage
+            log.logger.error(errormessage)
+            sys.exit(1)
+        elif localconfigs['smsaction.provider'] != 'twilio':
+            errormessage = u'Configuration value smsaction.provider must be "twilio"; no other providers currently ' \
+                           u'supported.'
+            print errormessage
+            log.logger.error(errormessage)
+            sys.exit(1)
+
+        # check for an account id
         if not localconfigs['smsaction.account_id']:
             errormessage = u'Configuration value smsaction.account_id must be set to enable SMS messaging'
             print errormessage

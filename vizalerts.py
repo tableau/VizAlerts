@@ -195,7 +195,7 @@ def get_alerts():
 
     source_viz = vizalert.VizAlert(
         config.configs['vizalerts.source.viz'],
-        config.configs['vizalerts.viz.site'],
+        config.configs['vizalerts.source.site'],
         config.configs['server.user'],
         config.configs['server.user.domain'])
     source_viz.view_name = 'VizAlerts Source Viz'
