@@ -26,7 +26,7 @@ server.user.domain: null                        # the domain for the server.user
                                                   # Leave as null (no quotes) if Tableau Server uses local authentication
                                                   # Set to the domain if using AD authentication, e.g. 'mycompany.com'
 vizalerts.source.viz: 'VizAlerts/AlertList'     # Viz to pull list of alerts from. Must be of the form 'WorkbookURL/ViewUrl'
-vizalerts.viz.site: 'Default'                   # Site that the vizalerts.source.viz exists within. Leave as 'Default' if using the default site.
+vizalerts.source.site: 'Default'                # Site that the vizalerts.source.viz exists within. Leave as 'Default' if using the default site.
 
 # Security settings
 server.ssl: false                               # use HTTPS for Server connections (recommended, but left off by default for testing)

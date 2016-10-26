@@ -12,7 +12,11 @@
         <calculation class='tableau' formula='&quot;.*yourdomain\.com&quot;' />
         <desc>
           <formatted-text>
-            <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/cc/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+            <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/cc/bcc, defined as a </run>
+            <run bold='true'>single</run>
+            <run>Æ </run>
+            <run bold='true'>regular expression</run>
+            <run>.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
             <run bold='true'>allowed_recipient_addresses </run>
             <run>calculation</run>
           </formatted-text>
@@ -90,6 +94,13 @@
       </column>
       <column caption='schedule_name_filter' datatype='string' name='[Parameter 9]' param-domain-type='any' role='measure' type='nominal' value='&quot;lert&quot;'>
         <calculation class='tableau' formula='&quot;lert&quot;' />
+        <desc>
+          <formatted-text>
+            <run>This is just a substring to look for in the names of your disabled subscription schedules on Tableau Server, to identify VizAlerts schedules from other schedules that happen to be disabled. It is not case-sensitive.&#10;&#10;The default is </run>
+            <run bold='true'>&quot;lert&quot;</run>
+            <run> because it&apos;s expected to be both precise enough and general enough to obtain the correct results for nearly all Tableau Server instances running VizAlerts. However, if you use different naming conventions on your schedules, you can change this to match them.</run>
+          </formatted-text>
+        </desc>
       </column>
       <column caption='default_action_enabled_sms' datatype='integer' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
         <calculation class='tableau' formula='1' />
@@ -1174,7 +1185,20 @@
         <calculation class='tableau' formula='// Use this calculation to define what To/CC/BCC address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address(es) listed in the &quot; Email To *&quot; and other recipient fields must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;    // It&apos;s generally recommended to keep the default setting, which will allow any alert to send mail to any &#13;&#10;    //     internal addresses, but not to any external addresses&#13;&#10;&#13;&#10;[Parameters].[Parameter 1]&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to send mail to their personal email accounts, but restrict everyone else to internal email:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE [default_allowed_recipient_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow specific VizAlerts to send mail to anyone, Admins to their personal accounts, and everyone else just to themselves:&#13;&#10;        //&#13;&#10;        // IF [workbook_repository_url] + &apos;/&apos; + [view_name] = &apos;VizAlerts_RecipientTests/ToCC&apos; THEN &apos;.*&apos;&#13;&#10;        // ELSEIF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE REPLACE([subscriber_email], &apos;.&apos;, &apos;\.&apos;) // Period must be escaped in regex&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
         <desc>
           <formatted-text>
-            <run>Describes what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+            <run>Describes the </run>
+            <run bold='true'>regular expression pattern </run>
+            <run>that </run>
+            <run italic='true'>each</run>
+            <run> recipient email address for a given VizAlert must match. If </run>
+            <run bold='true'>any</run>
+            <run> recipient addresses do not match this pattern when the alert runs, the alert will fail before any emails are sent.</run>
+            <run bold='true'>Æ&#10;</run>
+            <run>&#10;Regular expressions allow for complex pattern definitions. If you are not familiar with them, it&apos;s recommended that you visit </run>
+            <run bold='true'>www.regular-expressions.info</run>
+            <run> for more information about regex patterns.</run>
+            <run bold='true'>Æ&#10;</run>
+            <run>&#10;Note in particular that characters such as period (.) must be escaped with the backslash (\) character. </run>
+            <run bold='true'>&#10;&#10;See examples by editing the calculation.</run>
           </formatted-text>
         </desc>
       </column>
@@ -1201,7 +1225,7 @@
         </desc>
       </column>
       <column aggregation='Sum' caption='timeout_s' datatype='integer' default-format='n0;-0' name='[Calculation_2380602155000967]' role='dimension' type='ordinal'>
-        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;//      The calculation below uses a method failry consistent with past VizAlerts behavior,&#13;&#10;//       namely that more frequently-running schedules are afforded shorter timeouts.&#13;&#10;//      But you can customize this however you want.&#13;&#10;&#13;&#10;CASE [Calculation_1880608160023327]&#13;&#10;    WHEN &apos;Hourly&apos; THEN [Parameters].[Parameter 3] // most people subscribe to their VizAlerts on hourly schedules, so let&apos;s use the default for that&#13;&#10;    WHEN &apos;Daily&apos; THEN 300&#13;&#10;    WHEN &apos;Weekly&apos; THEN 300&#13;&#10;    WHEN &apos;Monthly&apos; THEN 300&#13;&#10;    ELSE [Parameters].[Parameter 3]&#13;&#10;END' scope-isolation='false' />
+        <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;//      The calculation below uses a method fairly consistent with past VizAlerts behavior,&#13;&#10;//       namely that more frequently-running schedules are afforded shorter timeouts.&#13;&#10;//      But you can customize this however you want.&#13;&#10;&#13;&#10;CASE [Calculation_1880608160023327]&#13;&#10;    WHEN &apos;Hourly&apos; THEN [Parameters].[Parameter 3] // most people subscribe to their VizAlerts on hourly schedules, so let&apos;s use the default for that&#13;&#10;    WHEN &apos;Daily&apos; THEN 300&#13;&#10;    WHEN &apos;Weekly&apos; THEN 300&#13;&#10;    WHEN &apos;Monthly&apos; THEN 300&#13;&#10;    ELSE [Parameters].[Parameter 3]&#13;&#10;END' scope-isolation='false' />
         <desc>
           <formatted-text>
             <run>The number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;This timeout value will also apply to any content references within the VizAlert--but each will start the count over again, so it is not a cumulative timeout for </run>
@@ -1236,7 +1260,20 @@
         <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
         <desc>
           <formatted-text>
-            <run>Describes what email address this VizAlert is able to send email from, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+            <run>Describes the </run>
+            <run bold='true'>regular expression pattern </run>
+            <run>that the </run>
+            <run bold='true'>From</run>
+            <run>email address for a given VizAlert must match. If the </run>
+            <run bold='true'>From address </run>
+            <run>does not match this pattern when the alert runs, the alert will fail before any emails are sent.</run>
+            <run bold='true'>Æ&#10;</run>
+            <run>&#10;Regular expressions allow for complex pattern definitions. If you are not familiar with them, it&apos;s recommended that you visit </run>
+            <run bold='true'>www.regular-expressions.info</run>
+            <run> for more information about regex patterns.</run>
+            <run bold='true'>Æ&#10;</run>
+            <run>&#10;Note in particular that characters such as period (.) must be escaped with the backslash (\) character. </run>
+            <run bold='true'>&#10;&#10;See examples by editing the calculation.</run>
           </formatted-text>
         </desc>
       </column>
@@ -1426,7 +1463,11 @@
           <calculation class='tableau' formula='&quot;.*yourdomain\.com&quot;' />
           <desc>
             <formatted-text>
-              <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/cc/bcc, defined as a regular expression.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
+              <run>System-wide default for describing what email address(es) this VizAlert is able to send email to/from/cc/bcc, defined as a </run>
+              <run bold='true'>single</run>
+              <run>Æ </run>
+              <run bold='true'>regular expression</run>
+              <run>.&#10;&#10;For more information, or to override this setting dynamically, see the </run>
               <run bold='true'>allowed_recipient_addresses </run>
               <run>calculation</run>
             </formatted-text>
@@ -1504,6 +1545,13 @@
         </column>
         <column caption='schedule_name_filter' datatype='string' name='[Parameter 9]' param-domain-type='any' role='measure' type='nominal' value='&quot;lert&quot;'>
           <calculation class='tableau' formula='&quot;lert&quot;' />
+          <desc>
+            <formatted-text>
+              <run>This is just a substring to look for in the names of your disabled subscription schedules on Tableau Server, to identify VizAlerts schedules from other schedules that happen to be disabled. It is not case-sensitive.&#10;&#10;The default is </run>
+              <run bold='true'>&quot;lert&quot;</run>
+              <run> because it&apos;s expected to be both precise enough and general enough to obtain the correct results for nearly all Tableau Server instances running VizAlerts. However, if you use different naming conventions on your schedules, you can change this to match them.</run>
+            </formatted-text>
+          </desc>
         </column>
         <column caption='default_action_enabled_sms' datatype='integer' name='[default_action_email_enabled (copy)]' param-domain-type='list' role='measure' type='quantitative' value='1'>
           <calculation class='tableau' formula='1' />
@@ -2089,13 +2137,17 @@
       <layout-options>
         <caption>
           <formatted-text>
-            <run fontsize='12'>This view provides VizAlerts the information it needs to process all the VizAlerts created on Tableau Server, at the right times. It&apos;s intended to allow for very flexible customization that will allow the administrator fine-grained control over which alerts may perform certain kinds of actions.&#10;&#10;First, set the </run>
-            <run bold='true' fontsize='12'>default configuration values</run>
-            <run fontsize='12'> that you prefer using the Parameter controls on the upper right. If you&apos;d like to better understand what each does, hover over the parameter name in the Parameters pane on the lower left.&#10;&#10;Now, if you want to grant an </run>
-            <run bold='true' fontsize='12'>exception</run>
-            <run fontsize='12'> to the default settings, edit the fields in the</run>
-            <run bold='true' fontsize='12'> VizAlert Settings folder</run>
-            <run fontsize='12'> in the data pane on the left. These calculations define the actual settings applied to each VizAlert, and you can change them however you like based on whatever criteria you like.&#10;&#10;Do NOT change the custom SQL connection unless you REALLY know what you are doing!</run>
+            <run fontcolor='#353535' fontsize='12'>This view provides VizAlerts the information it needs to process all the VizAlerts created on Tableau Server, at the right times. It&apos;s intended to allow for very flexible customization that will allow the administrator fine-grained control over which alerts may perform certain kinds of actions.&#10;&#10;First, set the </run>
+            <run bold='true' fontcolor='#353535' fontsize='12'>default configuration values</run>
+            <run fontcolor='#353535' fontsize='12'> that you prefer using the Parameter controls on the upper right. If you&apos;d like to better understand what each does, hover over the parameter name in the Parameters pane on the lower left. Note that several mention they use </run>
+            <run bold='true' fontcolor='#353535' fontsize='12'>Regular Expressions</run>
+            <run fontcolor='#353535' fontsize='12'>. To learn more about these, visit </run>
+            <run bold='true' fontcolor='#353535' fontsize='12'>www.regular-expressions.info</run>
+            <run fontcolor='#353535' fontsize='12'>.&#10;&#10;Now, if you want to grant an </run>
+            <run bold='true' fontcolor='#353535' fontsize='12'>exception</run>
+            <run fontcolor='#353535' fontsize='12'> to the default settings, edit the fields in the</run>
+            <run bold='true' fontcolor='#353535' fontsize='12'> VizAlert Settings folder</run>
+            <run fontcolor='#353535' fontsize='12'> in the data pane on the left. These calculations define the actual settings applied to each VizAlert, and you can change them however you like based on whatever criteria you like.&#10;&#10;Do NOT change the custom SQL connection unless you REALLY know what you are doing!</run>
           </formatted-text>
         </caption>
       </layout-options>
@@ -2127,7 +2179,20 @@
               <calculation class='tableau' formula='// Use this calculation to define what To/CC/BCC address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address(es) listed in the &quot; Email To *&quot; and other recipient fields must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;    //&#13;&#10;    // It&apos;s generally recommended to keep the default setting, which will allow any alert to send mail to any &#13;&#10;    //     internal addresses, but not to any external addresses&#13;&#10;&#13;&#10;[Parameters].[Parameter 1]&#13;&#10;&#13;&#10;// Examples:&#13;&#10;    // Allow Tableau Server Administrators to send mail to their personal email accounts, but restrict everyone else to internal email:&#13;&#10;        //&#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE [default_allowed_recipient_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow specific VizAlerts to send mail to anyone, Admins to their personal accounts, and everyone else just to themselves:&#13;&#10;        //&#13;&#10;        // IF [workbook_repository_url] + &apos;/&apos; + [view_name] = &apos;VizAlerts_RecipientTests/ToCC&apos; THEN &apos;.*&apos;&#13;&#10;        // ELSEIF [subscriber_license] = &apos;Administrator&apos; THEN &apos;mcoles@yahoo\.com|&apos; + [default_allowed_recipient_addresses]&#13;&#10;        // ELSE REPLACE([subscriber_email], &apos;.&apos;, &apos;\.&apos;) // Period must be escaped in regex&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
               <desc>
                 <formatted-text>
-                  <run>Describes what email address(es) this VizAlert is able to send email to/from/bcc, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+                  <run>Describes the </run>
+                  <run bold='true'>regular expression pattern </run>
+                  <run>that </run>
+                  <run italic='true'>each</run>
+                  <run> recipient email address for a given VizAlert must match. If </run>
+                  <run bold='true'>any</run>
+                  <run> recipient addresses do not match this pattern when the alert runs, the alert will fail before any emails are sent.</run>
+                  <run bold='true'>Æ&#10;</run>
+                  <run>&#10;Regular expressions allow for complex pattern definitions. If you are not familiar with them, it&apos;s recommended that you visit </run>
+                  <run bold='true'>www.regular-expressions.info</run>
+                  <run> for more information about regex patterns.</run>
+                  <run bold='true'>Æ&#10;</run>
+                  <run>&#10;Note in particular that characters such as period (.) must be escaped with the backslash (\) character. </run>
+                  <run bold='true'>&#10;&#10;See examples by editing the calculation.</run>
                 </formatted-text>
               </desc>
             </column>
@@ -2154,7 +2219,7 @@
               </desc>
             </column>
             <column aggregation='Sum' caption='timeout_s' datatype='integer' default-format='n0;-0' name='[Calculation_2380602155000967]' role='dimension' type='ordinal'>
-              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;//      The calculation below uses a method failry consistent with past VizAlerts behavior,&#13;&#10;//       namely that more frequently-running schedules are afforded shorter timeouts.&#13;&#10;//      But you can customize this however you want.&#13;&#10;&#13;&#10;CASE [Calculation_1880608160023327]&#13;&#10;    WHEN &apos;Hourly&apos; THEN [Parameters].[Parameter 3] // most people subscribe to their VizAlerts on hourly schedules, so let&apos;s use the default for that&#13;&#10;    WHEN &apos;Daily&apos; THEN 300&#13;&#10;    WHEN &apos;Weekly&apos; THEN 300&#13;&#10;    WHEN &apos;Monthly&apos; THEN 300&#13;&#10;    ELSE [Parameters].[Parameter 3]&#13;&#10;END' scope-isolation='false' />
+              <calculation class='tableau' formula='// This calculation can be edited to override the default setting based on whatever criteria you like.&#13;&#10;//      The calculation below uses a method fairly consistent with past VizAlerts behavior,&#13;&#10;//       namely that more frequently-running schedules are afforded shorter timeouts.&#13;&#10;//      But you can customize this however you want.&#13;&#10;&#13;&#10;CASE [Calculation_1880608160023327]&#13;&#10;    WHEN &apos;Hourly&apos; THEN [Parameters].[Parameter 3] // most people subscribe to their VizAlerts on hourly schedules, so let&apos;s use the default for that&#13;&#10;    WHEN &apos;Daily&apos; THEN 300&#13;&#10;    WHEN &apos;Weekly&apos; THEN 300&#13;&#10;    WHEN &apos;Monthly&apos; THEN 300&#13;&#10;    ELSE [Parameters].[Parameter 3]&#13;&#10;END' scope-isolation='false' />
               <desc>
                 <formatted-text>
                   <run>The number of seconds to allow a VizAlert request to process before considering it a failure.&#10;&#10;This timeout value will also apply to any content references within the VizAlert--but each will start the count over again, so it is not a cumulative timeout for </run>
@@ -2189,7 +2254,20 @@
               <calculation class='tableau' formula='// Use this calculation to define what From address an alert can use. Must be a valid regular expression.&#13;&#10;    // The email address listed in the &quot; Email From ~&quot; field must match the expression here, or the VizAlert will fail.&#13;&#10;    // Do not specify line start and end anchors, e.g. &quot;^mcoles@tableau\.com$&quot;--these are automatically applied.&#13;&#10;    //&#13;&#10;    // To learn more about regular expressions, check out www.regular-expressions.info&#13;&#10;&#13;&#10;[Parameters].[Parameter 2]&#13;&#10;&#13;&#10;// Some dynamic examples:&#13;&#10;    // Allow only Tableau Server Administrators to send mail From any Tableau address they want. Constrain everyone else to the default:&#13;&#10;        //    &#13;&#10;        // IF [subscriber_license] = &apos;Administrator&apos; THEN &apos;.*@tableau\.com&apos;&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // END&#13;&#10;&#13;&#10;    // Allow any alert on a workbook in the Sales project to use the sales@tableau.com as the From address, in addition to the default.&#13;&#10;        //&#13;&#10;        // IF [project_name] = &apos;Sales&apos; THEN &apos;sales@tableau\.com|&apos; + [default_allowed_from_addresses]&#13;&#10;        // ELSE [default_allowed_from_addresses]&#13;&#10;        // ELSE 0&#13;&#10;        // END' scope-isolation='false' />
               <desc>
                 <formatted-text>
-                  <run>Describes what email address this VizAlert is able to send email from, defined as a regular expression.&#10;&#10;See examples in the calculation.</run>
+                  <run>Describes the </run>
+                  <run bold='true'>regular expression pattern </run>
+                  <run>that the </run>
+                  <run bold='true'>From</run>
+                  <run>email address for a given VizAlert must match. If the </run>
+                  <run bold='true'>From address </run>
+                  <run>does not match this pattern when the alert runs, the alert will fail before any emails are sent.</run>
+                  <run bold='true'>Æ&#10;</run>
+                  <run>&#10;Regular expressions allow for complex pattern definitions. If you are not familiar with them, it&apos;s recommended that you visit </run>
+                  <run bold='true'>www.regular-expressions.info</run>
+                  <run> for more information about regex patterns.</run>
+                  <run bold='true'>Æ&#10;</run>
+                  <run>&#10;Note in particular that characters such as period (.) must be escaped with the backslash (\) character. </run>
+                  <run bold='true'>&#10;&#10;See examples by editing the calculation.</run>
                 </formatted-text>
               </desc>
             </column>
@@ -2486,7 +2564,7 @@
           </strip>
         </edge>
         <edge name='bottom'>
-          <strip size='85'>
+          <strip size='190'>
             <card type='caption' />
           </strip>
         </edge>
