@@ -25,7 +25,7 @@ server.user: SomeTableauServerUser              # this is ANY user licensed in T
 server.user.domain: null                        # the domain for the server.user account.
                                                   # Leave as null (no quotes) if Tableau Server uses local authentication
                                                   # Set to the domain if using AD authentication, e.g. 'mycompany.com'
-vizalerts.source.viz: 'VizAlerts/AlertList'     # Viz to pull list of alerts from. Must be of the form 'WorkbookURL/ViewUrl'
+vizalerts.source.viz: 'VizAlertsConfig/ScheduledTriggerViews'     # Viz to pull list of alerts from. Must be of the form 'WorkbookURL/ViewUrl'
 vizalerts.source.site: 'Default'                # Site that the vizalerts.source.viz exists within. Leave as 'Default' if using the default site.
 
 # Security settings
@@ -50,4 +50,4 @@ smsaction.auth_token: ''                        # auth token, for Twilio http://
 threads: 2                                      # Number of threads VizAlerts will use to process alerts
                                                      # Higher = More alerts process at once, increased server load
                                                      # Lower = Fewer alerts processed at once, decreased server load
-                                                     #    Content references within a single alert are processed serially
+                                                     # Content references within a single alert are processed serially
