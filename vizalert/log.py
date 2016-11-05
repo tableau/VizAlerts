@@ -1,4 +1,6 @@
+#! python
 # -*- coding: utf-8 -*-
+# Config module for VizAlert's global log
 
 import os, sys, yaml, datetime
 from yaml import Loader, SafeLoader
@@ -25,30 +27,13 @@ extra_formatter = u"%(threadName)s - %(asctime)s - [%(thread)d] - %(levelname)s 
 max_size    =  20*1024*1024  # in Bytes (5 MB)
 keep_count  = 5 # how many do we keep
 
-# load_yaml_file:
-#   opens the yaml file and loads the content
-def load_yaml_file(yaml_file):
-    logger = logging.getLogger()
-    try:
-        f = codecs.open(yaml_file, encoding='utf-8')
-        yaml_opts = yaml.load(f)
-        f.close()
-        return yaml_opts
-    except:
-        raise
-
-        
-# Override the default pyyaml string handling function to always return unicode objects
-    # See http://stackoverflow.com/questions/2890146/how-to-force-pyyaml-to-load-strings-as-unicode-objects
-def construct_yaml_str(self, node):
-    return self.construct_scalar(node)
-Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
-SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+# the logger
+logger = None
 
 
 # Logger
 #   basic logger configuration.
-def Logger(logfile_name, log_level=logging.INFO, time_format=log_time_format, extra_info = False, **kw):
+def Logger(logfile_name, log_level=logging.INFO, time_format=log_time_format, extra_info=False, **kw):
     logger = logging.getLogger()
     #
     # default settings
@@ -126,12 +111,3 @@ def LoggerQuickSetup(log_file, log_level=logging.INFO, filename_time_format='%Y-
     logger  = Logger(log_file, log_level=log_level, extra_info=extra_info, **kw)
     logger.info("Logging initialized, writing to %s" % log_file)
     return logger
-
-# Simple wrapper method to handle prompting the user. Return 'True' or 'False' depending on whether the input matches
-#   the 'acceptable' value provided in the second argument.
-def promptUser(msg, accptResp):
-    resp = raw_input(msg)
-    if resp == accptResp:
-        return True
-    else:
-        return False

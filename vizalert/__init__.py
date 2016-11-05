@@ -48,7 +48,7 @@ SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
 
 # Logger
 #   basic logger configuration.
-def Logger(logfile_name, log_level=logging.INFO, time_format=log_time_format, extra_info = False, **kw):
+def Logger(logfile_name, log_level=logging.INFO, time_format=log_time_format, extra_info=False, **kw):
     logger = logging.getLogger()
     #
     # default settings

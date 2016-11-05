@@ -1,6 +1,14 @@
 ## What is it?
 
-VizAlerts is a data-driven email notification and bursting platform for Tableau Server. It allows any user to author dashboards that will send email alerts to any audience based on any criteria you can define in your viz. Once VizAlerts is installed and running, all of the work to build and manage your alerts happens in Tableau--no scripting required, and no separate interface necessary.
+VizAlerts is a data-driven automation platform for Tableau Server. It allows any user to author dashboards that perform various actions based on any criteria you can define in your viz.
+
+Actions currently supported are:
+
+* Send email to any audience, with flexible control over who is sent what, and the ability to embed or attach images of your vizualizations as PNGs or PDFs
+* Send SMS messages to any audience using the Twilio service
+* (Future) Export viz data and/or images to a file share
+
+Once VizAlerts is installed and running, all of the work to build and manage your alerts happens in Tableau--no scripting required, and no separate interface necessary.
 
 ## Got any documentation?
 
@@ -32,4 +40,4 @@ If you're interested in contributing to VizAlerts, please [email Matt](http://ti
 
 ## What's the longer-term vision for this tool?
 
-Initially, VizAlerts was born out of a hackathon we held at Tableau, and it was conceived of as a proof-of-concept of how data analyzed through Tableau could be used as a programming language of sorts to drive automation of various tasks. The most critical and simplest task to tackle first was email automation, so that's what has been focused on to date. But in the future, we're interested in finding other ways that VizAlerts can be used to drive automation of other types of tasks, such as sending text messages, exporting data to file shares, making changes to other content on Tableau Server, and generally hooking into APIs exposed by various other third-party services.
+Initially, VizAlerts was born out of a hackathon we held at Tableau, and it was conceived of as a proof-of-concept of how data analyzed through Tableau could be used as a programming language of sorts to drive automation of various tasks. The most critical and simplest task to tackle first was email automation, so that's what has been primarily focused on to date. But more actions have been added recently, and we're interested in finding other ways that VizAlerts can be used to drive automation, such as exporting data to file shares, making changes to other content on Tableau Server, and generally hooking into APIs exposed by various other third-party services.
