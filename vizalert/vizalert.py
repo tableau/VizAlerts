@@ -37,7 +37,7 @@ ARGUMENT_DELIMITER = u'|'
 
 # reserved strings for Action Field names (used as keys)
 # General use fields
-GENERAL_SORTORDER_FIELDKEY = u'Sort Order'
+GENERAL_SORTORDER_FIELDKEY = u'Consolidated Sort'
 CONSOLIDATE_LINES_FIELDKEY = u'Consolidate Lines'
 
 # Email Action fields
@@ -236,10 +236,11 @@ class VizAlert:
         # add all possible alert fields to the new VizAlert instance (should this live somewhere else?)
 
         # General
+        # consolidated and sort have backwards-compatible options for v1.x
         self.action_field_dict[GENERAL_SORTORDER_FIELDKEY] = \
-            ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Sort.Order')
+            ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Consolidated.Sort|.*Email.Sort.Order')
         self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY] = \
-            ActionField(CONSOLIDATE_LINES_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*.Consolidate')
+            ActionField(CONSOLIDATE_LINES_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Consolidate.Lines|.*Email.Consolidate')
 
         # Email Action fields
         self.action_field_dict[EMAIL_ACTION_FIELDKEY] = \
