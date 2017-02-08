@@ -29,7 +29,7 @@ import log
 import vizalert
 
 # regular expression used to split recipient address strings into separate email addresses
-EMAIL_RECIP_SPLIT_REGEX = u'[; ,]*'
+EMAIL_RECIP_SPLIT_REGEX = u'[\t\n; ,]*'
 
 
 def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None, inlineattachments=None,
@@ -65,18 +65,18 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
         msg['Subject'] = Header(subject.encode('utf-8'), 'UTF-8').encode()
 
         # Process direct recipients
-        toaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, toaddrs.strip())
+        toaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, toaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
         msg['To'] = Header(', '.join(toaddrs))
         allrecips = toaddrs
 
         # Process indirect recipients
         if ccaddrs:
-            ccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, ccaddrs.strip())
+            ccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, ccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
             msg['CC'] = Header(', '.join(ccaddrs))
             allrecips.extend(ccaddrs)
 
         if bccaddrs:
-            bccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, bccaddrs.strip())
+            bccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, bccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
             # don't add to header, they are blind carbon-copied
             allrecips.extend(bccaddrs)
 
@@ -140,12 +140,12 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
     except Exception as e:
         log.logger.error(u'Email failed to send: {}'.format(e))
         raise e
-        
+
 
 def addresses_are_invalid(emailaddresses, emptystringok, regex_eval=None):
     """Validates all email addresses found in a given string, optionally that conform to the regex_eval"""
     log.logger.debug(u'Validating email field value: {}'.format(emailaddresses))
-    address_list = re.split(EMAIL_RECIP_SPLIT_REGEX, emailaddresses.strip())
+    address_list = re.split(EMAIL_RECIP_SPLIT_REGEX, emailaddresses.strip(EMAIL_RECIP_SPLIT_REGEX)) # trim separator chars from ends
     for address in address_list:
         log.logger.debug(u'Validating presumed email address: {}'.format(address))
         if emptystringok and (address == '' or address is None):
@@ -173,7 +173,7 @@ def address_is_invalid(address, regex_eval=None):
     # Validate address according to admin regex
     if regex_eval:
         log.logger.debug("testing address {} against regex {}".format(address, regex_eval))
-        if not re.match(regex_eval, address):
+        if not re.match(regex_eval, address, re.IGNORECASE):
             errormessage = u'Address must match regex pattern set by the administrator: {}'.format(regex_eval)
             log.logger.error(errormessage)
             return errormessage
@@ -294,27 +294,32 @@ def validate_addresses(vizdata,
     rownum = 2  # account for field header in CSV
 
     for row in vizdata:
-        result = addresses_are_invalid(row[email_to_field], False,
-                                       allowed_recipient_addresses)  # empty string not acceptable as a To address
-        if result:
-            errorlist.append(
-                {'Row': rownum, 'Field': email_to_field, 'Value': result['address'], 'Error': result['errormessage']})
-        if email_from_field:
-            result = addresses_are_invalid(row[email_from_field], False,
-                                           allowed_from_address)  # empty string not acceptable as a From address
+        if len(row) > 0:
+            log.logger.debug(u'Validating "To" addresses: {}'.format(row[email_to_field]))
+            result = addresses_are_invalid(row[email_to_field], False,
+                                           allowed_recipient_addresses)  # empty string not acceptable as a To address
             if result:
-                errorlist.append({'Row': rownum, 'Field': email_from_field, 'Value': result['address'],
-                                  'Error': result['errormessage']})
-        if email_cc_field:
-            result = addresses_are_invalid(row[email_cc_field], True, allowed_recipient_addresses)
-            if result:
-                errorlist.append({'Row': rownum, 'Field': email_cc_field, 'Value': result['address'],
-                                  'Error': result['errormessage']})
-        if email_bcc_field:
-            result = addresses_are_invalid(row[email_bcc_field], True, allowed_recipient_addresses)
-            if result:
-                errorlist.append({'Row': rownum, 'Field': email_bcc_field, 'Value': result['address'],
-                                  'Error': result['errormessage']})
+                errorlist.append(
+                    {'Row': rownum, 'Field': email_to_field, 'Value': result['address'], 'Error': result['errormessage']})
+            if email_from_field:
+                log.logger.debug(u'Validating "From" addresses')
+                result = addresses_are_invalid(row[email_from_field], False,
+                                               allowed_from_address)  # empty string not acceptable as a From address
+                if result:
+                    errorlist.append({'Row': rownum, 'Field': email_from_field, 'Value': result['address'],
+                                      'Error': result['errormessage']})
+            if email_cc_field:
+                log.logger.debug(u'Validating "CC" addresses')
+                result = addresses_are_invalid(row[email_cc_field], True, allowed_recipient_addresses)
+                if result:
+                    errorlist.append({'Row': rownum, 'Field': email_cc_field, 'Value': result['address'],
+                                      'Error': result['errormessage']})
+            if email_bcc_field:
+                log.logger.debug(u'Validating "BCC" addresses')
+                result = addresses_are_invalid(row[email_bcc_field], True, allowed_recipient_addresses)
+                if result:
+                    errorlist.append({'Row': rownum, 'Field': email_bcc_field, 'Value': result['address'],
+                                      'Error': result['errormessage']})
         rownum += 1
 
     return errorlist

@@ -51,3 +51,6 @@ threads: 2                                      # Number of threads VizAlerts wi
                                                      # Higher = More alerts process at once, increased server load
                                                      # Lower = Fewer alerts processed at once, decreased server load
                                                      # Content references within a single alert are processed serially
+
+data.coldelimiter: ','                          # Character used to separate field values in CSV files exported from Tableau Server
+                                                     # Some regions use semicolons for this, in which case switch it to ';'

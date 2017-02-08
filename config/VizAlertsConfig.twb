@@ -2147,7 +2147,7 @@
             <run bold='true' fontcolor='#353535' fontsize='12'>exception</run>
             <run fontcolor='#353535' fontsize='12'> to the default settings, edit the fields in the</run>
             <run bold='true' fontcolor='#353535' fontsize='12'> VizAlert Settings folder</run>
-            <run fontcolor='#353535' fontsize='12'> in the data pane on the left. These calculations define the actual settings applied to each VizAlert, and you can change them however you like based on whatever criteria you like.&#10;&#10;Do NOT change the custom SQL connection unless you REALLY know what you are doing!</run>
+            <run fontcolor='#353535' fontsize='12'> in the data pane on the left. These calculations define the actual settings applied to each VizAlert, and you can change them however you like based on whatever criteria you like.&#10;&#10;Do NOT change the custom SQL connection unless you REALLY know what you are doing!&#10;&#10;Want to build your own viz using this data? Awesome, go for it. But please create a new Sheet for that, as editing this one could break the config process.</run>
           </formatted-text>
         </caption>
       </layout-options>
@@ -2562,9 +2562,7 @@
           <strip size='31'>
             <card type='rows' />
           </strip>
-        </edge>
-        <edge name='bottom'>
-          <strip size='190'>
+          <strip size='300'>
             <card type='caption' />
           </strip>
         </edge>

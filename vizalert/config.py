@@ -13,7 +13,10 @@ import log
 configs = []
 
 # Global Variable Definitions
-valid_conf_keys = \
+
+
+# yaml configuration values that we require
+required_conf_keys = \
     ['log.dir',
     'log.dir.file_retention_seconds',
     'log.level',
@@ -45,6 +48,14 @@ valid_conf_keys = \
     'vizalerts.source.viz',
     'vizalerts.source.site']
 
+# yaml configuration values that we accept, but are not required
+optional_conf_keys = \
+    ['data.coldelimiter']
+
+# default delimiter for CSV exports
+DEFAULT_COL_DELIMITER = u','
+
+
 def validate_conf(configfile):
     """Import config values and do some basic validations"""
     try:
@@ -58,10 +69,18 @@ def validate_conf(configfile):
         log.logger.error(errormessage)
         sys.exit(1)
 
-    # test for missing config values
-    missingkeys = set(valid_conf_keys).difference(localconfigs.keys())
+    # test for missing required config values
+    missingkeys = set(required_conf_keys) - set(localconfigs.keys())
     if len(missingkeys) != 0:
         errormessage = u'Missing config values {}'.format(missingkeys)
+        print errormessage
+        log.logger.error(errormessage)
+        sys.exit(1)
+
+    # test for unrecognized config values
+    extrakeys = set(localconfigs.keys()) - (set(required_conf_keys) | set(optional_conf_keys))
+    if len(extrakeys) != 0:
+        errormessage = u'Extraneous config values found. Please examine for typos: {}'.format(extrakeys)
         print errormessage
         log.logger.error(errormessage)
         sys.exit(1)
@@ -135,6 +154,16 @@ def validate_conf(configfile):
             log.logger.error(errormessage)
             sys.exit(1)
 
+    # validate data.coldelimiter
+    if 'data.coldelimiter' in localconfigs.keys():
+        if len(localconfigs['data.coldelimiter']) > 1:
+            errormessage = u'Configuration value data.coldelimiter cannot be more than one character.'
+            print errormessage
+            log.logger.error(errormessage)
+            sys.exit(1)
+    else:
+        localconfigs['data.coldelimiter'] = DEFAULT_COL_DELIMITER
+    
     config.configs = localconfigs
 
 
