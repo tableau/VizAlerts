@@ -88,9 +88,9 @@ _os_alt_seps = list(sep for sep in [os.path.sep, os.path.altsep]
 class UnicodeCsvReader(object):
     """Code from http://stackoverflow.com/questions/1846135/general-unicode-utf-8-support-for-csv-files-in-python-2-6"""
     def __init__(self, f, encoding="utf-8", **kwargs):
-        self.csv_reader = csv.reader(f, **kwargs)
+        self.csv_reader = csv.reader(f, delimiter=str(config.configs['data.coldelimiter']), **kwargs)
         self.encoding = encoding
-
+        
     def __iter__(self):
         return self
 
@@ -407,14 +407,14 @@ class VizAlert:
                 # ensure the subscriber is the owner of the viz
                 #  we need to do this check straight away so we don't send any more info to the subscriber
                 if self.subscriber_sysname != self.owner_sysname:
-                    errormessage = u'You must be the owner of the workbook in order to use Advanced Alerts<br><br>.' \
+                    errormessage = u'You must be the owner of the workbook in order to use Advanced Alerts.<br><br>' \
                                    u'Subscriber {} to advanced alert subscription_id {} is not the owner, {}'.format(
                                     self.subscriber_sysname,
                                     self.subscription_id,
                                     self.owner_sysname)
                     log.logger.error(errormessage)
                     self.error_list.append(errormessage)
-                    return None  # provide no more info, and do no more work
+                    return []  # provide no more info, and do no more work
 
                 # check for issues in each of the fields
                 for action_field in self.action_field_dict:
@@ -437,7 +437,7 @@ class VizAlert:
                             if not config.configs['smsaction.enable']:
                                 self.action_field_dict[action_field].error_list.append(
                                     u'SMS actions are not enabled, per administrative settings')
-                            if not self.action_enabled_sms:
+                            elif not self.action_enabled_sms:
                                 self.action_field_dict[action_field].error_list.append(
                                     u'SMS actions are not allowed for this alert, per administrative settings')
                             elif not smsaction.smsclient:
@@ -614,7 +614,7 @@ class VizAlert:
             else:
                 # they're not the owner, so this is a simple alert. just ignore them and log that we did.
                 errormessage = u'Ignoring subscription_id {}: User {} is unlicensed.'.format(
-                    self.subscription_id)
+                    self.subscription_id, self.subscriber_sysname)
                 log.logger.error(errormessage)
                 self.error_list.append(errormessage)
                 return
@@ -1449,10 +1449,10 @@ class VizAlert:
                             replacestring = u'<a href="' + self.get_view_url(vizcompleterefs[vizref]['view_url_suffix']) + u'">' + \
                                             vizcompleterefs[vizref]['view_url_suffix'] + u'</a>'
 
-            replaceresult = replace_in_list(body, vizref, replacestring)
+                    replaceresult = replace_in_list(body, vizref, replacestring)
 
-            if replaceresult['foundstring']:
-                body = replaceresult['outlist']\
+                    if replaceresult['foundstring']:
+                        body = replaceresult['outlist']\
 
         return body, inlineattachments
 

@@ -2,6 +2,21 @@
 VERSION HISTORY
 ===============
 
+Version 2.0.1
+=================================
+-Fixed issue where unlicensed users subscribed to Simple Alerts generate failure emails (Issue #88)
+-Fixed issue where VIZ_LINK content reference doesn't work if placed after other content references (Issue #83)
+-Improved error handling when subscriber to an Advanced Alert is not the owner (Issue #82)
+-Fixed issue where trailing commas in recipients lists cause a "missing field" error (Issue #61)
+-Fixed issue where locales defaulting to semicolon delimiters cannot use Advanced Alerts (Issue #17)
+-Added a few small notes to the VizAlertsConfig workbook (Issues #87,  #94)
+-Install guide clarifications and corrections (Issues #86, #85, #84)
+-User Guide clarifications and corrections (Issue #77)
+-Allow use of additional characters to break up list of recipient email addresses (Issue #92)
+-Added error handling for invalid regex expressions in configuration viz (Issue #90)
+-Fixed issue where Case should be ignored in email address regex pattern comparisons (Issue #93)
+=================================
+
 Version 2.0.0
 =================================
 -Added support for SMS messages through Twilio (Issue #57)

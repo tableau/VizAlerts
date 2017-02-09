@@ -4,7 +4,7 @@
 
 __author__ = 'Matt Coles'
 __credits__ = 'Jonathan Drummey'
-__version__ = '2.0.0'
+__version__ = '2.0.1'
 
 # generic modules
 import logging
@@ -15,6 +15,7 @@ import datetime
 import time
 import fileinput
 import codecs
+import re
 from Queue import Queue
 import threading
 from operator import attrgetter
@@ -215,8 +216,28 @@ def get_alerts():
             raise UserWarning(''.join(source_viz.error_list))
 
     except Exception as e:
-        quit_script('Could not download or read source viz data for the following reasons:<br/><br/>{}'.format(
+        quit_script('Could not process source viz data from {} for the following reasons:<br/><br/>{}'.format(
+			config.configs['vizalerts.source.viz'],
             e.message))
+
+    # test for regex invalidity
+    try:
+        fieldlist = ('allowed_from_address','allowed_recipient_addresses','allowed_recipient_numbers')
+        currentfield = ''
+        currentfieldvalue = ''
+
+        for line in results:
+            for field in fieldlist:
+                currentfield = field
+                currentfieldvalue = line[field]
+                re.compile('{}'.format(currentfieldvalue))
+    except Exception as e:
+        quit_script('Could not process source viz data from {} for the following reason:<br/><br/>' \
+		    'Invalid regular expression found. Could not evaluate expression \'{}\' in the field {}. Raw error:<br/><br/>{}'.format(
+                config.configs['vizalerts.source.viz'],
+                currentfieldvalue,
+                currentfield,
+                e.message))
 
     # retrieve schedule data from the last run and compare to current
     statefile = config.configs['schedule.state.dir'] + SCHEDULE_STATE_FILENAME
@@ -240,6 +261,7 @@ def get_alerts():
 
     # Create VizAlert instances for all the alerts we've retrieved
     try:
+        results = source_viz.read_trigger_data() # get the results again to start at the beginning
         for line in results:
             # build an alert instance for each line            
             alert = vizalert.VizAlert(line['view_url_suffix'],
