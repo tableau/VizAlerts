@@ -1449,10 +1449,10 @@ class VizAlert:
                             replacestring = u'<a href="' + self.get_view_url(vizcompleterefs[vizref]['view_url_suffix']) + u'">' + \
                                             vizcompleterefs[vizref]['view_url_suffix'] + u'</a>'
 
-                replaceresult = replace_in_list(body, vizref, replacestring)
+                    replaceresult = replace_in_list(body, vizref, replacestring)
 
-                if replaceresult['foundstring']:
-                    body = replaceresult['outlist']\
+                    if replaceresult['foundstring']:
+                        body = replaceresult['outlist']\
 
         return body, inlineattachments
 
