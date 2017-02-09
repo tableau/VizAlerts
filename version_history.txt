@@ -9,7 +9,7 @@ Version 2.0.1
 -Improved error handling when subscriber to an Advanced Alert is not the owner (Issue #82)
 -Fixed issue where trailing commas in recipients lists cause a "missing field" error (Issue #61)
 -Fixed issue where locales defaulting to semicolon delimiters cannot use Advanced Alerts (Issue #17)
--Added a small note to the VizAlertsConfig workbook (Issue #87)
+-Added a few small notes to the VizAlertsConfig workbook (Issues #87,  #94)
 -Install guide clarifications and corrections (Issues #86, #85, #84)
 -User Guide clarifications and corrections (Issue #77)
 -Allow use of additional characters to break up list of recipient email addresses (Issue #92)
