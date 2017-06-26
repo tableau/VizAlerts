@@ -118,13 +118,15 @@ class UnicodeDictReader(csv.DictReader):
 class ActionField:
     """Represents a mapping of a field found in a trigger CSV to an action property"""
 
-    def __init__(self, name, action_type, is_required, is_action_flag, pattern):
+    def __init__(self, name, action_type, is_required, is_action_flag, pattern, default_value=None):
         self.name = name
         self.action_type = action_type
         self.is_required = is_required  # "if performing this action_type, is this field required to do it?"
         self.is_action_flag = is_action_flag
         self.pattern = pattern
         self.field_name = None  # no field name until we validate
+        self.default_value = default_value  # if a field is required information, but was NOT used in the viz, 
+                                            #    then use default values we populate from the user data, if possible
         self.match_list = []
         self.error_list = []
 
@@ -134,6 +136,23 @@ class ActionField:
             return field_name.format(self.name, u'*')
         else:
             return field_name.format(self.name, u'~')
+
+    def get_value_from_dict(self, dict):
+    # Retrieve the field value from a dictionary, or the default value
+        if self.field_name:
+            if dict.has_key(self.field_name):
+                return dict[self.field_name]
+            else:
+                errormessage = u'Could not retrieve value for field {} from row {}'.format(
+                        self.field_name, dict)
+                raise UserWarning(errormessage)
+        elif self.default_value:
+            return self.default_value
+        else:
+            errormessage = u'Could not retrieve value for field {}, no matches were found ' \
+                            'and no default value available'.format(
+                    self.field_name)
+            raise UserWarning(errormessage)
 
     def has_match(self):
         if len(self.match_list) > 0:
@@ -173,11 +192,13 @@ class ContentReference:
 class VizAlert:
     """Standard class representing a VizAlert"""
 
-    def __init__(self, view_url_suffix, site_name, subscriber_sysname, subscriber_domain):
+    def __init__(self, view_url_suffix, site_name, subscriber_sysname, subscriber_domain, subscriber_email=u'', view_name=u''):
         self.view_url_suffix = view_url_suffix
         self.site_name = site_name
         self.subscriber_domain = subscriber_domain
         self.subscriber_sysname = subscriber_sysname
+        self.subscriber_email = subscriber_email
+        self.view_name = view_name
 
         # general config
         self.data_retrieval_tries = 2
@@ -216,12 +237,10 @@ class VizAlert:
         self.priority = -1
         self.schedule_type = -1
         self.site_id = -1
-        self.subscriber_email = u''
         self.subscriber_license = u''
         self.subscriber_user_id = -1
         self.subscription_id = -1
         self.view_id = -1
-        self.view_name = u''
         self.view_owner_id = -1
         self.workbook_id = u''
         self.workbook_repository_url = u''
@@ -230,6 +249,7 @@ class VizAlert:
         self.trigger_data_file = u''
         self.trigger_data = []
         self.trigger_data_rowcount = 0
+        self.unique_trigger_data = []
         self.action_field_dict = {}
         self.error_list = []  # list of errors encountered processing the vizalert
 
@@ -246,17 +266,17 @@ class VizAlert:
         self.action_field_dict[EMAIL_ACTION_FIELDKEY] = \
             ActionField(EMAIL_ACTION_FIELDKEY, EMAIL_ACTION_TYPE, True, True, u' ?Email.Action')
         self.action_field_dict[EMAIL_SUBJECT_FIELDKEY] = \
-            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject')
+            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject', u'Alert triggered for {}'.format(self.view_name))
         self.action_field_dict[EMAIL_TO_FIELDKEY] = \
-            ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To')
+            ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To', self.subscriber_email)
         self.action_field_dict[EMAIL_FROM_FIELDKEY] = \
-            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From')
+            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From', config.configs['smtp.address.from'])
         self.action_field_dict[EMAIL_CC_FIELDKEY] = \
             ActionField(EMAIL_CC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.CC')
         self.action_field_dict[EMAIL_BCC_FIELDKEY] = \
             ActionField(EMAIL_BCC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.BCC')
         self.action_field_dict[EMAIL_BODY_FIELDKEY] = \
-            ActionField(EMAIL_BODY_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Body')
+            ActionField(EMAIL_BODY_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Body', 'VIZ_IMAGE(|vizlink)')
         self.action_field_dict[EMAIL_HEADER_FIELDKEY] = \
             ActionField(EMAIL_HEADER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Header')
         self.action_field_dict[EMAIL_FOOTER_FIELDKEY] = \
@@ -347,6 +367,7 @@ class VizAlert:
                     errormessage = u'Maximum rows of {} exceeded.'.format(self.viz_data_maxrows)
                     self.error_list.append(errormessage)
                     log.logger.error(errormessage)
+                    break
 
                 # read data in anyway
                 self.trigger_data.append(row)
@@ -477,13 +498,16 @@ class VizAlert:
                                         SMS_ACTION_FIELDKEY))
 
                     else:  # the field has no matches
-                        # missing fields that are required
+
+                        # check for missing fields that are required
                         if action_flag:
                             # remember, 'general' fields have don't have an action_flag
                             if self.action_field_dict[action_flag].has_match() \
-                                    and self.action_field_dict[action_field].is_required:
+                                    and self.action_field_dict[action_field].is_required \
+                                    and self.action_field_dict[action_field].default_value is None:
                                 # the action flag field was matched, which means
                                 #   the author intends to use that action type in this alert
+                                #   ...but we don't have a default value, so missing this field is a dealbreaker
                                 self.action_field_dict[action_field].error_list.append(
                                     u'This is a required field for {} actions'.format(
                                         self.action_field_dict[action_field].action_type))
@@ -551,10 +575,11 @@ class VizAlert:
                                                             self.trigger_data,
                                                             self.allowed_from_address,
                                                             self.allowed_recipient_addresses,
-                                                            self.action_field_dict[EMAIL_TO_FIELDKEY].field_name,
-                                                            self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name,
-                                                            self.action_field_dict[EMAIL_CC_FIELDKEY].field_name,
-                                                            self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name)
+                                                            self.action_field_dict[EMAIL_ACTION_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_TO_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_FROM_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_CC_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_BCC_FIELDKEY])
                 if addresserrors:
                     errormessage = u'Invalid email addresses found: {}'.format(addresserrors)
                     log.logger.error(errormessage)
@@ -756,22 +781,35 @@ class VizAlert:
 
                     # iterate through the rows and send emails accordingly
                     consolidate_email_ctr = 0
-                    body = []
+                    body = []  # the entire body of the email
+                    email_body_line = u'' # the current line of the email body
+                    subject = u''
+                    email_to = u''
+                    email_from = u''
                     inlineattachments = []
                     appendattachments = []
 
                     # Process each row of data
                     for i, row in enumerate(data):
-                        log.logger.debug(u'Starting iteration {}, consolidate_email_ctr is {}'.format(i, consolidate_email_ctr))
 
                         # author wants to send an email
                         #  use string value for maximum safety. all other values are ignored, currently
                         if row[email_action_fieldname] == '1':
                             # make sure we set the "from" address if the viz did not provide it
-                            if email_from_fieldname:
-                                email_from = row[email_from_fieldname]
-                            else:
-                                email_from = config.configs['smtp.address.from']  # use default from config file
+                            email_from = self.action_field_dict[EMAIL_FROM_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'email_from is {}'.format(email_from))
+
+                            # make sure we set the "to" address if the viz did not provide it
+                            email_to = self.action_field_dict[EMAIL_TO_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'email_to is {}'.format(email_to))
+
+                            # make sure we set the subject field if the viz did not provide it
+                            subject = self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'subject is {}'.format(subject))
+
+                            # make sure we set the body line if the viz did not provide it
+                            email_body_line = self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'email_body_line is {}'.format(email_body_line))
 
                             # get the other recipient addresses
                             if email_cc_fieldname:
@@ -802,7 +840,7 @@ class VizAlert:
                                 if i + 1 == rowcount_unique:
                                     log.logger.debug(u'Last email in set reached, sending consolidated email')
                                     log.logger.info(u'Sending email to {}, CC {}, BCC {}, subject {}'.format(
-                                        row[email_to_fieldname], email_cc, email_bcc, row[email_subject_fieldname]))
+                                        email_to, email_cc, email_bcc, subject))
 
                                     try:  # remove this later??
                                         body, inlineattachments = self.append_body_and_inlineattachments(
@@ -810,9 +848,8 @@ class VizAlert:
                                         appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
                                         # send the email
-                                        emailaction.send_email(email_from, row[email_to_fieldname],
-                                                               row[email_subject_fieldname],
-                                                   u''.join(body), email_cc, email_bcc, inlineattachments, appendattachments)
+                                        emailaction.send_email(email_from, email_to, subject, u''.join(body), email_cc,
+                                                                email_bcc, inlineattachments, appendattachments)
                                     except Exception as e:
                                         errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                         log.logger.error(errormessage)
@@ -831,14 +868,22 @@ class VizAlert:
                                     this_row_recipients = []
                                     next_row_recipients = []
 
-                                    this_row_recipients.append(row[email_subject_fieldname])
-                                    this_row_recipients.append(row[email_to_fieldname])
+                                    this_row_recipients.append(subject)
+                                    this_row_recipients.append(email_to)
                                     this_row_recipients.append(email_from)
 
                                     # check if we're sending an email at all in the next row
                                     next_row_email_action = data[i + 1][email_action_fieldname]
-                                    next_row_recipients.append(data[i + 1][email_subject_fieldname])
-                                    next_row_recipients.append(data[i + 1][email_to_fieldname])
+                                    
+                                    if email_subject_fieldname:
+                                        next_row_recipients.append(data[i + 1][email_subject_fieldname])
+                                    else:
+                                        next_row_recipients.append(subject)
+                                        
+                                    if email_to_fieldname:
+                                        next_row_recipients.append(data[i + 1][email_to_fieldname])
+                                    else:
+                                        next_row_recipients.append(email_to)
 
                                     if email_from_fieldname:
                                         next_row_recipients.append(data[i + 1][email_from_fieldname])
@@ -856,7 +901,7 @@ class VizAlert:
                                     # Now compare the data from the rows
                                     if this_row_recipients == next_row_recipients and next_row_email_action:
                                         log.logger.debug(u'Next row matches recips and subject, appending body & attachments')
-                                        body.append(row[email_body_fieldname])
+                                        body.append(email_body_line)
                                         if self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name and \
                                                 len(row[self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name]) > 0:
                                             appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
@@ -864,10 +909,10 @@ class VizAlert:
                                     else:
                                         log.logger.debug(u'Next row does not match recips and subject, sending consolidated email')
                                         log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
-                                            row[email_to_fieldname],
+                                            email_to,
                                             email_cc,
                                             email_bcc,
-                                            row[email_subject_fieldname]))
+                                            subject))
 
                                         body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments,
                                                                                                     row, vizcompleterefs)
@@ -875,8 +920,8 @@ class VizAlert:
 
                                         # send the email
                                         try:
-                                            emailaction.send_email(email_from, row[email_to_fieldname],
-                                                                   row[email_subject_fieldname],
+                                            emailaction.send_email(email_from, email_to,
+                                                                   subject,
                                                        u''.join(body), email_cc, email_bcc, inlineattachments,
                                                        appendattachments)
                                         except Exception as e:
@@ -892,18 +937,19 @@ class VizAlert:
                             else:
                                 # emails are not being consolidated, so send the email
                                 log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
-                                    row[email_to_fieldname],
+                                    email_to,
                                     email_cc,
                                     email_bcc,
-                                    row[email_subject_fieldname]))
+                                    subject))
 
                                 body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments, row,
                                                                                             vizcompleterefs)
                                 appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
                                 try:
-                                    emailaction.send_email(email_from, row[email_to_fieldname],
-                                                           row[email_subject_fieldname],
+                                    emailaction.send_email(email_from, 
+                                                           email_to,
+                                                           subject,
                                                            u''.join(body),
                                                            email_cc,
                                                            email_bcc,
@@ -1108,9 +1154,10 @@ class VizAlert:
         # loop through it to make a result set of all viz references
         for item in data:
             # this might be able to be more efficient code
-            if email_body_fieldname:
-                if 'VIZ_IMAGE' in item[email_body_fieldname] or 'VIZ_LINK' in item[email_body_fieldname]:
-                    results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_body_fieldname]))
+            if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
+                or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
+                    results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
+                        self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
 
             if email_header_fieldname:
                 results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
@@ -1128,7 +1175,8 @@ class VizAlert:
         # loop through each found viz reference, i.e. everything in the VIZ_*(*).
         for vizref in results:
 
-            log.logger.debug(u'found content ref {}'.format(vizref))
+            # REVISIT!!! Can we lighten the log load (ha) here?
+            # log.logger.debug(u'found content ref {}'.format(vizref))
 
             if vizref not in vizcompleterefs:
                 # create a dictionary to hold the necessary values for this viz reference
@@ -1388,10 +1436,11 @@ class VizAlert:
         """for inline attachments and hyperlink text"""
 
         log.logger.debug(u'Replacing body text with exact content references for inline attachments and hyperlinks')
-        body.append(row[self.action_field_dict[EMAIL_BODY_FIELDKEY].field_name])
+        body.append(self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(row))
 
         # add the footer if needed
         if self.action_field_dict[EMAIL_FOOTER_FIELDKEY].field_name:
+            log.logger.debug(u'Adding the custom footer')
             body.append(row[self.action_field_dict[EMAIL_FOOTER_FIELDKEY].field_name].replace(DEFAULT_FOOTER,
                                                        bodyfooter.format(self.subscriber_email,
                                                                          self.subscriber_sysname,
@@ -1399,17 +1448,20 @@ class VizAlert:
                                                                          self.view_name)))
         else:
             # no footer specified, add the default footer
+            log.logger.debug(u'Adding the default footer')
             body.append(bodyfooter.format(self.subscriber_email, self.subscriber_sysname,
                                           self.get_view_url(), self.view_name))
 
         # find all distinct content references in the email body list
         # so we can replace each with an inline image or hyperlink text
+        log.logger.debug(u'Finding all content refs')
         foundcontent = re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", ' '.join(body))
         foundcontentset = set(foundcontent)
         vizrefs = list(foundcontentset)
 
         if len(vizrefs) > 0:
             for vizref in vizrefs:
+                log.logger.debug(u'Iterating... Ref: {}'.format(vizref))
                 # replacing VIZ_IMAGE() with inline images
                 if vizcompleterefs[vizref]['formatstring'] == 'PNG':
                     # add hyperlinks to images if necessary

@@ -283,10 +283,11 @@ def get_mimetype(filename):
 def validate_addresses(vizdata,
                        allowed_from_address,
                        allowed_recipient_addresses,
-                       email_to_field,
-                       email_from_field,
-                       email_cc_field,
-                       email_bcc_field):
+                       email_action_actionfield,
+                       email_to_actionfield,
+                       email_from_actionfield,
+                       email_cc_actionfield,
+                       email_bcc_actionfield):
     """Loops through the viz data for an Advanced Alert and returns a list of dicts
         containing any errors found in recipients"""
 
@@ -295,31 +296,36 @@ def validate_addresses(vizdata,
 
     for row in vizdata:
         if len(row) > 0:
-            log.logger.debug(u'Validating "To" addresses: {}'.format(row[email_to_field]))
-            result = addresses_are_invalid(row[email_to_field], False,
-                                           allowed_recipient_addresses)  # empty string not acceptable as a To address
-            if result:
-                errorlist.append(
-                    {'Row': rownum, 'Field': email_to_field, 'Value': result['address'], 'Error': result['errormessage']})
-            if email_from_field:
-                log.logger.debug(u'Validating "From" addresses')
-                result = addresses_are_invalid(row[email_from_field], False,
-                                               allowed_from_address)  # empty string not acceptable as a From address
+            if email_action_actionfield.get_value_from_dict(row) == '1':\
+
+                email_to = email_to_actionfield.get_value_from_dict(row)
+                log.logger.debug(u'Validating "To" addresses: {}'.format(email_to))
+                result = addresses_are_invalid(email_to, False, allowed_recipient_addresses)  # empty string not acceptable as a To address
                 if result:
-                    errorlist.append({'Row': rownum, 'Field': email_from_field, 'Value': result['address'],
-                                      'Error': result['errormessage']})
-            if email_cc_field:
-                log.logger.debug(u'Validating "CC" addresses')
-                result = addresses_are_invalid(row[email_cc_field], True, allowed_recipient_addresses)
+                    errorlist.append(
+                        {'Row': rownum, 'Field': (email_to_actionfield.field_name if email_to_actionfield.field_name else email_to_actionfield.name),
+                        'Value': result['address'], 'Error': result['errormessage']})
+                
+                email_from = email_from_actionfield.get_value_from_dict(row)
+                log.logger.debug(u'Validating "From" addresses: {}'.format(email_from))
+                result = addresses_are_invalid(email_from, False, allowed_from_address)  # empty string not acceptable as a From address
                 if result:
-                    errorlist.append({'Row': rownum, 'Field': email_cc_field, 'Value': result['address'],
-                                      'Error': result['errormessage']})
-            if email_bcc_field:
-                log.logger.debug(u'Validating "BCC" addresses')
-                result = addresses_are_invalid(row[email_bcc_field], True, allowed_recipient_addresses)
-                if result:
-                    errorlist.append({'Row': rownum, 'Field': email_bcc_field, 'Value': result['address'],
-                                      'Error': result['errormessage']})
+                    errorlist.append({'Row': rownum, 'Field': (email_from_actionfield.field_name if email_from_actionfield.field_name else email_from_actionfield.name),
+                        'Value': result['address'], 'Error': result['errormessage']})
+
+                # REVISIT THIS!
+                if email_cc_actionfield.field_name:
+                    log.logger.debug(u'Validating "CC" addresses')
+                    result = addresses_are_invalid(row[email_cc_actionfield.field_name], True, allowed_recipient_addresses)
+                    if result:
+                        errorlist.append({'Row': rownum, 'Field': email_cc_actionfield.field_name, 'Value': result['address'],
+                                          'Error': result['errormessage']})
+                if email_bcc_actionfield.field_name:
+                    log.logger.debug(u'Validating "BCC" addresses')
+                    result = addresses_are_invalid(row[email_bcc_actionfield.field_name], True, allowed_recipient_addresses)
+                    if result:
+                        errorlist.append({'Row': rownum, 'Field': email_bcc_actionfield.field_name, 'Value': result['address'],
+                                          'Error': result['errormessage']})
         rownum += 1
 
     return errorlist

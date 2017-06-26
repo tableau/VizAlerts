@@ -267,7 +267,9 @@ def get_alerts():
             alert = vizalert.VizAlert(line['view_url_suffix'],
                                       line['site_name'],
                                       line['subscriber_sysname'],
-                                      line['subscriber_domain'])
+                                      line['subscriber_domain'],
+                                      line['subscriber_email'],
+                                      line['view_name'])
 
             # Email actions
             alert.action_enabled_email = int(line['action_enabled_email'])
