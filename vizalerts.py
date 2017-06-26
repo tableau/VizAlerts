@@ -93,11 +93,13 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
         # Send mail to the admin informing them of the problem, but don't quit
         errormessage = u'OSError: Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
         log.logger.error(errormessage)
-        emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        emailaction.send_email(email_instance)
     except Exception as e:
         errormessage = u'Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
         log.logger.error(errormessage)
-        emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        emailaction.send_email(email_instance)
 
     # cleanup old log files
     try:
@@ -443,8 +445,9 @@ def get_alerts():
 def quit_script(message):
     """"Called when a fatal error is encountered in the script"""
     try:
-        emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'],
+        email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'],
                                config.configs['smtp.subject'], message)
+        emailaction.send_email(email_instance)
     except Exception as e:
         log.logger.error(u'Unknown error-sending exception alert email: {}'.format(e.message))
     sys.exit(1)

@@ -12,6 +12,7 @@ from collections import OrderedDict
 from os.path import abspath, basename, expanduser
 from operator import itemgetter
 import posixpath
+import uuid
 
 # import local modules
 import config
@@ -165,6 +166,72 @@ class ActionField:
             return True
         else:
             return False
+
+
+class TaskType(object):
+    """Enumerates the allowed types a Task may be"""
+    SEND_EMAIL = 'send_email'
+    SEND_SMS = 'send_sms'
+    # GET_CONTENT_REFERENCE = 'get_content_reference'
+    # VALIDATE_TRIGGER_DATA = 'validate_trigger_data'
+
+
+class Task:
+    """Represents a task within an Alert to be executed. It need not be an actual alert Action"""
+
+    def __init__(self, alert, task_type, task_instance):
+        self.alert = alert # the parent Alert for this Task (REVISIT THIS---we could have thousands of these instance)
+        self.task_type = task_type  # the type of task to be executed, represented as an instance of the TaskType class
+        self.action_type = task_instance  # the instance of the task to be executed
+
+        # task content
+        self.task_input_value = None
+
+        # execution configs
+
+        # execution attempt information
+        self.task_execution_uuid = uuid.uuid4().bytes
+        self.task_attempt_number = 0  # REVISIT: should use retry count from vizalert parent
+        self.task_started_at = None
+        self.task_completed_at = None
+        self.task_succeeded = None
+        self.error_list = []
+
+        # output information
+        self.task_output_content_type = None
+        self.task_output_destination = None
+        self.task_output_name = None  # string representing a name of whatever tasks' output was--email subject, or filename
+        self.task_output_rowcount = None
+        self.task_output_size_b = None
+        self.task_output_text = None
+        self.task_thread_id = None
+
+    def execute_task(self):
+
+        self.task_started_at = datetime.now()
+
+        try:
+            if self.task_type == TaskType.SEND_EMAIL:
+                emailaction.send_email(self.task_instance)
+            elif self.task_type == TaskType.SEND_SMS:
+                smsaction.send_sms(self.task_instance)
+            else:
+                raise UserWarning('Task Type "{}" is invalid'.format(self.task_type))
+        except Exception as e:
+            self.task_succeeded = False
+            self.task_completed_at = datetime.now()
+            log.logger.error(u'Could not execute task {}: {}'.format(e))
+            raise e
+
+        self.task_succeeded = True
+        self.task_completed_at = datetime.now()
+
+    def has_errors(self):
+        if len(self.error_list) > 0:
+            return True
+        else:
+            return False
+
 
 # stub for the Content Reference class to come someday
 """
@@ -736,8 +803,18 @@ class VizAlert:
                            bodyfooter.format(self.subscriber_email, self.subscriber_sysname,
                                              self.get_view_url(), self.view_name)
                     subject = unicode(u'Alert triggered for {}'.format(self.view_name))
-                    emailaction.send_email(config.configs['smtp.address.from'], self.subscriber_email, subject, body,
-                                           None, None, inlineattachments, appendattachments)
+
+                    try:
+                        email_instance = emailaction.Email(
+                            config.configs['smtp.address.from'], self.subscriber_email, subject, body,
+                            None, None, inlineattachments, appendattachments)
+                        emailaction.send_email(email_instance)
+                    except Exception as e:
+                        errormessage = u'Could not send email, error: {}'.format(e.message)
+                        log.logger.error(errormessage)
+                        self.error_list.append(errormessage)
+                        self.alert_failure()
+                        return
                     return
                 except Exception as e:
                     errormessage = u'Alert was triggered, but encountered a failure rendering data/image:<br> {}'.format(
@@ -788,6 +865,7 @@ class VizAlert:
                     email_from = u''
                     inlineattachments = []
                     appendattachments = []
+                    email_instance = None
 
                     # Process each row of data
                     for i, row in enumerate(data):
@@ -848,8 +926,12 @@ class VizAlert:
                                         appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
                                         # send the email
-                                        emailaction.send_email(email_from, email_to, subject, u''.join(body), email_cc,
-                                                                email_bcc, inlineattachments, appendattachments)
+                                        email_instance = emailaction.Email(
+                                            email_from, email_to, subject, u''.join(body), email_cc,
+                                            email_bcc, inlineattachments, appendattachments)
+                                        log.logger.debug ('This is the email to:{}'.format(email_instance.toaddrs))
+                                        log.logger.debug ('This is the email from:{}'.format(email_instance.fromaddr))
+                                        emailaction.send_email(email_instance)
                                     except Exception as e:
                                         errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                         log.logger.error(errormessage)
@@ -861,6 +943,7 @@ class VizAlert:
                                     inlineattachments = []
                                     consolidate_email_ctr = 0
                                     appendattachments = []
+                                    email_instance = None
                                 else:
                                     # This isn't the end, and we're consolidating rows, so test to see if the next row needs
                                     # to be a new email
@@ -874,12 +957,12 @@ class VizAlert:
 
                                     # check if we're sending an email at all in the next row
                                     next_row_email_action = data[i + 1][email_action_fieldname]
-                                    
+
                                     if email_subject_fieldname:
                                         next_row_recipients.append(data[i + 1][email_subject_fieldname])
                                     else:
                                         next_row_recipients.append(subject)
-                                        
+
                                     if email_to_fieldname:
                                         next_row_recipients.append(data[i + 1][email_to_fieldname])
                                     else:
@@ -920,10 +1003,10 @@ class VizAlert:
 
                                         # send the email
                                         try:
-                                            emailaction.send_email(email_from, email_to,
-                                                                   subject,
-                                                       u''.join(body), email_cc, email_bcc, inlineattachments,
-                                                       appendattachments)
+                                            email_instance = emailaction.Email(
+                                                email_from, email_to, subject, u''.join(body), email_cc, email_bcc,
+                                                inlineattachments, appendattachments)
+                                            emailaction.send_email(email_instance)
                                         except Exception as e:
                                             errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                             log.logger.error(errormessage)
@@ -934,6 +1017,7 @@ class VizAlert:
                                         consolidate_email_ctr = 0
                                         inlineattachments = []
                                         appendattachments = []
+                                        email_instance = None
                             else:
                                 # emails are not being consolidated, so send the email
                                 log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
@@ -947,14 +1031,16 @@ class VizAlert:
                                 appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
                                 try:
-                                    emailaction.send_email(email_from, 
-                                                           email_to,
-                                                           subject,
-                                                           u''.join(body),
-                                                           email_cc,
-                                                           email_bcc,
-                                                           inlineattachments,
-                                                           appendattachments)
+                                    email_instance = emailaction.Email(
+                                        email_from,
+                                        email_to,
+                                        subject,
+                                        u''.join(body),
+                                        email_cc,
+                                        email_bcc,
+                                        inlineattachments,
+                                        appendattachments )
+                                    emailaction.send_email(email_instance)
                                 except Exception as e:
                                     errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                     log.logger.error(errormessage)
@@ -965,6 +1051,7 @@ class VizAlert:
                                 consolidate_email_ctr = 0
                                 inlineattachments = []
                                 appendattachments = []
+                                email_instance = None
                         # we're not performing any actions this round.
                         #   Make sure we reset our variables again
                         else:
@@ -973,6 +1060,7 @@ class VizAlert:
                             inlineattachments = []
                             consolidate_email_ctr = 0
                             appendattachments = []
+                            email_instance = None
 
                 # process sms messages
                 if self.action_field_dict[SMS_ACTION_FIELDKEY].field_name:
@@ -1027,11 +1115,12 @@ class VizAlert:
 
                                     # send the message(s) (multiple  for multiple phone numbers)
                                     for smsaddress in smsaddresses:
-                                        errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                        if errormessage:
-                                            self.error_list.append(u'Could not send SMS, error: {}'.format(errormessage))
-
-                                            # since we've had one failure, bail on the entire VizAlert
+                                        try:
+                                            sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
+                                            smsaction.send_sms(sms_instance)
+                                        except Exception as e:
+                                            self.error_list.append(
+                                                u'Could not send SMS, error: {}'.format(e.message))
                                             self.alert_failure()
                                             return
 
@@ -1073,14 +1162,15 @@ class VizAlert:
 
                                         # send the message(s) (multiple for multiple phone numbers)
                                         for smsaddress in smsaddresses:
-                                            errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                            if errormessage:
+                                            try:
+                                                sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
+                                                smsaction.send_sms(sms_instance)
+                                            except Exception as e:
                                                 self.error_list.append(
-                                                    u'Could not send SMS, error: {}'.format(errormessage))
-
-                                                # since we've had one failure, bail on the entire VizAlert
+                                                    u'Could not send SMS, error: {}'.format(e.message))
                                                 self.alert_failure()
                                                 return
+
                                         # reset the variables for the next message
                                         sms_message = []
                                         consolidate_sms_ctr = 0
@@ -1100,14 +1190,15 @@ class VizAlert:
 
                                 # send the message(s) (multiple for multiple phone numbers)
                                 for smsaddress in smsaddresses:
-                                    errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                    if errormessage:
+                                    try:
+                                        sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
+                                        smsaction.send_sms(sms_instance)
+                                    except Exception as e:
                                         self.error_list.append(
-                                            u'Could not send SMS, error: {}'.format(errormessage))
-
-                                        # since we've had one failure, bail on the entire VizAlert
+                                            u'Could not send SMS, error: {}'.format(e.message))
                                         self.alert_failure()
                                         return
+
                                 # reset the variables for the next message
                                 sms_message = []
                                 consolidate_sms_ctr = 0
@@ -1578,8 +1669,11 @@ class VizAlert:
             log.logger.debug(u'Failure email should include attachment: {}'.format(attachment))
 
         try:
-            emailaction.send_email(config.configs['smtp.address.from'], toaddrs, subject,
-                                   body, ccaddrs, None, None, attachment)
+            email_instance = emailaction.Email(
+                config.configs['smtp.address.from'], toaddrs, subject,
+                body, ccaddrs, None, None, attachment
+            )
+            emailaction.send_email(email_instance)
         except Exception as e:
             log.logger.error(u'Unknown error sending exception alert email: {}'.format(e.message))
 
