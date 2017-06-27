@@ -46,6 +46,8 @@ class Email:
         self.inlineattachments = inlineattachments
         self.appendattachments = appendattachments
 
+        # REVISIT: Should add other methods in this module to this class? Validation, at least.
+
 
 def send_email(email_instance):
     """Generic function to send an email. The presumption is that all arguments have been validated prior to the call

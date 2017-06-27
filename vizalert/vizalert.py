@@ -7,12 +7,14 @@ import csv
 import copy
 import threading
 import datetime
+import time
 from PyPDF2 import PdfFileReader, PdfFileMerger
 from collections import OrderedDict
 from os.path import abspath, basename, expanduser
 from operator import itemgetter
 import posixpath
 import uuid
+from Queue import Queue
 
 # import local modules
 import config
@@ -85,7 +87,6 @@ _os_alt_seps = list(sep for sep in [os.path.sep, os.path.altsep]
                     if sep not in (None, '/', '\\'))
 
 
-
 class UnicodeCsvReader(object):
     """Code from http://stackoverflow.com/questions/1846135/general-unicode-utf-8-support-for-csv-files-in-python-2-6"""
     def __init__(self, f, encoding="utf-8", **kwargs):
@@ -113,7 +114,6 @@ class UnicodeDictReader(csv.DictReader):
     def __init__(self, f, encoding="utf-8", fieldnames=None, **kwds):
         csv.DictReader.__init__(self, f, fieldnames=fieldnames, **kwds)
         self.reader = UnicodeCsvReader(f, encoding=encoding, **kwds)
-
 
 
 class ActionField:
@@ -180,9 +180,9 @@ class Task:
     """Represents a task within an Alert to be executed. It need not be an actual alert Action"""
 
     def __init__(self, alert, task_type, task_instance):
-        self.alert = alert # the parent Alert for this Task (REVISIT THIS---we could have thousands of these instance)
+        self.alert = alert  # the parent Alert for this Task (REVISIT THIS---we could have thousands of these instance)
         self.task_type = task_type  # the type of task to be executed, represented as an instance of the TaskType class
-        self.action_type = task_instance  # the instance of the task to be executed
+        self.task_instance = task_instance  # the instance of the task to be executed
 
         # task content
         self.task_input_value = None
@@ -190,7 +190,7 @@ class Task:
         # execution configs
 
         # execution attempt information
-        self.task_execution_uuid = uuid.uuid4().bytes
+        self.task_uuid = unicode(uuid.uuid4())
         self.task_attempt_number = 0  # REVISIT: should use retry count from vizalert parent
         self.task_started_at = None
         self.task_completed_at = None
@@ -208,23 +208,31 @@ class Task:
 
     def execute_task(self):
 
-        self.task_started_at = datetime.now()
+        self.task_started_at = datetime.datetime.now()
+
+        log.logger.debug(u'starting task execution for task {}'.format(self.task_uuid))
 
         try:
             if self.task_type == TaskType.SEND_EMAIL:
+
+                log.logger.debug(u'Task is type email, sending now')
+
                 emailaction.send_email(self.task_instance)
             elif self.task_type == TaskType.SEND_SMS:
+
+                log.logger.debug(u'Task is type SMS, sending now')
+
                 smsaction.send_sms(self.task_instance)
             else:
-                raise UserWarning('Task Type "{}" is invalid'.format(self.task_type))
+                raise UserWarning(u'Task Type "{}" is invalid'.format(self.task_type))
         except Exception as e:
             self.task_succeeded = False
-            self.task_completed_at = datetime.now()
-            log.logger.error(u'Could not execute task {}: {}'.format(e))
+            self.task_completed_at = datetime.datetime.now()
+            log.logger.error(u'Could not execute task {}: {}'.format(self.task_uuid, e.message))
             raise e
 
         self.task_succeeded = True
-        self.task_completed_at = datetime.now()
+        self.task_completed_at = datetime.datetime.now()
 
     def has_errors(self):
         if len(self.error_list) > 0:
@@ -256,6 +264,49 @@ class ContentReference:
             return False
 """
 
+
+class TaskWorker(threading.Thread):
+    """Class to enable multi-threaded processing of Tasks within an Alert"""
+
+    def __init__(self, thread_name, task_queue):
+        threading.Thread.__init__(self, name=thread_name)
+        self.queue = task_queue
+        self.thread_name = thread_name
+
+    def run(self):
+        # loop infinitely, breaking when the queue is out of work (should add a timeout!)
+        while 1 == 1:
+            if self.queue.qsize() == 0:
+                return
+            else:
+                # Get the work from the queue and expand the tuple
+                task = self.queue.get()
+
+                log.logger.debug(u'Thread {} is processing task_id {}, from subscription_id {}, view_id {}, '
+                                 u'site_name {}, customized_view_id {}, '
+                                 u'view_name {}'.format(
+                                    self.thread_name,
+                                    task.task_uuid ,
+                                    task.alert.subscription_id,
+                                    task.alert.view_id,
+                                    task.alert.site_name,
+                                    task.alert.customized_view_id,
+                                    task.alert.view_name))
+
+                # process the alert
+                try:
+                    task.execute_task()
+                except Exception as e:
+                    errormessage = u'Unable to process task {} from alert {}, error: {}'.format(
+                                                                                        task.task_uuid,
+                                                                                        task.alert.view_name,
+                                                                                        e.message)
+                    log.logger.error(errormessage)
+                    task.alert.error_list.append(errormessage)
+                    task.alert.alert_failure()
+                    continue
+
+
 class VizAlert:
     """Standard class representing a VizAlert"""
 
@@ -266,6 +317,7 @@ class VizAlert:
         self.subscriber_sysname = subscriber_sysname
         self.subscriber_email = subscriber_email
         self.view_name = view_name
+        self.alert_uuid = unicode(uuid.uuid4())
 
         # general config
         self.data_retrieval_tries = 2
@@ -275,6 +327,8 @@ class VizAlert:
         self.viz_png_height = 1500
         self.viz_png_width = 1500
         self.timeout_s = 60
+        self.task_thread_count = 10  # REVISIT!!!!!!!
+        self.task_thread_names = []
 
         # email action config
         self.action_enabled_email = 0
@@ -318,6 +372,8 @@ class VizAlert:
         self.trigger_data_rowcount = 0
         self.unique_trigger_data = []
         self.action_field_dict = {}
+        self.task_queue = Queue()  # the tasks to execute for this alert
+        self.task_threads = []  # the names of all the threads spun up to process tasks generated by this alert
         self.error_list = []  # list of errors encountered processing the vizalert
 
         # add all possible alert fields to the new VizAlert instance (should this live somewhere else?)
@@ -423,7 +479,17 @@ class VizAlert:
 
         # export the CSV to a local file
         try:
-            self.trigger_data_file = tabhttp.export_view(self, tabhttp.Format.CSV)
+            self.trigger_data_file = tabhttp.export_view(
+                self.view_url_suffix,
+                self.site_name,
+                self.timeout_s,
+                self.data_retrieval_tries,
+                self.force_refresh,
+                tabhttp.Format.CSV,
+                self.viz_png_width,
+                self.viz_png_height,
+                self.subscriber_sysname,
+                self.subscriber_domain)
 
             # read all rows into the trigger_data class member for later use
             reader = self.read_trigger_data()
@@ -758,6 +824,47 @@ class VizAlert:
                 # perform all actions as instructed by the alert
                 #  These two are in the same call right now, but should probably be separated
                 self.perform_actions()
+
+                log.logger.debug(u'Processing alert tasks')
+
+                try:
+                    # spin up threads to process tasks
+                    for index in range(self.task_thread_count):
+
+                        log.logger.debug(u'Spinning up task threads')
+
+                        thread_name = self.alert_uuid.join((u'_', unicode(index)))  # start thread names at 1
+
+                        log.logger.debug(u'New thread name will be {}'.format(thread_name))
+
+                        task_worker = TaskWorker(thread_name, self.task_queue)
+
+                        log.logger.debug(u'Starting task thread with name: {}'.format(thread_name))
+
+                        self.task_thread_names.append(thread_name)
+                        task_worker.start()
+
+                    # loop until work is done
+                    while 1 == 1:
+                            # test for completed task threads
+                            completed_task_threads = set(self.task_thread_names) - \
+                                                     set([thread.name for thread in threading.enumerate()])
+
+                            # if the set of completed threads matches all the task threads we spun up, that means we're done
+                            if completed_task_threads == set(self.task_thread_names):
+                                log.logger.debug(u'Task threads have completed for alert {}. Returning.'.format(self.alert_uuid))
+                                return
+                            task_sleep_time = 3  # REVISIT THIS
+                            time.sleep(task_sleep_time)
+                            log.logger.debug(u'Task threads still in progress for alert {}. Sleeping {} seconds'.format(
+                                self.alert_uuid, task_sleep_time))
+                except Exception as e:
+                    log.logger.error(u'Encountered error processing alert tasks for alert {}: {} '.format(
+                        self.alert_uuid,
+                        e.message))
+                # REVISIT
+                # check for any outstanding errors
+
             else:
                 self.alert_failure()
                 return
@@ -790,7 +897,17 @@ class VizAlert:
                     log.logger.debug(u'Processing as a simple alert')
 
                     # export the viz to a PNG file
-                    imagepath = tabhttp.export_view(self, tabhttp.Format.PNG)
+                    imagepath = tabhttp.export_view(
+                        self.view_url_suffix,
+                        self.site_name,
+                        self.timeout_s,
+                        self.data_retrieval_tries,
+                        self.force_refresh,
+                        tabhttp.Format.PNG,
+                        self.viz_png_width,
+                        self.viz_png_height,
+                        self.subscriber_sysname,
+                        self.subscriber_domain)
 
                     # attachments are stored lists of dicts to handle Advanced Alerts
                     inlineattachments = [{'imagepath': imagepath}]
@@ -808,7 +925,9 @@ class VizAlert:
                         email_instance = emailaction.Email(
                             config.configs['smtp.address.from'], self.subscriber_email, subject, body,
                             None, None, inlineattachments, appendattachments)
-                        emailaction.send_email(email_instance)
+
+                        # enqueue the task for later execution
+                        self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                     except Exception as e:
                         errormessage = u'Could not send email, error: {}'.format(e.message)
                         log.logger.error(errormessage)
@@ -929,9 +1048,11 @@ class VizAlert:
                                         email_instance = emailaction.Email(
                                             email_from, email_to, subject, u''.join(body), email_cc,
                                             email_bcc, inlineattachments, appendattachments)
-                                        log.logger.debug ('This is the email to:{}'.format(email_instance.toaddrs))
-                                        log.logger.debug ('This is the email from:{}'.format(email_instance.fromaddr))
-                                        emailaction.send_email(email_instance)
+                                        log.logger.debug(u'This is the email to:{}'.format(email_instance.toaddrs))
+                                        log.logger.debug(u'This is the email from:{}'.format(email_instance.fromaddr))
+
+                                        # Enqueue the task for later execution
+                                        self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                                     except Exception as e:
                                         errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                         log.logger.error(errormessage)
@@ -1006,7 +1127,9 @@ class VizAlert:
                                             email_instance = emailaction.Email(
                                                 email_from, email_to, subject, u''.join(body), email_cc, email_bcc,
                                                 inlineattachments, appendattachments)
-                                            emailaction.send_email(email_instance)
+
+                                            # Enqueue the task for later execution
+                                            self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                                         except Exception as e:
                                             errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                             log.logger.error(errormessage)
@@ -1039,8 +1162,10 @@ class VizAlert:
                                         email_cc,
                                         email_bcc,
                                         inlineattachments,
-                                        appendattachments )
-                                    emailaction.send_email(email_instance)
+                                        appendattachments)
+
+                                    # Enqueue the task for later execution
+                                    self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                                 except Exception as e:
                                     errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                     log.logger.error(errormessage)
@@ -1413,11 +1538,20 @@ class VizAlert:
                 # we need a full VizAlert instance to export the info, but with a different view_url_suffix
                 # to avoid overwriting the view_url_suffix in ourself, create a deep copy and pass that instead
                 #  this should probably be implemented differently, but for now it'll have to do
-                alert_copy = copy.deepcopy(self)
-                alert_copy.view_url_suffix = vizdistinctrefs[vizref]['view_url_suffix']
+
+                view_url_suffix = vizdistinctrefs[vizref]['view_url_suffix']
                 # export/render the viz to a file, store path to the download as value with vizref as key
-                vizdistinctrefs[vizref]['imagepath'] = tabhttp.export_view(alert_copy, eval(
-                    'tabhttp.Format.' + vizdistinctrefs[vizref]['formatstring']))
+                vizdistinctrefs[vizref]['imagepath'] = tabhttp.export_view(
+                    view_url_suffix,
+                    self.site_name,  # content references must live on the same site as the alert itself
+                    self.timeout_s,
+                    self.data_retrieval_tries,
+                    self.force_refresh,
+                    eval('tabhttp.Format.' + vizdistinctrefs[vizref]['formatstring']),
+                    self.viz_png_width,
+                    self.viz_png_height,
+                    self.subscriber_sysname,
+                    self.subscriber_domain)
 
             except Exception as e:
                 errormessage = u'Unable to render content reference {} with error:<br> {}'.format(vizref, e.message)
@@ -1611,9 +1745,9 @@ class VizAlert:
         attachment = None
 
         # dump all errors to the log for troubleshooting
-        log.logger.debug('All errors found:')
+        log.logger.debug(u'All errors found:')
         for error in self.error_list:
-            log.logger.debug('{}'.format(error))
+            log.logger.debug(u'{}'.format(error))
 
         # Separate the errors stored in a dictionary from the generic errors
         #   structure a nice HTML table to help our beloved users sort out their problems
