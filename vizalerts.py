@@ -302,6 +302,7 @@ def get_alerts():
             alert.viz_png_height = int(line['viz_png_height'])
             alert.viz_png_width = int(line['viz_png_width'])
             alert.timeout_s = int(line['timeout_s'])
+            alert.task_thread_count = int(line['task_threads'])
 
             # alert
             alert.alert_type = line['alert_type']

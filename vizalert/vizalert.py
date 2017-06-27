@@ -327,7 +327,7 @@ class VizAlert:
         self.viz_png_height = 1500
         self.viz_png_width = 1500
         self.timeout_s = 60
-        self.task_thread_count = 5  # REVISIT!!!!!!!
+        self.task_thread_count = 1
         self.task_thread_names = []
 
         # email action config

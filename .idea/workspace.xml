@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6107e266-d2c9-47dc-bdbd-2525af6a826c" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/demo/tests.xlsx" afterPath="$PROJECT_DIR$/demo/tests.xlsx" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/vizalert/smsaction.py" afterPath="$PROJECT_DIR$/vizalert/smsaction.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/vizalert/tabhttp.py" afterPath="$PROJECT_DIR$/vizalert/tabhttp.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/config/VizAlertsConfig.twb" afterPath="$PROJECT_DIR$/config/VizAlertsConfig.twb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/version_history.txt" afterPath="$PROJECT_DIR$/version_history.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/vizalert/vizalert.py" afterPath="$PROJECT_DIR$/vizalert/vizalert.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/vizalerts.py" afterPath="$PROJECT_DIR$/vizalerts.py" />
     </list>
     <ignored path="VizAlerts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,8 +30,8 @@
       <file leaf-file-name="vizalerts.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/vizalerts.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="470">
-              <caret line="44" column="31" selection-start-line="44" selection-start-column="26" selection-end-line="44" selection-end-column="31" />
+            <state relative-caret-position="538">
+              <caret line="304" column="36" selection-start-line="304" selection-start-column="12" selection-end-line="304" selection-end-column="36" />
               <folding>
                 <element signature="e#234#248#0" expanded="true" />
               </folding>
@@ -40,12 +42,22 @@
       <file leaf-file-name="vizalert.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/vizalert/vizalert.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="708">
-              <caret line="841" column="43" selection-start-line="841" selection-start-column="43" selection-end-line="841" selection-end-column="43" />
+            <state relative-caret-position="232">
+              <caret line="328" column="27" selection-start-line="328" selection-start-column="27" selection-end-line="328" selection-end-column="27" />
               <folding>
                 <element signature="e#81#90#0" expanded="true" />
-                <element signature="e#45704#60106#0" expanded="false" />
+                <element signature="e#45686#60088#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="version_history.txt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/version_history.txt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="510">
+              <caret line="30" column="67" selection-start-line="30" selection-start-column="67" selection-end-line="30" selection-end-column="67" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -84,11 +96,12 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/vizalert/emailaction.py" />
-        <option value="$PROJECT_DIR$/vizalerts.py" />
         <option value="C:/Utility/VizAlerts-2.1.0/vizalerts.py" />
         <option value="$PROJECT_DIR$/vizalert/tabhttp.py" />
         <option value="$PROJECT_DIR$/vizalert/smsaction.py" />
+        <option value="$PROJECT_DIR$/version_history.txt" />
         <option value="$PROJECT_DIR$/vizalert/vizalert.py" />
+        <option value="$PROJECT_DIR$/vizalerts.py" />
       </list>
     </option>
   </component>
@@ -326,7 +339,14 @@
       <option name="project" value="LOCAL" />
       <updated>1498586279261</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Checking in initial changes for Issue #68: Implement smart default behavior for Advanced Alerts">
+      <created>1498593038962</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1498593038962</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -336,7 +356,7 @@
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.11640625" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32992503" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.41308793" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.41308793" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -423,16 +443,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/vizalerts.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="470">
-          <caret line="44" column="31" selection-start-line="44" selection-start-column="26" selection-end-line="44" selection-end-column="31" />
-          <folding>
-            <element signature="e#234#248#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vizalert/smsaction.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="369">
@@ -441,13 +451,31 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/version_history.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="510">
+          <caret line="30" column="67" selection-start-line="30" selection-start-column="67" selection-end-line="30" selection-end-column="67" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vizalerts.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="538">
+          <caret line="304" column="36" selection-start-line="304" selection-start-column="12" selection-end-line="304" selection-end-column="36" />
+          <folding>
+            <element signature="e#234#248#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/vizalert/vizalert.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="708">
-          <caret line="841" column="43" selection-start-line="841" selection-start-column="43" selection-end-line="841" selection-end-column="43" />
+        <state relative-caret-position="232">
+          <caret line="328" column="27" selection-start-line="328" selection-start-column="27" selection-end-line="328" selection-end-column="27" />
           <folding>
             <element signature="e#81#90#0" expanded="true" />
-            <element signature="e#45704#60106#0" expanded="false" />
+            <element signature="e#45686#60088#0" expanded="false" />
           </folding>
         </state>
       </provider>
