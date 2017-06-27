@@ -178,7 +178,7 @@ def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, for
     # get the full URL (minus the ticket) for logging and error reporting
     displayurl = protocol + u'://' + server + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
     if force_refresh:
-        displayurl = displayurl + u'&:force_refresh=y'   # show admin/users that we forced a force_refresh
+        displayurl = displayurl + u'&:refresh=y'   # show admin/users that we forced a force_refresh
 
     while attempts < data_retrieval_tries:
         try:
@@ -190,7 +190,7 @@ def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, for
             # build final URL
             url = protocol + u'://' + server + u'/trusted/' + ticket + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
             if force_refresh:
-                url = url + u'&:force_refresh=y'   # force a force_refresh of the data--we don't want alerts based on cached (stale) data
+                url = url + u'&:refresh=y'   # force a force_refresh of the data--we don't want alerts based on cached (stale) data
 
             log.logger.debug(u'Getting vizdata from: {}'.format(url))
 

@@ -327,7 +327,7 @@ class VizAlert:
         self.viz_png_height = 1500
         self.viz_png_width = 1500
         self.timeout_s = 60
-        self.task_thread_count = 10  # REVISIT!!!!!!!
+        self.task_thread_count = 5  # REVISIT!!!!!!!
         self.task_thread_names = []
 
         # email action config
@@ -825,7 +825,9 @@ class VizAlert:
                 #  These two are in the same call right now, but should probably be separated
                 self.perform_actions()
 
-                log.logger.debug(u'Processing alert tasks')
+                log.logger.debug(u'Processing {} alert tasks for alert {}'.format(
+                    self.task_queue.qsize(),
+                    self.alert_uuid))
 
                 try:
                     # spin up threads to process tasks
@@ -833,7 +835,11 @@ class VizAlert:
 
                         log.logger.debug(u'Spinning up task threads')
 
-                        thread_name = self.alert_uuid.join((u'_', unicode(index)))  # start thread names at 1
+                        # get a unique thread name for the alert
+                        thread_name = u'{}{}{}'.format(
+                            self.alert_uuid,
+                            u'_',
+                            unicode(index))
 
                         log.logger.debug(u'New thread name will be {}'.format(thread_name))
 
@@ -850,9 +856,11 @@ class VizAlert:
                             completed_task_threads = set(self.task_thread_names) - \
                                                      set([thread.name for thread in threading.enumerate()])
 
-                            # if the set of completed threads matches all the task threads we spun up, that means we're done
+                            # if the set of completed threads matches all the task threads we spun up,
+                            #   that means we're done
                             if completed_task_threads == set(self.task_thread_names):
-                                log.logger.debug(u'Task threads have completed for alert {}. Returning.'.format(self.alert_uuid))
+                                log.logger.debug(u'Task threads have completed for alert {}. Returning.'.format(
+                                    self.alert_uuid))
                                 return
                             task_sleep_time = 3  # REVISIT THIS
                             time.sleep(task_sleep_time)
@@ -1236,13 +1244,15 @@ class VizAlert:
                                     log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
                                         smsaddresses,
                                         sms_from,
-                                        ''.join(sms_message)))
+                                        u''.join(sms_message)))
 
                                     # send the message(s) (multiple  for multiple phone numbers)
                                     for smsaddress in smsaddresses:
                                         try:
-                                            sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
-                                            smsaction.send_sms(sms_instance)
+                                            sms_instance = smsaction.SMS(sms_from, smsaddress, u''.join(sms_message))
+
+                                            # enqueue the sms to be sent
+                                            self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
                                         except Exception as e:
                                             self.error_list.append(
                                                 u'Could not send SMS, error: {}'.format(e.message))
@@ -1283,13 +1293,15 @@ class VizAlert:
                                         log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
                                             smsaddresses,
                                             sms_from,
-                                            ''.join(sms_message)))
+                                            u''.join(sms_message)))
 
                                         # send the message(s) (multiple for multiple phone numbers)
                                         for smsaddress in smsaddresses:
                                             try:
-                                                sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
-                                                smsaction.send_sms(sms_instance)
+                                                sms_instance = smsaction.SMS(sms_from, smsaddress, u''.join(sms_message))
+
+                                                # enqueue the sms to be sent
+                                                self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
                                             except Exception as e:
                                                 self.error_list.append(
                                                     u'Could not send SMS, error: {}'.format(e.message))
@@ -1317,7 +1329,9 @@ class VizAlert:
                                 for smsaddress in smsaddresses:
                                     try:
                                         sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
-                                        smsaction.send_sms(sms_instance)
+
+                                        # enqueue the sms to be sent
+                                        self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
                                     except Exception as e:
                                         self.error_list.append(
                                             u'Could not send SMS, error: {}'.format(e.message))

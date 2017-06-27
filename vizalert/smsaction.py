@@ -71,11 +71,11 @@ def send_sms(sms_instance):
     Presumes that numbers have gone through a first level of checks for validity
     Returns nothing on success, error string back on failure"""
 
-    log.logger.info(u'Sending SMS: {},{},{}'.format(sms_instance.sms_from, sms_instance.sms_to, sms_instance.msgbody))
-
     # shouldn't happen but setting content to '' if it's None
     if not sms_instance.msgbody:
-        msgbody = ''
+        sms_instance.msgbody = ''
+
+    log.logger.info(u'Sending SMS: {},{},{}'.format(sms_instance.sms_from, sms_instance.sms_to, sms_instance.msgbody))
 
     # now to send the message
     try:
@@ -91,13 +91,21 @@ def send_sms(sms_instance):
         # this may never happen since the Twilio REST API throws exceptions, it's a failsafe check
         if message.status == 'failed':
             raise ValueError(u'Failed to deliver SMS message to {} with body {},'
-                             u' no additional information is available'.format(sms_instance.sms_to, msgbody))
+                             u' no additional information is available'.format(
+                                sms_instance.sms_to,
+                                sms_instance.msgbody))
 
     # check for Twilio REST API exceptions
     except twilio.TwilioRestException as e:
         errormessage = u'Could not send SMS message to {} with body {}.\nHTTP status {} returned for request: ' \
-                       u'{} {}\nWith error {}: {} '.format(sms_instance.sms_to, msgbody, e.status, e.method, e.uri,
-                                                           e.code, e.msg)
+                       u'{} {}\nWith error {}: {} '.format(
+                            sms_instance.sms_to,
+                            sms_instance.msgbody,
+                            e.status,
+                            e.method,
+                            e.uri,
+                            e.code,
+                            e.msg)
         log.logger.error(errormessage)
         return errormessage
 
@@ -107,7 +115,9 @@ def send_sms(sms_instance):
         return e
 
     except Exception as e:
-        errormessage = u'Could not send SMS message to {} with body {}, error {}'.format(sms_instance.sms_to, msgbody, e)
+        errormessage = u'Could not send SMS message to {} with body {}, error {}'.format(
+            sms_instance.sms_to,
+            sms_instance.msgbody, e)
         log.logger.error(errormessage)
         return e
 
