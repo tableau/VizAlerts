@@ -311,6 +311,11 @@ def get_alerts():
             else:
                 alert.is_test = False
 
+            if line['is_triggered_by_refresh'].lower() == 'true':
+                alert.is_triggered_by_refresh = True
+            else:
+                alert.is_triggered_by_refresh = False
+
             # subscription
             if line['customized_view_id'] == '':
                 alert.customized_view_id = None
@@ -384,28 +389,30 @@ def get_alerts():
                         # the schedule condition ensures the alert doesn't run simply due to a schedule switch
                         # (note that CHANGING a schedule will still trigger the alert check...to be fixed later
                         if (
-                                    (datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
-                                             != datetime.datetime.strptime(str(linedict['run_next_at']),
-                                                                           "%Y-%m-%d %H:%M:%S") \
-                                             and str(alert.schedule_id) == str(linedict['schedule_id']))
+                                (datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
+                                         > datetime.datetime.strptime(str(linedict['run_next_at']),
+                                                                       "%Y-%m-%d %H:%M:%S") \
+                                         and str(alert.schedule_id) == str(linedict['schedule_id']))
                                 # test alerts are handled differently
                                 and not alert.is_test
                         ):
 
-                            # For a test, run_next_at is anchored to the most recent comment, so use it as last run time
-                            if alert.is_test:
-                                alert.ran_last_at = alert.run_next_at
-                            else:
-                                alert.ran_last_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                                # For a test, run_next_at is anchored to the most recent comment, so use it as last run time
+                                if alert.is_test:
+                                    alert.ran_last_at = alert.run_next_at
+                                else:
+                                    alert.ran_last_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
-                            seconds_since_last_run = \
-                                abs((
-                                        datetime.datetime.strptime(str(linedict['ran_last_at']),
-                                                                   "%Y-%m-%d %H:%M:%S") -
-                                        datetime.datetime.utcnow()
-                                    ).total_seconds())
+                                seconds_since_last_run = \
+                                    abs((
+                                            datetime.datetime.strptime(str(linedict['ran_last_at']),
+                                                                       "%Y-%m-%d %H:%M:%S") -
+                                            datetime.datetime.utcnow()
+                                        ).total_seconds())
 
-                            execalerts.append(alert)
+                                execalerts.append(alert)
+
+                        # else use the ran_last_at field, and write it to the state file? I dunno.
 
                         # add the alert to the list to write back to our state file
                         persistalerts.append(alert)

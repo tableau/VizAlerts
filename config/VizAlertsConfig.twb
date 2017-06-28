@@ -712,8 +712,7 @@
     </datasource>
     <datasource caption='VizAlerts Scheduled Trigger Views' inline='true' name='postgres.42520.320455937501' version='8.3'>
       <connection class='postgres' dbname='workgroup' odbc-native-protocol='yes' port='8060' server='your-repo-server' server-oauth='' username='readonly' workgroup-auth-mode='prompt'>
-        <relation name='Alerts' type='text'>SELECT&#13;&#10;         s.id                    AS subscription_id ,&#13;&#10;         v.id                    AS view_id ,&#13;&#10;         cv.id                   AS customized_view_id ,&#13;&#10;         COALESCE(v.name || &apos;/&apos; || cv.url_id ,&#13;&#10;        v.name)              AS view_name ,&#13;&#10;         COALESCE(w.repository_url || &apos;/&apos; || v.sheet_id || &apos;/&apos; || su_cust.name || &apos;@&apos; || d.name || &apos;/&apos; || cv.url_id ,&#13;&#10;             w.repository_url || &apos;/&apos; || v.sheet_id)         -- determine URL for a customized view&#13;&#10;                                 AS view_url_suffix ,&#13;&#10;         w.id                    AS workbook_id ,&#13;&#10;         w.repository_url        AS workbook_repository_url ,&#13;&#10;         p.id                    AS project_id ,&#13;&#10;         p.name                  AS project_name ,&#13;&#10;         st.id                   AS site_id ,&#13;&#10;         CASE&#13;&#10;             WHEN st.url_namespace IS NULL THEN &apos;Default&apos;&#13;&#10;             WHEN st.url_namespace = &apos;&apos; THEN &apos;Default&apos;&#13;&#10;             ELSE st.url_namespace&#13;&#10;         END                     AS site_name ,&#13;&#10;         v.owner_id              AS view_owner_id ,&#13;&#10;         s.user_id               AS subscriber_user_id ,&#13;&#10;         su_sub.name             AS subscriber_sysname ,&#13;&#10;         dom_sub.name            AS subscriber_domain ,&#13;&#10;         su_sub.email            AS subscriber_email ,&#13;&#10;         l_sub.name              AS subscriber_license ,&#13;&#10;         su.email                AS owner_email ,&#13;&#10;         su.name                 AS owner_sysname ,&#13;&#10;         su.friendly_name        AS owner_friendly_name ,&#13;&#10;         sch.id                  AS schedule_id ,&#13;&#10;         sch.name                AS schedule_name ,&#13;&#10;         sch.priority            AS schedule_priority ,&#13;&#10;         sch.schedule_type       AS schedule_type ,&#13;&#10;         s.is_test ,&#13;&#10;         COALESCE(date_trunc(&apos;second&apos;, s.test_alert_timestamp), sch.run_next_at)&#13;&#10;                                 AS run_next_at ,&#13;&#10;         COALESCE(&#13;&#10;             /*&#13;&#10;              Give our best guess as to when a newly scheduled alert would have last run&#13;&#10;                We&apos;re basically making this up, but this is only used for timeout values on the first run&#13;&#10;             */&#13;&#10;             CASE&#13;&#10;                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL &apos;1 minute&apos;&#13;&#10;                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL &apos;1 day&apos;&#13;&#10;                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL &apos;7 days&apos;&#13;&#10;                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL &apos;30 days&apos;&#13;&#10;                 ELSE sch.run_next_at - INTERVAL &apos;1 day&apos; --default to a day ago&#13;&#10;             END ,&#13;&#10;             date_trunc(&apos;second&apos;, (s.test_alert_timestamp - interval &apos;30 minutes&apos;))&#13;&#10;             )                   AS ran_last_at ,           -- used for initial timeouts only&#13;&#10;         CAST(&apos;simple&apos; AS text)  AS alert_type              -- placeholder, ignore this&#13;&#10;    FROM (&#13;&#10;        SELECT&#13;&#10;            s.id ,&#13;&#10;            s.user_id ,&#13;&#10;            s.subject ,&#13;&#10;            false           is_test ,&#13;&#10;            sv.repository_url ,&#13;&#10;            s.schedule_id ,&#13;&#10;            NULL            test_alert_timestamp&#13;&#10;        FROM subscriptions s&#13;&#10;            LEFT JOIN subscriptions_views sv&#13;&#10;                   ON s.id = sv.subscription_id&#13;&#10;        UNION&#13;&#10;        SELECT&#13;&#10;            MIN((-1 * c.id))&#13;&#10;                   
-         id ,&#13;&#10;            c.user_id ,&#13;&#10;            v.name          subject ,&#13;&#10;            true            is_test ,&#13;&#10;            v.repository_url ,&#13;&#10;            -1              schedule_id ,&#13;&#10;            MAX(c.updated_at)&#13;&#10;                            test_alert_timestamp&#13;&#10;        FROM comments c&#13;&#10;            INNER JOIN views v&#13;&#10;            ON c.commentable_id = v.id&#13;&#10;                AND c.commentable_type = &apos;View&apos;&#13;&#10;                AND LOWER(c.comment) = &apos;test_alert&apos;&#13;&#10;            WHERE c.updated_at &gt;&gt; current_timestamp - interval &apos;5 minutes&apos;&#13;&#10;        GROUP BY c.user_id ,&#13;&#10;            v.name ,&#13;&#10;            v.repository_url&#13;&#10;        ) s&#13;&#10;        INNER JOIN users u_sub&#13;&#10;            ON s.user_id = u_sub.id&#13;&#10;        INNER JOIN system_users su_sub&#13;&#10;            ON u_sub.system_user_id = su_sub.id&#13;&#10;        INNER JOIN licensing_roles l_sub&#13;&#10;            ON u_sub.licensing_role_id = l_sub.id&#13;&#10;        INNER JOIN domains dom_sub&#13;&#10;            ON su_sub.domain_id = dom_sub.id&#13;&#10;        LEFT JOIN subscriptions_customized_views scv&#13;&#10;            ON s.id = scv.subscription_id&#13;&#10;        LEFT JOIN customized_views cv&#13;&#10;            ON scv.customized_view_id = cv.id&#13;&#10;        LEFT JOIN users u_cust&#13;&#10;            ON cv.creator_id = u_cust.id&#13;&#10;        LEFT JOIN system_users su_cust&#13;&#10;            ON u_cust.system_user_id = su_cust.id&#13;&#10;        LEFT JOIN schedules sch&#13;&#10;           ON s.schedule_id = sch.id&#13;&#10;        INNER JOIN views v&#13;&#10;           ON s.repository_url = v.repository_url&#13;&#10;               AND u_sub.site_id = v.site_id&#13;&#10;        INNER JOIN workbooks w&#13;&#10;           ON v.workbook_id = w.id&#13;&#10;        INNER JOIN sites st&#13;&#10;           ON v.site_id = st.id&#13;&#10;        INNER JOIN projects p&#13;&#10;           ON w.project_id = p.id&#13;&#10;        INNER JOIN users u&#13;&#10;            ON v.owner_id = u.id&#13;&#10;        INNER JOIN system_users su&#13;&#10;            ON u.system_user_id = su.id&#13;&#10;        INNER JOIN domains d&#13;&#10;            ON su.domain_id = d.id&#13;&#10;    WHERE 1 = 1&#13;&#10;        AND (&#13;&#10;                (s.is_test = true)  -- not scheduled, someone is testing an ad-hoc alert&#13;&#10;                OR&#13;&#10;                sch.active = &apos;f&apos;    -- only show alerts on disabled schedules&#13;&#10;            )&#13;&#10;        AND coalesce(su_sub.email, &apos;&apos;) &lt;&lt;&gt;&gt; &apos;&apos;              -- only accounts with valid emails (no service accts)&#13;&#10;    ORDER BY&#13;&#10;        sch.run_next_at ,&#13;&#10;        sch.priority DESC</relation>
+        <relation name='Alerts' type='text'>SELECT&#13;&#10;         s.id                    AS subscription_id ,&#13;&#10;         v.id                    AS view_id ,&#13;&#10;         cv.id                   AS customized_view_id ,&#13;&#10;         COALESCE(v.name || &apos;/&apos; || cv.url_id ,&#13;&#10;        v.name)              AS view_name ,&#13;&#10;         COALESCE(w.repository_url || &apos;/&apos; || v.sheet_id || &apos;/&apos; || su_cust.name || &apos;@&apos; || d.name || &apos;/&apos; || cv.url_id ,&#13;&#10;             w.repository_url || &apos;/&apos; || v.sheet_id)         -- determine URL for a customized view&#13;&#10;                                 AS view_url_suffix ,&#13;&#10;         w.id                    AS workbook_id ,&#13;&#10;         w.repository_url        AS workbook_repository_url ,&#13;&#10;         p.id                    AS project_id ,&#13;&#10;         p.name                  AS project_name ,&#13;&#10;         st.id                   AS site_id ,&#13;&#10;         CASE&#13;&#10;             WHEN st.url_namespace IS NULL THEN &apos;Default&apos;&#13;&#10;             WHEN st.url_namespace = &apos;&apos; THEN &apos;Default&apos;&#13;&#10;             ELSE st.url_namespace&#13;&#10;         END                     AS site_name ,&#13;&#10;         v.owner_id              AS view_owner_id ,&#13;&#10;         s.user_id               AS subscriber_user_id ,&#13;&#10;         su_sub.name             AS subscriber_sysname ,&#13;&#10;         dom_sub.name            AS subscriber_domain ,&#13;&#10;         su_sub.email            AS subscriber_email ,&#13;&#10;         l_sub.name              AS subscriber_license ,&#13;&#10;         su.email                AS owner_email ,&#13;&#10;         su.name                 AS owner_sysname ,&#13;&#10;         su.friendly_name        AS owner_friendly_name ,&#13;&#10;         sch.id                  AS schedule_id ,&#13;&#10;         sch.name                AS schedule_name ,&#13;&#10;         sch.priority            AS schedule_priority ,&#13;&#10;         sch.schedule_type       AS schedule_type ,&#13;&#10;         s.is_test ,&#13;&#10;         CASE&#13;&#10;            WHEN LOWER(sch.name) LIKE &apos;%refresh%&apos; AND LOWER(sch.name) LIKE &apos;%&apos; || &lt;[Parameters].[Parameter 9]&gt; || &apos;%&apos;&#13;&#10;                THEN true&#13;&#10;            ELSE false&#13;&#10;         END                     AS is_triggered_by_refresh ,&#13;&#10;         COALESCE(&#13;&#10;            date_trunc(&apos;second&apos;, s.test_alert_timestamp),  -- the alert is being tested with a &quot;test_alert&quot; comment&#13;&#10;            CASE&#13;&#10;                WHEN LOWER(sch.name) LIKE &apos;%refresh%&apos; AND LOWER(sch.name) LIKE &apos;%&apos; || &lt;[Parameters].[Parameter 9]&gt; || &apos;%&apos;&#13;&#10;                    THEN &#13;&#10;                        CASE&#13;&#10;                            WHEN LOWER(sch.name) LIKE &apos;%refresh%succ%&apos;&#13;&#10;                                THEN COALESCE(&#13;&#10;                                    date_trunc(&apos;second&apos;, refresh_stats.refresh_succeeded_at),&#13;&#10;                                    timestamp &apos;1970-01-01 00:00:00&apos;&#13;&#10;                                )&#13;&#10;                            WHEN LOWER(sch.name) LIKE &apos;%refresh%fail%&apos;&#13;&#10;                                THEN COALESCE(&#13;&#10;                                    date_trunc(&apos;second&apos;, refresh_stats.refresh_failed_at),&#13;&#10;                                    timestamp &apos;1970-01-01 00:00:00&apos;&#13;&#10;                                )&#13;&#10;                            ELSE timestamp &apos;1970-01-01 00:00:00&apos;&#13;&#10;                        END&#13;&#10;                ELSE sch.run_next_at&#13;&#10;            END&#13;&#10;         )                      AS run_next_at ,&#13;&#10;         COALESCE(&#13;&#10;             /*&#13;&#10;              Give our best guess as to when a newly scheduled alert would have last run&#13;&#10;                We&apos;re basically making this up, but this is only used for timeout values on the first run&#13;&#10;             */&#13;&#10;             CASE&#13;&#10;                 WHEN sch.schedule_type = 0 THEN sch.run_next_at - sch.minute_interval * INTERVAL &apos;1 minute&apos;&#13;&#10;                 WHEN sch.schedule_type = 1 THEN sch.run_next_at - INTERVAL &apos;1 day&apos;&#13;&#10;                 WHEN sch.schedule_type = 2 THEN sch.run_next_at - INTERVAL &apos;7 days&apos;&#13;&#10;                 WHEN sch.schedule_type = 3 THEN sch.run_next_at - INTERVAL &apos;30 days&apos;&#13;&#10;                 ELSE sch.run_next_at - INTERVAL &apos;1 day&apos; --default to a day ago&#13;&#10;             END ,&#13;&#10;             date_trunc(&apos;second&apos;, (s.test_alert_timestamp - interval &apos;30 minutes&apos;))&#13;&#10;             )                   AS ran_last_at ,           -- used for initial timeouts only&#13;&#10;         CAST(&apos;simple&apos; AS text)  AS alert_type              -- placeholder, ignore this&#13;&#10;    FROM (&#13;&#10;        SELECT&#13;&#10;            s.id ,&#13;&#10;            s.user_id ,&#13;&#10;            s.subject ,&#13;&#10;            false           is_test ,&#13;&#10;            sv.repository_url ,&#13;&#10;            s.schedule_id ,&#13;&#10;            NULL            test_alert_timestamp&#13;&#10;        FROM subscriptions s&#13;&#10;            LEFT JOIN subscriptions_views sv&#13;&#10;                   ON s.id = sv.subscription_id&#13;&#10;        UNION&#13;&#10;        SELECT&#13;&#10;            MIN((-1 * c.id))&#13;&#10;                            id ,&#13;&#10;            c.user_id ,&#13;&#10;            v.name          subject ,&#13;&#10;            true            is_test ,&#13;&#10;            v.repository_url ,&#13;&#10;            -1              schedule_id ,&#13;&#10;            MAX(c.updated_at)&#13;&#10;                            test_alert_timestamp&#13;&#10;        FROM comments c&#13;&#10;            INNER JOIN views v&#13;&#10;            ON c.commentable_id = v.id&#13;&#10;                AND c.commentable_type = &apos;View&apos;&#13;&#10;                AND LOWER(c.comment) = &apos;test_alert&apos;&#13;&#10;            WHERE c.updated_at &gt;&gt; current_timestamp - interval &apos;5 minutes&apos;&#13;&#10;        GROUP BY c.user_id ,&#13;&#10;            v.name ,&#13;&#10;            v.repository_url&#13;&#10;        ) s&#13;&#10;        INNER JOIN users u_sub&#13;&#10;            ON s.user_id = u_sub.id&#13;&#10;        INNER JOIN system_users su_sub&#13;&#10;            ON u_sub.system_user_id = su_sub.id&#13;&#10;        INNER JOIN licensing_roles l_sub&#13;&#10;            ON u_sub.licensing_role_id = l_sub.id&#13;&#10;        INNER JOIN domains dom_sub&#13;&#10;            ON su_sub.domain_id = dom_sub.id&#13;&#10;        LEFT JOIN subscriptions_customized_views scv&#13;&#10;            ON s.id = scv.subscription_id&#13;&#10;        LEFT JOIN customized_views cv&#13;&#10;            ON scv.customized_view_id = cv.id&#13;&#10;        LEFT JOIN users u_cust&#13;&#10;            ON cv.creator_id = u_cust.id&#13;&#10;        LEFT JOIN system_users su_cust&#13;&#10;            ON u_cust.system_user_id = su_cust.id&#13;&#10;        LEFT JOIN schedules sch&#13;&#10;           ON s.schedule_id = sch.id&#13;&#10;        INNER JOIN views v&#13;&#10;           ON s.repository_url = v.repository_url&#13;&#10;               AND u_sub.site_id = v.site_id&#13;&#10;        INNER JOIN workbooks w&#13;&#10;           ON v.workbook_id = w.id&#13;&#10;        INNER JOIN sites st&#13;&#10;           ON v.site_id = st.id&#13;&#10;        INNER JOIN projects p&#13;&#10;           ON w.project_id = p.id&#13;&#10;        INNER JOIN users u&#13;&#10;            ON v.owner_id = u.id&#13;&#10;        INNER JOIN system_users su&#13;&#10;            ON u.system_user_id = su.id&#13;&#10;        INNER JOIN domains d&#13;&#10;            ON su.domain_id = d.id&#13;&#10;        LEFT JOIN&#13;&#10;            (&#13;&#10;            -- this query grabs the last day&apos;s worth of extract refreshes so we know when they failed/succeded&#13;&#10;            SELECT&#13;&#10;                MAX(&#13;&#10;                    CASE bj.finish_code &#13;&#10;                        WHEN 0 THEN bj.completed_at&#13;&#10;                        ELSE NULL&#13;&#10;                    END&#13;&#10;                )                                                   AS &quot;refresh_succeeded_at&quot; ,&#13;&#10;                MAX(&#13;&#10;                    CASE bj.finish_code &#13;&#10;                        WHEN 1 THEN bj.completed_at&#13;&#10;                        ELSE NULL&#13;&#10;                    END&#13;&#10;                )                                                   AS &quot;refresh_failed_at&quot; ,&#13;&#10;                w.id                                                AS &quot;refreshed_workbook_id&quot;&#13;&#10;            FROM background_jobs bj&#13;&#10;                INNER JOIN tasks t&#13;&#10;                    ON bj.correlation_id = t.id&#13;&#10;                        AND bj.job_name IN (&apos;Refresh Extracts&apos;,&apos;Increment Extracts&apos;)&#13;&#10;                INNER JOIN workbooks w&#13;&#10;                    ON (t.obj_id = w.id AND t.obj_type = &apos;Workbook&apos;)&#13;&#10;            &#13;&#10;            GROUP BY&#13;&#10;                w.id&#13;&#10;            ) AS refresh_stats&#13;&#10;            ON w.id = refresh_stats.refreshed_workbook_id&#13;&#10;    WHERE 1 = 1&#13;&#10;        AND (&#13;&#10;                (s.is_test = true)  -- not scheduled, someone is testing an ad-hoc alert&#13;&#10;                OR&#13;&#10;                sch.active = &apos;f&apos;    -- only show alerts on disabled schedules&#13;&#10;            )&#13;&#10;        AND coalesce(su_sub.email, &apos;&apos;) &lt;&lt;&gt;&gt; &apos;&apos;              -- only accounts with valid emails (no service accts)&#13;&#10;    ORDER BY&#13;&#10;        sch.run_next_at ,&#13;&#10;        sch.priority DESC</relation>
         <metadata-records>
           <metadata-record class='column'>
             <remote-name>subscription_id</remote-name>
@@ -1128,12 +1127,27 @@
             </attributes>
           </metadata-record>
           <metadata-record class='column'>
+            <remote-name>is_triggered_by_refresh</remote-name>
+            <remote-type>11</remote-type>
+            <local-name>[is_triggered_by_refresh]</local-name>
+            <parent-name>[Alerts]</parent-name>
+            <remote-alias>is_triggered_by_refresh</remote-alias>
+            <ordinal>26</ordinal>
+            <local-type>boolean</local-type>
+            <aggregation>Count</aggregation>
+            <contains-null>true</contains-null>
+            <attributes>
+              <attribute datatype='string' name='DebugRemoteType'>&quot;SQL_BIT&quot;</attribute>
+              <attribute datatype='string' name='DebugWireType'>&quot;SQL_C_BIT&quot;</attribute>
+            </attributes>
+          </metadata-record>
+          <metadata-record class='column'>
             <remote-name>run_next_at</remote-name>
             <remote-type>7</remote-type>
             <local-name>[run_next_at]</local-name>
             <parent-name>[Alerts]</parent-name>
             <remote-alias>run_next_at</remote-alias>
-            <ordinal>26</ordinal>
+            <ordinal>27</ordinal>
             <local-type>datetime</local-type>
             <aggregation>Year</aggregation>
             <contains-null>true</contains-null>
@@ -1148,7 +1162,7 @@
             <local-name>[ran_last_at]</local-name>
             <parent-name>[Alerts]</parent-name>
             <remote-alias>ran_last_at</remote-alias>
-            <ordinal>27</ordinal>
+            <ordinal>28</ordinal>
             <local-type>datetime</local-type>
             <aggregation>Year</aggregation>
             <contains-null>true</contains-null>
@@ -1163,7 +1177,7 @@
             <local-name>[alert_type]</local-name>
             <parent-name>[Alerts]</parent-name>
             <remote-alias>alert_type</remote-alias>
-            <ordinal>28</ordinal>
+            <ordinal>29</ordinal>
             <local-type>string</local-type>
             <aggregation>Count</aggregation>
             <width>8190</width>
@@ -1365,6 +1379,13 @@
           </formatted-text>
         </desc>
       </column>
+      <column datatype='boolean' name='[is_triggered_by_refresh]' role='dimension' type='nominal'>
+        <desc>
+          <formatted-text>
+            <run>Indicates whether this VizAlert instance is triggered when the workbook it belongs to undergoes an extract refresh.</run>
+          </formatted-text>
+        </desc>
+      </column>
       <column aggregation='Sum' datatype='integer' default-format='n0;-0' name='[project_id]' role='dimension' type='ordinal'>
       </column>
       <column datatype='datetime' default-format='*YYYY-mm-DD HH:MM:SS' name='[ran_last_at]' role='dimension' type='ordinal'>
@@ -1445,6 +1466,7 @@
         <folder-item name='[Calculation_1880608160023327]' type='field' />
         <folder-item name='[Calculation_5911012080139041]' type='field' />
         <folder-item name='[is_test]' type='field' />
+        <folder-item name='[is_triggered_by_refresh]' type='field' />
         <folder-item name='[ran_last_at]' type='field' />
         <folder-item name='[run_next_at]' type='field' />
         <folder-item name='[schedule_id]' type='field' />
@@ -2186,7 +2208,7 @@
           </formatted-text>
         </caption>
       </layout-options>
-      <repository-location derived-from='https://alpo/workbooks/VizAlerts/AlertList?rev=' id='AlertList' path='/workbooks/VizAlerts' revision='' />
+      <repository-location derived-from='https://your-server/workbooks/VizAlertsConfig/ScheduledTriggerViews?rev=' id='ScheduledTriggerViews' path='/workbooks/VizAlertsConfig' revision='' />
       <table>
         <view>
           <datasources>
@@ -2381,6 +2403,13 @@
                 </formatted-text>
               </desc>
             </column>
+            <column datatype='boolean' name='[is_triggered_by_refresh]' role='dimension' type='nominal'>
+              <desc>
+                <formatted-text>
+                  <run>Indicates whether this VizAlert instance is triggered when the workbook it belongs to undergoes an extract refresh.</run>
+                </formatted-text>
+              </desc>
+            </column>
             <column-instance column='[Calculation_0491015131514267]' derivation='None' name='[none:Calculation_0491015131514267:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_0630608185616497]' derivation='None' name='[none:Calculation_0630608185616497:ok]' pivot='key' type='ordinal' />
             <column-instance column='[Calculation_0880602155537439]' derivation='None' name='[none:Calculation_0880602155537439:nk]' pivot='key' type='nominal' />
@@ -2400,6 +2429,7 @@
             <column-instance column='[data_retrieval_tries (copy 2)]' derivation='None' name='[none:data_retrieval_tries (copy 2):ok]' pivot='key' type='ordinal' />
             <column-instance column='[data_retrieval_tries (copy)]' derivation='None' name='[none:data_retrieval_tries (copy):ok]' pivot='key' type='ordinal' />
             <column-instance column='[is_test]' derivation='None' name='[none:is_test:nk]' pivot='key' type='nominal' />
+            <column-instance column='[is_triggered_by_refresh]' derivation='None' name='[none:is_triggered_by_refresh:nk]' pivot='key' type='nominal' />
             <column-instance column='[owner_email]' derivation='None' name='[none:owner_email:nk]' pivot='key' type='nominal' />
             <column-instance column='[owner_friendly_name]' derivation='None' name='[none:owner_friendly_name:nk]' pivot='key' type='nominal' />
             <column-instance column='[owner_sysname]' derivation='None' name='[none:owner_sysname:nk]' pivot='key' type='nominal' />
@@ -2572,6 +2602,7 @@
               <lod column='[postgres.42520.320455937501].[none:allowed_from_number (copy):nk]' />
               <lod column='[postgres.42520.320455937501].[none:Calculation_0491015131514267:ok]' />
               <lod column='[postgres.42520.320455937501].[none:timeout_s (copy):ok]' />
+              <lod column='[postgres.42520.320455937501].[none:is_triggered_by_refresh:nk]' />
             </encodings>
           </pane>
         </panes>
@@ -2628,6 +2659,7 @@
           <field>[postgres.42520.320455937501].[none:allowed_from_number (copy):nk]</field>
           <field>[postgres.42520.320455937501].[none:allowed_recipient_addresses (copy):nk]</field>
           <field>[postgres.42520.320455937501].[none:allowed_recipient_numbers (copy):nk]</field>
+          <field>[postgres.42520.320455937501].[none:is_triggered_by_refresh:nk]</field>
           <field>[postgres.42520.320455937501].[none:is_valid_schedule (copy):nk]</field>
           <field>[postgres.42520.320455937501].[none:ran_last_at:ok]</field>
           <field>[postgres.42520.320455937501].[none:run_next_at:ok]</field>

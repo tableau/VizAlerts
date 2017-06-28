@@ -180,7 +180,7 @@ class Task:
     """Represents a task within an Alert to be executed. It need not be an actual alert Action"""
 
     def __init__(self, alert, task_type, task_instance):
-        self.alert = alert  # the parent Alert for this Task (REVISIT THIS---we could have thousands of these instance)
+        self.alert = alert
         self.task_type = task_type  # the type of task to be executed, represented as an instance of the TaskType class
         self.task_instance = task_instance  # the instance of the task to be executed
 
@@ -344,6 +344,7 @@ class VizAlert:
         # alert metadata
         self.alert_type = SIMPLE_ALERT
         self.is_test = False
+        self.is_triggered_by_refresh = False
         self.customized_view_id = -1
         self.owner_email = u''
         self.owner_friendly_name = u''
