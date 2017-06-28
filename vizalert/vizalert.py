@@ -7,11 +7,14 @@ import csv
 import copy
 import threading
 import datetime
+import time
 from PyPDF2 import PdfFileReader, PdfFileMerger
 from collections import OrderedDict
 from os.path import abspath, basename, expanduser
 from operator import itemgetter
 import posixpath
+import uuid
+from Queue import Queue
 
 # import local modules
 import config
@@ -84,7 +87,6 @@ _os_alt_seps = list(sep for sep in [os.path.sep, os.path.altsep]
                     if sep not in (None, '/', '\\'))
 
 
-
 class UnicodeCsvReader(object):
     """Code from http://stackoverflow.com/questions/1846135/general-unicode-utf-8-support-for-csv-files-in-python-2-6"""
     def __init__(self, f, encoding="utf-8", **kwargs):
@@ -114,17 +116,18 @@ class UnicodeDictReader(csv.DictReader):
         self.reader = UnicodeCsvReader(f, encoding=encoding, **kwds)
 
 
-
 class ActionField:
     """Represents a mapping of a field found in a trigger CSV to an action property"""
 
-    def __init__(self, name, action_type, is_required, is_action_flag, pattern):
+    def __init__(self, name, action_type, is_required, is_action_flag, pattern, default_value=None):
         self.name = name
         self.action_type = action_type
         self.is_required = is_required  # "if performing this action_type, is this field required to do it?"
         self.is_action_flag = is_action_flag
         self.pattern = pattern
         self.field_name = None  # no field name until we validate
+        self.default_value = default_value  # if a field is required information, but was NOT used in the viz, 
+                                            #    then use default values we populate from the user data, if possible
         self.match_list = []
         self.error_list = []
 
@@ -134,6 +137,23 @@ class ActionField:
             return field_name.format(self.name, u'*')
         else:
             return field_name.format(self.name, u'~')
+
+    def get_value_from_dict(self, dict):
+    # Retrieve the field value from a dictionary, or the default value
+        if self.field_name:
+            if dict.has_key(self.field_name):
+                return dict[self.field_name]
+            else:
+                errormessage = u'Could not retrieve value for field {} from row {}'.format(
+                        self.field_name, dict)
+                raise UserWarning(errormessage)
+        elif self.default_value:
+            return self.default_value
+        else:
+            errormessage = u'Could not retrieve value for field {}, no matches were found ' \
+                            'and no default value available'.format(
+                    self.field_name)
+            raise UserWarning(errormessage)
 
     def has_match(self):
         if len(self.match_list) > 0:
@@ -146,6 +166,80 @@ class ActionField:
             return True
         else:
             return False
+
+
+class TaskType(object):
+    """Enumerates the allowed types a Task may be"""
+    SEND_EMAIL = 'send_email'
+    SEND_SMS = 'send_sms'
+    # GET_CONTENT_REFERENCE = 'get_content_reference'
+    # VALIDATE_TRIGGER_DATA = 'validate_trigger_data'
+
+
+class Task:
+    """Represents a task within an Alert to be executed. It need not be an actual alert Action"""
+
+    def __init__(self, alert, task_type, task_instance):
+        self.alert = alert
+        self.task_type = task_type  # the type of task to be executed, represented as an instance of the TaskType class
+        self.task_instance = task_instance  # the instance of the task to be executed
+
+        # task content
+        self.task_input_value = None
+
+        # execution configs
+
+        # execution attempt information
+        self.task_uuid = unicode(uuid.uuid4())
+        self.task_attempt_number = 0  # REVISIT: should use retry count from vizalert parent
+        self.task_started_at = None
+        self.task_completed_at = None
+        self.task_succeeded = None
+        self.error_list = []
+
+        # output information
+        self.task_output_content_type = None
+        self.task_output_destination = None
+        self.task_output_name = None  # string representing a name of whatever tasks' output was--email subject, or filename
+        self.task_output_rowcount = None
+        self.task_output_size_b = None
+        self.task_output_text = None
+        self.task_thread_id = None
+
+    def execute_task(self):
+
+        self.task_started_at = datetime.datetime.now()
+
+        log.logger.debug(u'starting task execution for task {}'.format(self.task_uuid))
+
+        try:
+            if self.task_type == TaskType.SEND_EMAIL:
+
+                log.logger.debug(u'Task is type email, sending now')
+
+                emailaction.send_email(self.task_instance)
+            elif self.task_type == TaskType.SEND_SMS:
+
+                log.logger.debug(u'Task is type SMS, sending now')
+
+                smsaction.send_sms(self.task_instance)
+            else:
+                raise UserWarning(u'Task Type "{}" is invalid'.format(self.task_type))
+        except Exception as e:
+            self.task_succeeded = False
+            self.task_completed_at = datetime.datetime.now()
+            log.logger.error(u'Could not execute task {}: {}'.format(self.task_uuid, e.message))
+            raise e
+
+        self.task_succeeded = True
+        self.task_completed_at = datetime.datetime.now()
+
+    def has_errors(self):
+        if len(self.error_list) > 0:
+            return True
+        else:
+            return False
+
 
 # stub for the Content Reference class to come someday
 """
@@ -170,14 +264,60 @@ class ContentReference:
             return False
 """
 
+
+class TaskWorker(threading.Thread):
+    """Class to enable multi-threaded processing of Tasks within an Alert"""
+
+    def __init__(self, thread_name, task_queue):
+        threading.Thread.__init__(self, name=thread_name)
+        self.queue = task_queue
+        self.thread_name = thread_name
+
+    def run(self):
+        # loop infinitely, breaking when the queue is out of work (should add a timeout!)
+        while 1 == 1:
+            if self.queue.qsize() == 0:
+                return
+            else:
+                # Get the work from the queue and expand the tuple
+                task = self.queue.get()
+
+                log.logger.debug(u'Thread {} is processing task_id {}, from subscription_id {}, view_id {}, '
+                                 u'site_name {}, customized_view_id {}, '
+                                 u'view_name {}'.format(
+                                    self.thread_name,
+                                    task.task_uuid ,
+                                    task.alert.subscription_id,
+                                    task.alert.view_id,
+                                    task.alert.site_name,
+                                    task.alert.customized_view_id,
+                                    task.alert.view_name))
+
+                # process the alert
+                try:
+                    task.execute_task()
+                except Exception as e:
+                    errormessage = u'Unable to process task {} from alert {}, error: {}'.format(
+                                                                                        task.task_uuid,
+                                                                                        task.alert.view_name,
+                                                                                        e.message)
+                    log.logger.error(errormessage)
+                    task.alert.error_list.append(errormessage)
+                    task.alert.alert_failure()
+                    continue
+
+
 class VizAlert:
     """Standard class representing a VizAlert"""
 
-    def __init__(self, view_url_suffix, site_name, subscriber_sysname, subscriber_domain):
+    def __init__(self, view_url_suffix, site_name, subscriber_sysname, subscriber_domain, subscriber_email=u'', view_name=u''):
         self.view_url_suffix = view_url_suffix
         self.site_name = site_name
         self.subscriber_domain = subscriber_domain
         self.subscriber_sysname = subscriber_sysname
+        self.subscriber_email = subscriber_email
+        self.view_name = view_name
+        self.alert_uuid = unicode(uuid.uuid4())
 
         # general config
         self.data_retrieval_tries = 2
@@ -187,6 +327,8 @@ class VizAlert:
         self.viz_png_height = 1500
         self.viz_png_width = 1500
         self.timeout_s = 60
+        self.task_thread_count = 1
+        self.task_thread_names = []
 
         # email action config
         self.action_enabled_email = 0
@@ -202,6 +344,7 @@ class VizAlert:
         # alert metadata
         self.alert_type = SIMPLE_ALERT
         self.is_test = False
+        self.is_triggered_by_refresh = False
         self.customized_view_id = -1
         self.owner_email = u''
         self.owner_friendly_name = u''
@@ -216,12 +359,10 @@ class VizAlert:
         self.priority = -1
         self.schedule_type = -1
         self.site_id = -1
-        self.subscriber_email = u''
         self.subscriber_license = u''
         self.subscriber_user_id = -1
         self.subscription_id = -1
         self.view_id = -1
-        self.view_name = u''
         self.view_owner_id = -1
         self.workbook_id = u''
         self.workbook_repository_url = u''
@@ -230,7 +371,10 @@ class VizAlert:
         self.trigger_data_file = u''
         self.trigger_data = []
         self.trigger_data_rowcount = 0
+        self.unique_trigger_data = []
         self.action_field_dict = {}
+        self.task_queue = Queue()  # the tasks to execute for this alert
+        self.task_threads = []  # the names of all the threads spun up to process tasks generated by this alert
         self.error_list = []  # list of errors encountered processing the vizalert
 
         # add all possible alert fields to the new VizAlert instance (should this live somewhere else?)
@@ -246,17 +390,17 @@ class VizAlert:
         self.action_field_dict[EMAIL_ACTION_FIELDKEY] = \
             ActionField(EMAIL_ACTION_FIELDKEY, EMAIL_ACTION_TYPE, True, True, u' ?Email.Action')
         self.action_field_dict[EMAIL_SUBJECT_FIELDKEY] = \
-            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject')
+            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject', u'Alert triggered for {}'.format(self.view_name))
         self.action_field_dict[EMAIL_TO_FIELDKEY] = \
-            ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To')
+            ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To', self.subscriber_email)
         self.action_field_dict[EMAIL_FROM_FIELDKEY] = \
-            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From')
+            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From', config.configs['smtp.address.from'])
         self.action_field_dict[EMAIL_CC_FIELDKEY] = \
             ActionField(EMAIL_CC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.CC')
         self.action_field_dict[EMAIL_BCC_FIELDKEY] = \
             ActionField(EMAIL_BCC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.BCC')
         self.action_field_dict[EMAIL_BODY_FIELDKEY] = \
-            ActionField(EMAIL_BODY_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Body')
+            ActionField(EMAIL_BODY_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Body', 'VIZ_IMAGE(|vizlink)')
         self.action_field_dict[EMAIL_HEADER_FIELDKEY] = \
             ActionField(EMAIL_HEADER_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.Header')
         self.action_field_dict[EMAIL_FOOTER_FIELDKEY] = \
@@ -336,7 +480,17 @@ class VizAlert:
 
         # export the CSV to a local file
         try:
-            self.trigger_data_file = tabhttp.export_view(self, tabhttp.Format.CSV)
+            self.trigger_data_file = tabhttp.export_view(
+                self.view_url_suffix,
+                self.site_name,
+                self.timeout_s,
+                self.data_retrieval_tries,
+                self.force_refresh,
+                tabhttp.Format.CSV,
+                self.viz_png_width,
+                self.viz_png_height,
+                self.subscriber_sysname,
+                self.subscriber_domain)
 
             # read all rows into the trigger_data class member for later use
             reader = self.read_trigger_data()
@@ -347,6 +501,7 @@ class VizAlert:
                     errormessage = u'Maximum rows of {} exceeded.'.format(self.viz_data_maxrows)
                     self.error_list.append(errormessage)
                     log.logger.error(errormessage)
+                    break
 
                 # read data in anyway
                 self.trigger_data.append(row)
@@ -477,13 +632,16 @@ class VizAlert:
                                         SMS_ACTION_FIELDKEY))
 
                     else:  # the field has no matches
-                        # missing fields that are required
+
+                        # check for missing fields that are required
                         if action_flag:
                             # remember, 'general' fields have don't have an action_flag
                             if self.action_field_dict[action_flag].has_match() \
-                                    and self.action_field_dict[action_field].is_required:
+                                    and self.action_field_dict[action_field].is_required \
+                                    and self.action_field_dict[action_field].default_value is None:
                                 # the action flag field was matched, which means
                                 #   the author intends to use that action type in this alert
+                                #   ...but we don't have a default value, so missing this field is a dealbreaker
                                 self.action_field_dict[action_field].error_list.append(
                                     u'This is a required field for {} actions'.format(
                                         self.action_field_dict[action_field].action_type))
@@ -551,10 +709,11 @@ class VizAlert:
                                                             self.trigger_data,
                                                             self.allowed_from_address,
                                                             self.allowed_recipient_addresses,
-                                                            self.action_field_dict[EMAIL_TO_FIELDKEY].field_name,
-                                                            self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name,
-                                                            self.action_field_dict[EMAIL_CC_FIELDKEY].field_name,
-                                                            self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name)
+                                                            self.action_field_dict[EMAIL_ACTION_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_TO_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_FROM_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_CC_FIELDKEY],
+                                                            self.action_field_dict[EMAIL_BCC_FIELDKEY])
                 if addresserrors:
                     errormessage = u'Invalid email addresses found: {}'.format(addresserrors)
                     log.logger.error(errormessage)
@@ -666,6 +825,55 @@ class VizAlert:
                 # perform all actions as instructed by the alert
                 #  These two are in the same call right now, but should probably be separated
                 self.perform_actions()
+
+                log.logger.debug(u'Processing {} alert tasks for alert {}'.format(
+                    self.task_queue.qsize(),
+                    self.alert_uuid))
+
+                try:
+                    # spin up threads to process tasks
+                    for index in range(self.task_thread_count):
+
+                        log.logger.debug(u'Spinning up task threads')
+
+                        # get a unique thread name for the alert
+                        thread_name = u'{}{}{}'.format(
+                            self.alert_uuid,
+                            u'_',
+                            unicode(index))
+
+                        log.logger.debug(u'New thread name will be {}'.format(thread_name))
+
+                        task_worker = TaskWorker(thread_name, self.task_queue)
+
+                        log.logger.debug(u'Starting task thread with name: {}'.format(thread_name))
+
+                        self.task_thread_names.append(thread_name)
+                        task_worker.start()
+
+                    # loop until work is done
+                    while 1 == 1:
+                            # test for completed task threads
+                            completed_task_threads = set(self.task_thread_names) - \
+                                                     set([thread.name for thread in threading.enumerate()])
+
+                            # if the set of completed threads matches all the task threads we spun up,
+                            #   that means we're done
+                            if completed_task_threads == set(self.task_thread_names):
+                                log.logger.debug(u'Task threads have completed for alert {}. Returning.'.format(
+                                    self.alert_uuid))
+                                return
+                            task_sleep_time = 3  # REVISIT THIS
+                            time.sleep(task_sleep_time)
+                            log.logger.debug(u'Task threads still in progress for alert {}. Sleeping {} seconds'.format(
+                                self.alert_uuid, task_sleep_time))
+                except Exception as e:
+                    log.logger.error(u'Encountered error processing alert tasks for alert {}: {} '.format(
+                        self.alert_uuid,
+                        e.message))
+                # REVISIT
+                # check for any outstanding errors
+
             else:
                 self.alert_failure()
                 return
@@ -698,7 +906,17 @@ class VizAlert:
                     log.logger.debug(u'Processing as a simple alert')
 
                     # export the viz to a PNG file
-                    imagepath = tabhttp.export_view(self, tabhttp.Format.PNG)
+                    imagepath = tabhttp.export_view(
+                        self.view_url_suffix,
+                        self.site_name,
+                        self.timeout_s,
+                        self.data_retrieval_tries,
+                        self.force_refresh,
+                        tabhttp.Format.PNG,
+                        self.viz_png_width,
+                        self.viz_png_height,
+                        self.subscriber_sysname,
+                        self.subscriber_domain)
 
                     # attachments are stored lists of dicts to handle Advanced Alerts
                     inlineattachments = [{'imagepath': imagepath}]
@@ -711,8 +929,20 @@ class VizAlert:
                            bodyfooter.format(self.subscriber_email, self.subscriber_sysname,
                                              self.get_view_url(), self.view_name)
                     subject = unicode(u'Alert triggered for {}'.format(self.view_name))
-                    emailaction.send_email(config.configs['smtp.address.from'], self.subscriber_email, subject, body,
-                                           None, None, inlineattachments, appendattachments)
+
+                    try:
+                        email_instance = emailaction.Email(
+                            config.configs['smtp.address.from'], self.subscriber_email, subject, body,
+                            None, None, inlineattachments, appendattachments)
+
+                        # enqueue the task for later execution
+                        self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
+                    except Exception as e:
+                        errormessage = u'Could not send email, error: {}'.format(e.message)
+                        log.logger.error(errormessage)
+                        self.error_list.append(errormessage)
+                        self.alert_failure()
+                        return
                     return
                 except Exception as e:
                     errormessage = u'Alert was triggered, but encountered a failure rendering data/image:<br> {}'.format(
@@ -756,22 +986,36 @@ class VizAlert:
 
                     # iterate through the rows and send emails accordingly
                     consolidate_email_ctr = 0
-                    body = []
+                    body = []  # the entire body of the email
+                    email_body_line = u'' # the current line of the email body
+                    subject = u''
+                    email_to = u''
+                    email_from = u''
                     inlineattachments = []
                     appendattachments = []
+                    email_instance = None
 
                     # Process each row of data
                     for i, row in enumerate(data):
-                        log.logger.debug(u'Starting iteration {}, consolidate_email_ctr is {}'.format(i, consolidate_email_ctr))
 
                         # author wants to send an email
                         #  use string value for maximum safety. all other values are ignored, currently
                         if row[email_action_fieldname] == '1':
                             # make sure we set the "from" address if the viz did not provide it
-                            if email_from_fieldname:
-                                email_from = row[email_from_fieldname]
-                            else:
-                                email_from = config.configs['smtp.address.from']  # use default from config file
+                            email_from = self.action_field_dict[EMAIL_FROM_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'email_from is {}'.format(email_from))
+
+                            # make sure we set the "to" address if the viz did not provide it
+                            email_to = self.action_field_dict[EMAIL_TO_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'email_to is {}'.format(email_to))
+
+                            # make sure we set the subject field if the viz did not provide it
+                            subject = self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'subject is {}'.format(subject))
+
+                            # make sure we set the body line if the viz did not provide it
+                            email_body_line = self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(row)
+                            log.logger.debug(u'email_body_line is {}'.format(email_body_line))
 
                             # get the other recipient addresses
                             if email_cc_fieldname:
@@ -802,7 +1046,7 @@ class VizAlert:
                                 if i + 1 == rowcount_unique:
                                     log.logger.debug(u'Last email in set reached, sending consolidated email')
                                     log.logger.info(u'Sending email to {}, CC {}, BCC {}, subject {}'.format(
-                                        row[email_to_fieldname], email_cc, email_bcc, row[email_subject_fieldname]))
+                                        email_to, email_cc, email_bcc, subject))
 
                                     try:  # remove this later??
                                         body, inlineattachments = self.append_body_and_inlineattachments(
@@ -810,9 +1054,14 @@ class VizAlert:
                                         appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
                                         # send the email
-                                        emailaction.send_email(email_from, row[email_to_fieldname],
-                                                               row[email_subject_fieldname],
-                                                   u''.join(body), email_cc, email_bcc, inlineattachments, appendattachments)
+                                        email_instance = emailaction.Email(
+                                            email_from, email_to, subject, u''.join(body), email_cc,
+                                            email_bcc, inlineattachments, appendattachments)
+                                        log.logger.debug(u'This is the email to:{}'.format(email_instance.toaddrs))
+                                        log.logger.debug(u'This is the email from:{}'.format(email_instance.fromaddr))
+
+                                        # Enqueue the task for later execution
+                                        self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                                     except Exception as e:
                                         errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                         log.logger.error(errormessage)
@@ -824,6 +1073,7 @@ class VizAlert:
                                     inlineattachments = []
                                     consolidate_email_ctr = 0
                                     appendattachments = []
+                                    email_instance = None
                                 else:
                                     # This isn't the end, and we're consolidating rows, so test to see if the next row needs
                                     # to be a new email
@@ -831,14 +1081,22 @@ class VizAlert:
                                     this_row_recipients = []
                                     next_row_recipients = []
 
-                                    this_row_recipients.append(row[email_subject_fieldname])
-                                    this_row_recipients.append(row[email_to_fieldname])
+                                    this_row_recipients.append(subject)
+                                    this_row_recipients.append(email_to)
                                     this_row_recipients.append(email_from)
 
                                     # check if we're sending an email at all in the next row
                                     next_row_email_action = data[i + 1][email_action_fieldname]
-                                    next_row_recipients.append(data[i + 1][email_subject_fieldname])
-                                    next_row_recipients.append(data[i + 1][email_to_fieldname])
+
+                                    if email_subject_fieldname:
+                                        next_row_recipients.append(data[i + 1][email_subject_fieldname])
+                                    else:
+                                        next_row_recipients.append(subject)
+
+                                    if email_to_fieldname:
+                                        next_row_recipients.append(data[i + 1][email_to_fieldname])
+                                    else:
+                                        next_row_recipients.append(email_to)
 
                                     if email_from_fieldname:
                                         next_row_recipients.append(data[i + 1][email_from_fieldname])
@@ -856,7 +1114,7 @@ class VizAlert:
                                     # Now compare the data from the rows
                                     if this_row_recipients == next_row_recipients and next_row_email_action:
                                         log.logger.debug(u'Next row matches recips and subject, appending body & attachments')
-                                        body.append(row[email_body_fieldname])
+                                        body.append(email_body_line)
                                         if self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name and \
                                                 len(row[self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name]) > 0:
                                             appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
@@ -864,10 +1122,10 @@ class VizAlert:
                                     else:
                                         log.logger.debug(u'Next row does not match recips and subject, sending consolidated email')
                                         log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
-                                            row[email_to_fieldname],
+                                            email_to,
                                             email_cc,
                                             email_bcc,
-                                            row[email_subject_fieldname]))
+                                            subject))
 
                                         body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments,
                                                                                                     row, vizcompleterefs)
@@ -875,10 +1133,12 @@ class VizAlert:
 
                                         # send the email
                                         try:
-                                            emailaction.send_email(email_from, row[email_to_fieldname],
-                                                                   row[email_subject_fieldname],
-                                                       u''.join(body), email_cc, email_bcc, inlineattachments,
-                                                       appendattachments)
+                                            email_instance = emailaction.Email(
+                                                email_from, email_to, subject, u''.join(body), email_cc, email_bcc,
+                                                inlineattachments, appendattachments)
+
+                                            # Enqueue the task for later execution
+                                            self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                                         except Exception as e:
                                             errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                             log.logger.error(errormessage)
@@ -889,26 +1149,32 @@ class VizAlert:
                                         consolidate_email_ctr = 0
                                         inlineattachments = []
                                         appendattachments = []
+                                        email_instance = None
                             else:
                                 # emails are not being consolidated, so send the email
                                 log.logger.info(u'Sending email to {}, CC {}, BCC {}, Subject {}'.format(
-                                    row[email_to_fieldname],
+                                    email_to,
                                     email_cc,
                                     email_bcc,
-                                    row[email_subject_fieldname]))
+                                    subject))
 
                                 body, inlineattachments = self.append_body_and_inlineattachments(body, inlineattachments, row,
                                                                                             vizcompleterefs)
                                 appendattachments = self.append_attachments(appendattachments, row, vizcompleterefs)
 
                                 try:
-                                    emailaction.send_email(email_from, row[email_to_fieldname],
-                                                           row[email_subject_fieldname],
-                                                           u''.join(body),
-                                                           email_cc,
-                                                           email_bcc,
-                                                           inlineattachments,
-                                                           appendattachments)
+                                    email_instance = emailaction.Email(
+                                        email_from,
+                                        email_to,
+                                        subject,
+                                        u''.join(body),
+                                        email_cc,
+                                        email_bcc,
+                                        inlineattachments,
+                                        appendattachments)
+
+                                    # Enqueue the task for later execution
+                                    self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                                 except Exception as e:
                                     errormessage = u'Failed to send the email. Exception:<br> {}'.format(e)
                                     log.logger.error(errormessage)
@@ -919,6 +1185,7 @@ class VizAlert:
                                 consolidate_email_ctr = 0
                                 inlineattachments = []
                                 appendattachments = []
+                                email_instance = None
                         # we're not performing any actions this round.
                         #   Make sure we reset our variables again
                         else:
@@ -927,6 +1194,7 @@ class VizAlert:
                             inlineattachments = []
                             consolidate_email_ctr = 0
                             appendattachments = []
+                            email_instance = None
 
                 # process sms messages
                 if self.action_field_dict[SMS_ACTION_FIELDKEY].field_name:
@@ -977,15 +1245,18 @@ class VizAlert:
                                     log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
                                         smsaddresses,
                                         sms_from,
-                                        ''.join(sms_message)))
+                                        u''.join(sms_message)))
 
                                     # send the message(s) (multiple  for multiple phone numbers)
                                     for smsaddress in smsaddresses:
-                                        errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                        if errormessage:
-                                            self.error_list.append(u'Could not send SMS, error: {}'.format(errormessage))
+                                        try:
+                                            sms_instance = smsaction.SMS(sms_from, smsaddress, u''.join(sms_message))
 
-                                            # since we've had one failure, bail on the entire VizAlert
+                                            # enqueue the sms to be sent
+                                            self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
+                                        except Exception as e:
+                                            self.error_list.append(
+                                                u'Could not send SMS, error: {}'.format(e.message))
                                             self.alert_failure()
                                             return
 
@@ -1023,18 +1294,21 @@ class VizAlert:
                                         log.logger.info(u'Sending SMS to {}, from {}, message: {}'.format(
                                             smsaddresses,
                                             sms_from,
-                                            ''.join(sms_message)))
+                                            u''.join(sms_message)))
 
                                         # send the message(s) (multiple for multiple phone numbers)
                                         for smsaddress in smsaddresses:
-                                            errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                            if errormessage:
-                                                self.error_list.append(
-                                                    u'Could not send SMS, error: {}'.format(errormessage))
+                                            try:
+                                                sms_instance = smsaction.SMS(sms_from, smsaddress, u''.join(sms_message))
 
-                                                # since we've had one failure, bail on the entire VizAlert
+                                                # enqueue the sms to be sent
+                                                self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
+                                            except Exception as e:
+                                                self.error_list.append(
+                                                    u'Could not send SMS, error: {}'.format(e.message))
                                                 self.alert_failure()
                                                 return
+
                                         # reset the variables for the next message
                                         sms_message = []
                                         consolidate_sms_ctr = 0
@@ -1054,14 +1328,17 @@ class VizAlert:
 
                                 # send the message(s) (multiple for multiple phone numbers)
                                 for smsaddress in smsaddresses:
-                                    errormessage = smsaction.send_sms(sms_from, smsaddress, ''.join(sms_message))
-                                    if errormessage:
-                                        self.error_list.append(
-                                            u'Could not send SMS, error: {}'.format(errormessage))
+                                    try:
+                                        sms_instance = smsaction.SMS(sms_from, smsaddress, ''.join(sms_message))
 
-                                        # since we've had one failure, bail on the entire VizAlert
+                                        # enqueue the sms to be sent
+                                        self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
+                                    except Exception as e:
+                                        self.error_list.append(
+                                            u'Could not send SMS, error: {}'.format(e.message))
                                         self.alert_failure()
                                         return
+
                                 # reset the variables for the next message
                                 sms_message = []
                                 consolidate_sms_ctr = 0
@@ -1108,9 +1385,10 @@ class VizAlert:
         # loop through it to make a result set of all viz references
         for item in data:
             # this might be able to be more efficient code
-            if email_body_fieldname:
-                if 'VIZ_IMAGE' in item[email_body_fieldname] or 'VIZ_LINK' in item[email_body_fieldname]:
-                    results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_body_fieldname]))
+            if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
+                or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
+                    results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
+                        self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
 
             if email_header_fieldname:
                 results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
@@ -1128,7 +1406,8 @@ class VizAlert:
         # loop through each found viz reference, i.e. everything in the VIZ_*(*).
         for vizref in results:
 
-            log.logger.debug(u'found content ref {}'.format(vizref))
+            # REVISIT!!! Can we lighten the log load (ha) here?
+            # log.logger.debug(u'found content ref {}'.format(vizref))
 
             if vizref not in vizcompleterefs:
                 # create a dictionary to hold the necessary values for this viz reference
@@ -1274,11 +1553,20 @@ class VizAlert:
                 # we need a full VizAlert instance to export the info, but with a different view_url_suffix
                 # to avoid overwriting the view_url_suffix in ourself, create a deep copy and pass that instead
                 #  this should probably be implemented differently, but for now it'll have to do
-                alert_copy = copy.deepcopy(self)
-                alert_copy.view_url_suffix = vizdistinctrefs[vizref]['view_url_suffix']
+
+                view_url_suffix = vizdistinctrefs[vizref]['view_url_suffix']
                 # export/render the viz to a file, store path to the download as value with vizref as key
-                vizdistinctrefs[vizref]['imagepath'] = tabhttp.export_view(alert_copy, eval(
-                    'tabhttp.Format.' + vizdistinctrefs[vizref]['formatstring']))
+                vizdistinctrefs[vizref]['imagepath'] = tabhttp.export_view(
+                    view_url_suffix,
+                    self.site_name,  # content references must live on the same site as the alert itself
+                    self.timeout_s,
+                    self.data_retrieval_tries,
+                    self.force_refresh,
+                    eval('tabhttp.Format.' + vizdistinctrefs[vizref]['formatstring']),
+                    self.viz_png_width,
+                    self.viz_png_height,
+                    self.subscriber_sysname,
+                    self.subscriber_domain)
 
             except Exception as e:
                 errormessage = u'Unable to render content reference {} with error:<br> {}'.format(vizref, e.message)
@@ -1388,10 +1676,11 @@ class VizAlert:
         """for inline attachments and hyperlink text"""
 
         log.logger.debug(u'Replacing body text with exact content references for inline attachments and hyperlinks')
-        body.append(row[self.action_field_dict[EMAIL_BODY_FIELDKEY].field_name])
+        body.append(self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(row))
 
         # add the footer if needed
         if self.action_field_dict[EMAIL_FOOTER_FIELDKEY].field_name:
+            log.logger.debug(u'Adding the custom footer')
             body.append(row[self.action_field_dict[EMAIL_FOOTER_FIELDKEY].field_name].replace(DEFAULT_FOOTER,
                                                        bodyfooter.format(self.subscriber_email,
                                                                          self.subscriber_sysname,
@@ -1399,17 +1688,20 @@ class VizAlert:
                                                                          self.view_name)))
         else:
             # no footer specified, add the default footer
+            log.logger.debug(u'Adding the default footer')
             body.append(bodyfooter.format(self.subscriber_email, self.subscriber_sysname,
                                           self.get_view_url(), self.view_name))
 
         # find all distinct content references in the email body list
         # so we can replace each with an inline image or hyperlink text
+        log.logger.debug(u'Finding all content refs')
         foundcontent = re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", ' '.join(body))
         foundcontentset = set(foundcontent)
         vizrefs = list(foundcontentset)
 
         if len(vizrefs) > 0:
             for vizref in vizrefs:
+                log.logger.debug(u'Iterating... Ref: {}'.format(vizref))
                 # replacing VIZ_IMAGE() with inline images
                 if vizcompleterefs[vizref]['formatstring'] == 'PNG':
                     # add hyperlinks to images if necessary
@@ -1468,9 +1760,9 @@ class VizAlert:
         attachment = None
 
         # dump all errors to the log for troubleshooting
-        log.logger.debug('All errors found:')
+        log.logger.debug(u'All errors found:')
         for error in self.error_list:
-            log.logger.debug('{}'.format(error))
+            log.logger.debug(u'{}'.format(error))
 
         # Separate the errors stored in a dictionary from the generic errors
         #   structure a nice HTML table to help our beloved users sort out their problems
@@ -1526,8 +1818,11 @@ class VizAlert:
             log.logger.debug(u'Failure email should include attachment: {}'.format(attachment))
 
         try:
-            emailaction.send_email(config.configs['smtp.address.from'], toaddrs, subject,
-                                   body, ccaddrs, None, None, attachment)
+            email_instance = emailaction.Email(
+                config.configs['smtp.address.from'], toaddrs, subject,
+                body, ccaddrs, None, None, attachment
+            )
+            emailaction.send_email(email_instance)
         except Exception as e:
             log.logger.error(u'Unknown error sending exception alert email: {}'.format(e.message))
 

@@ -120,21 +120,16 @@ def get_trusted_ticket(server, sitename, username, encrypt, certcheck=True, cert
 
 
 # Export a view to a file in the specified format based on a trusted ticket
-def export_view(view, format):
+def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, force_refresh, format,
+                viz_png_width, viz_png_height, user_sysname, user_domain):
 
     # assign variables (clean this up later)
-    username = view.subscriber_sysname
-    sitename = unicode(view.site_name).replace('Default', '')
-    if view.subscriber_domain != 'local': # leave it as None if Server uses local authentication
-        subscriberdomain = view.subscriber_domain
-    else:
-        subscriberdomain = None
+    site_name = unicode(site_name).replace('Default', '')
 
-    timeout_s = view.timeout_s
-    refresh = view.force_refresh
+    if user_domain == 'local':  # leave it as None if Server uses local authentication
+        user_domain = None
+
     attempts = 0
-    pngwidth = view.viz_png_width
-    pngheight = view.viz_png_height
 
     server = config.configs['server']
     encrypt = config.configs['server.ssl']
@@ -159,70 +154,70 @@ def export_view(view, format):
     #viewurlsuffix may be of form workbook/view
     #or workbook/view?param1=value1&param2=value2
     #in the latter case separate it out
-    search = re.search(u'(.*?)\?(.*)', view.view_url_suffix)
+    search = re.search(u'(.*?)\?(.*)', view_url_suffix)
     if search:
         viewurlsuffix = search.group(1)
         extraurlparameter = '?' + search.group(2)
     else:
-        viewurlsuffix = view.view_url_suffix
-        # always need a ? to add in the formatparam and potentially refresh URL parameters
+        viewurlsuffix = view_url_suffix
+        # always need a ? to add in the formatparam and potentially force_refresh URL parameters
         extraurlparameter = '?'
 
     # set up format
     # if user hasn't overriden PNG with size setting then use the default  
     if format == Format.PNG and ':size=' not in extraurlparameter:
-            formatparam = u'&:format=' + format + u'&:size={},{}'.format(str(pngwidth), str(pngheight))
+            formatparam = u'&:format=' + format + u'&:size={},{}'.format(str(viz_png_width), str(viz_png_height))
     else:
         formatparam = u'&:format=' + format
 
-    if sitename != '':
-        sitepart = u'/t/' + sitename
+    if site_name != '':
+        sitepart = u'/t/' + site_name
     else:
-        sitepart = sitename
+        sitepart = site_name
 
     # get the full URL (minus the ticket) for logging and error reporting
     displayurl = protocol + u'://' + server + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
-    if refresh:
-        displayurl = displayurl + u'&:refresh=y'   # show admin/users that we forced a refresh
+    if force_refresh:
+        displayurl = displayurl + u'&:refresh=y'   # show admin/users that we forced a force_refresh
 
-    while attempts < view.data_retrieval_tries:
+    while attempts < data_retrieval_tries:
         try:
             attempts += 1
 
             # get a trusted ticket
-            ticket = get_trusted_ticket(server, sitename, username, encrypt, certcheck, certfile, subscriberdomain, clientip)
+            ticket = get_trusted_ticket(server, site_name, user_sysname, encrypt, certcheck, certfile, user_domain, clientip)
 
             # build final URL
             url = protocol + u'://' + server + u'/trusted/' + ticket + sitepart + u'/views/' + viewurlsuffix + extraurlparameter + formatparam
-            if refresh:
-                url = url + u'&:refresh=y'   # force a refresh of the data--we don't want alerts based on cached (stale) data
+            if force_refresh:
+                url = url + u'&:refresh=y'   # force a force_refresh of the data--we don't want alerts based on cached (stale) data
 
             log.logger.debug(u'Getting vizdata from: {}'.format(url))
 
             # Make the GET call to obtain the data
             response = None
-            if subscriberdomain:
+            if user_domain:
                 # Tableau Server is using AD auth (is this even needed? May need to remove later)
                 if certcheck:
                     log.logger.debug('Validating cert for this request using certfile {}'.format(certfile))
                     if not certfile:
                         certfile = requests.utils.DEFAULT_CA_BUNDLE_PATH
-                    response = requests.get(url, auth=HttpNtlmAuth(subscriberdomain + u'\\' + username, ''), verify=certfile, timeout=timeout_s)
+                    response = requests.get(url, auth=HttpNtlmAuth(user_domain + u'\\' + user_sysname, ''), verify=certfile, timeout=timeout_s)
                 else:
                     log.logger.debug('NOT Validating cert for this request')
-                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # disable warnings for unverified certs
-                    response = requests.get(url, auth=HttpNtlmAuth(subscriberdomain + u'\\' + username, ''), verify=False, timeout=timeout_s)
+                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # disable warnings for unverified certs
+                    response = requests.get(url, auth=HttpNtlmAuth(user_domain + u'\\' + user_sysname, ''), verify=False, timeout=timeout_s)
             else:
                 # Server is using local auth
                 if certcheck:
                     log.logger.debug('Validating cert for this request using certfile {}'.format(certfile))
                     if not certfile:
                         certfile = requests.utils.DEFAULT_CA_BUNDLE_PATH
-                    response = requests.get(url, auth=(username, ''), verify=certfile, timeout=timeout_s)
+                    response = requests.get(url, auth=(user_sysname, ''), verify=certfile, timeout=timeout_s)
                 else:
                     log.logger.debug('NOT Validating cert for this request')
-                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning) # disable warnings for unverified certs
-                    response = requests.get(url, auth=(username, ''), verify=False, timeout=timeout_s)
+                    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)  # disable warnings for unverified certs
+                    response = requests.get(url, auth=(user_sysname, ''), verify=False, timeout=timeout_s)
             response.raise_for_status()
 
             # Create the temporary file, datestring is down to microsecond to prevent dups since
@@ -248,21 +243,21 @@ def export_view(view, format):
         except requests.exceptions.Timeout as e:
             errormessage = cgi.escape(u'Timeout error. Could not retrieve vizdata from url {} within {} seconds, after {} tries'.format(displayurl, timeout_s, attempts))
             log.logger.error(errormessage)
-            if attempts >= view.data_retrieval_tries:
+            if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except requests.exceptions.HTTPError as e:
             errormessage = cgi.escape(u'HTTP error getting vizdata from url {}. Code: {} Reason: {}'.format(displayurl, e.response.status_code, e.response.reason))
             log.logger.error(errormessage)
-            if attempts >= view.data_retrieval_tries:
+            if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except requests.exceptions.SSLError as e:
             errormessage = cgi.escape(u'SSL error getting vizdata from url {}. Error: {}'.format(displayurl, e))
             log.logger.error(errormessage)
-            if attempts >= view.data_retrieval_tries:
+            if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
@@ -275,14 +270,14 @@ def export_view(view, format):
             if hasattr(e, 'reason'):
                 errormessage += ' Reason: {}'.format(e.reason)
             log.logger.error(errormessage)
-            if attempts >= view.data_retrieval_tries:
+            if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except IOError as e:
             errormessage = cgi.escape(u'Unable to write the file {} for url {}, error: {}'.format(filepath, displayurl, e))
             log.logger.error(errormessage)
-            if attempts >= view.data_retrieval_tries:
+            if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
@@ -295,7 +290,7 @@ def export_view(view, format):
             if hasattr(e, 'reason'):
                 errormessage += ' Reason: {}'.format(e.reason)
             log.logger.error(errormessage)
-            if attempts >= view.data_retrieval_tries:
+            if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue

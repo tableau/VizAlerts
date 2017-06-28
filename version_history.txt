@@ -2,6 +2,13 @@
 VERSION HISTORY
 ===============
 
+Version 2.1.0
+=================================
+-Emails and SMS messages are now multithreaded within a single VizAlert (Issue #76)
+-Updated to support the latest Twilio library (Issue #107)
+-Fixed issue with VizAlertsDemo SMS tests (Issue #105)
+=================================
+
 Version 2.0.1
 =================================
 -Fixed issue where unlicensed users subscribed to Simple Alerts generate failure emails (Issue #88)

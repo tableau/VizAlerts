@@ -93,11 +93,13 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
         # Send mail to the admin informing them of the problem, but don't quit
         errormessage = u'OSError: Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
         log.logger.error(errormessage)
-        emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        emailaction.send_email(email_instance)
     except Exception as e:
         errormessage = u'Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
         log.logger.error(errormessage)
-        emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
+        emailaction.send_email(email_instance)
 
     # cleanup old log files
     try:
@@ -267,7 +269,9 @@ def get_alerts():
             alert = vizalert.VizAlert(line['view_url_suffix'],
                                       line['site_name'],
                                       line['subscriber_sysname'],
-                                      line['subscriber_domain'])
+                                      line['subscriber_domain'],
+                                      line['subscriber_email'],
+                                      line['view_name'])
 
             # Email actions
             alert.action_enabled_email = int(line['action_enabled_email'])
@@ -298,6 +302,7 @@ def get_alerts():
             alert.viz_png_height = int(line['viz_png_height'])
             alert.viz_png_width = int(line['viz_png_width'])
             alert.timeout_s = int(line['timeout_s'])
+            alert.task_thread_count = int(line['task_threads'])
 
             # alert
             alert.alert_type = line['alert_type']
@@ -305,6 +310,11 @@ def get_alerts():
                 alert.is_test = True
             else:
                 alert.is_test = False
+
+            if line['is_triggered_by_refresh'].lower() == 'true':
+                alert.is_triggered_by_refresh = True
+            else:
+                alert.is_triggered_by_refresh = False
 
             # subscription
             if line['customized_view_id'] == '':
@@ -379,28 +389,30 @@ def get_alerts():
                         # the schedule condition ensures the alert doesn't run simply due to a schedule switch
                         # (note that CHANGING a schedule will still trigger the alert check...to be fixed later
                         if (
-                                    (datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
-                                             != datetime.datetime.strptime(str(linedict['run_next_at']),
-                                                                           "%Y-%m-%d %H:%M:%S") \
-                                             and str(alert.schedule_id) == str(linedict['schedule_id']))
+                                (datetime.datetime.strptime(str(alert.run_next_at), "%Y-%m-%d %H:%M:%S") \
+                                         > datetime.datetime.strptime(str(linedict['run_next_at']),
+                                                                       "%Y-%m-%d %H:%M:%S") \
+                                         and str(alert.schedule_id) == str(linedict['schedule_id']))
                                 # test alerts are handled differently
                                 and not alert.is_test
                         ):
 
-                            # For a test, run_next_at is anchored to the most recent comment, so use it as last run time
-                            if alert.is_test:
-                                alert.ran_last_at = alert.run_next_at
-                            else:
-                                alert.ran_last_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
+                                # For a test, run_next_at is anchored to the most recent comment, so use it as last run time
+                                if alert.is_test:
+                                    alert.ran_last_at = alert.run_next_at
+                                else:
+                                    alert.ran_last_at = datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
 
-                            seconds_since_last_run = \
-                                abs((
-                                        datetime.datetime.strptime(str(linedict['ran_last_at']),
-                                                                   "%Y-%m-%d %H:%M:%S") -
-                                        datetime.datetime.utcnow()
-                                    ).total_seconds())
+                                seconds_since_last_run = \
+                                    abs((
+                                            datetime.datetime.strptime(str(linedict['ran_last_at']),
+                                                                       "%Y-%m-%d %H:%M:%S") -
+                                            datetime.datetime.utcnow()
+                                        ).total_seconds())
 
-                            execalerts.append(alert)
+                                execalerts.append(alert)
+
+                        # else use the ran_last_at field, and write it to the state file? I dunno.
 
                         # add the alert to the list to write back to our state file
                         persistalerts.append(alert)
@@ -441,8 +453,9 @@ def get_alerts():
 def quit_script(message):
     """"Called when a fatal error is encountered in the script"""
     try:
-        emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'],
+        email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'],
                                config.configs['smtp.subject'], message)
+        emailaction.send_email(email_instance)
     except Exception as e:
         log.logger.error(u'Unknown error-sending exception alert email: {}'.format(e.message))
     sys.exit(1)
