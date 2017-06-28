@@ -40,7 +40,7 @@ def get_sms_client():
         import twilio.rest as twiliorest
         
         global smsclient
-        smsclient = twiliorest.TwilioRestClient(
+        smsclient = twiliorest.Client(
             config.configs['smsaction.account_id'],
             config.configs['smsaction.auth_token'])
         
@@ -80,7 +80,7 @@ def send_sms(sms_from, sms_to, msgbody=None):
                              u' no additional information is available'.format(sms_to, msgbody))
 
     # check for Twilio REST API exceptions
-    except twilio.TwilioRestException as e:
+    except twilio.base.exceptions.TwilioRestException as e:
         errormessage = u'Could not send SMS message to {} with body {}.\nHTTP status {} returned for request: ' \
                        u'{} {}\nWith error {}: {} '.format(sms_to, msgbody, e.status, e.method, e.uri, e.code, e.msg)
         log.logger.error(errormessage)
