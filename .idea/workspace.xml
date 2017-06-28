@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="6107e266-d2c9-47dc-bdbd-2525af6a826c" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/vizalert/vizalert.py" afterPath="$PROJECT_DIR$/vizalert/vizalert.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/vizalerts.py" afterPath="$PROJECT_DIR$/vizalerts.py" />
     </list>
     <ignored path="VizAlerts.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -27,8 +25,8 @@
       <file leaf-file-name="vizalerts.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/vizalerts.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="442">
-              <caret line="413" column="0" selection-start-line="413" selection-start-column="0" selection-end-line="413" selection-end-column="0" />
+            <state relative-caret-position="238">
+              <caret line="401" column="73" selection-start-line="401" selection-start-column="73" selection-end-line="401" selection-end-column="73" />
               <folding>
                 <element signature="e#234#248#0" expanded="true" />
               </folding>
@@ -350,7 +348,14 @@
       <option name="project" value="LOCAL" />
       <updated>1498595729938</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="Checking in initial changes for:&#10;&#10;Issue #68: Implement smart default behavior for Advanced Alerts&#10;Issue #97: Support a custom schedule representing &quot;when the extract refreshes&quot;&#10;">
+      <created>1498628253138</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1498628253138</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -389,7 +394,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Checking in initial changes for Issue #68: Implement smart default behavior for Advanced Alerts" />
-    <option name="LAST_COMMIT_MESSAGE" value="Checking in initial changes for Issue #68: Implement smart default behavior for Advanced Alerts" />
+    <MESSAGE value="Checking in initial changes for:&#10;&#10;Issue #68: Implement smart default behavior for Advanced Alerts&#10;Issue #97: Support a custom schedule representing &quot;when the extract refreshes&quot;&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Checking in initial changes for:&#10;&#10;Issue #68: Implement smart default behavior for Advanced Alerts&#10;Issue #97: Support a custom schedule representing &quot;when the extract refreshes&quot;&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
@@ -476,8 +482,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/vizalerts.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="413" column="0" selection-start-line="413" selection-start-column="0" selection-end-line="413" selection-end-column="0" />
+        <state relative-caret-position="238">
+          <caret line="401" column="73" selection-start-line="401" selection-start-column="73" selection-end-line="401" selection-end-column="73" />
           <folding>
             <element signature="e#234#248#0" expanded="true" />
           </folding>
