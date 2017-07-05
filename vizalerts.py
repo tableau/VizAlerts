@@ -157,7 +157,9 @@ def main(configfile=u'.\\config\\vizalerts.yaml',
                 log.logger.info('Worker threads have completed. Exiting')
                 return
             time.sleep(10)
-            log.logger.info('Waiting on {} worker threads. Currently active threads:: {}'.format(threading.active_count() - 1,threading.enumerate()))
+            log.logger.info('Waiting on {} worker threads. Currently active threads:: {}'.format(
+                threading.active_count() - 1,
+                threading.enumerate()))
 
 
 def trusted_ticket_test():

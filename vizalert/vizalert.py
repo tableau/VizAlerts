@@ -200,7 +200,7 @@ class Task:
         # output information
         self.task_output_content_type = None
         self.task_output_destination = None
-        self.task_output_name = None  # string representing a name of whatever tasks' output was--email subject, or filename
+        self.task_output_name = None  # string representing whatever tasks' output was--email subject, or filename
         self.task_output_rowcount = None
         self.task_output_size_b = None
         self.task_output_text = None
@@ -218,6 +218,9 @@ class Task:
                 log.logger.debug(u'Task is type email, sending now')
 
                 emailaction.send_email(self.task_instance)
+
+                log.logger.debug(u'Task completed')
+
             elif self.task_type == TaskType.SEND_SMS:
 
                 log.logger.debug(u'Task is type SMS, sending now')
@@ -225,14 +228,18 @@ class Task:
                 smsaction.send_sms(self.task_instance)
             else:
                 raise UserWarning(u'Task Type "{}" is invalid'.format(self.task_type))
+
+            log.logger.debug(u'Writing Task completion state info')
+
+            self.task_succeeded = True
+            self.task_completed_at = datetime.datetime.now()
+
+            return
         except Exception as e:
             self.task_succeeded = False
             self.task_completed_at = datetime.datetime.now()
             log.logger.error(u'Could not execute task {}: {}'.format(self.task_uuid, e.message))
             raise e
-
-        self.task_succeeded = True
-        self.task_completed_at = datetime.datetime.now()
 
     def has_errors(self):
         if len(self.error_list) > 0:
@@ -286,7 +293,7 @@ class TaskWorker(threading.Thread):
                                  u'site_name {}, customized_view_id {}, '
                                  u'view_name {}'.format(
                                     self.thread_name,
-                                    task.task_uuid ,
+                                    task.task_uuid,
                                     task.alert.subscription_id,
                                     task.alert.view_id,
                                     task.alert.site_name,
@@ -856,6 +863,8 @@ class VizAlert:
                             # test for completed task threads
                             completed_task_threads = set(self.task_thread_names) - \
                                                      set([thread.name for thread in threading.enumerate()])
+
+                            log.logger.debug(u'All threads: {}'.format(threading.enumerate()))
 
                             # if the set of completed threads matches all the task threads we spun up,
                             #   that means we're done
