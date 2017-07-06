@@ -4,7 +4,7 @@
 
 __author__ = 'Matt Coles'
 __credits__ = 'Jonathan Drummey'
-__version__ = '2.0.1'
+__version__ = '2.1.0'
 
 # generic modules
 import logging
@@ -19,6 +19,7 @@ import re
 from Queue import Queue
 import threading
 from operator import attrgetter
+import argparse
 
 # local modules
 import vizalert
@@ -71,20 +72,30 @@ class VizAlertWorker(threading.Thread):
                     continue
 
 
-def main(configfile=u'.\\config\\vizalerts.yaml',
-         logfile=u'.\\logs\\vizalerts.log'):
-    # initialize logging
-    log.logger = logging.getLogger()
-    if not len(log.logger.handlers):
-        log.logger = log.LoggerQuickSetup(logfile, log_level=logging.DEBUG)
+def main():
 
+    try:
+        # parse command-line arguments
+        parser = argparse.ArgumentParser(description='Execute the VizAlerts process.')
+        parser.add_argument('-C', '--configpath', help='Path to .yml configuration file')
+        args = parser.parse_args()
+
+        # validate and load configs from yaml file
+        configfile = u'.\\config\\vizalerts.yaml'
+        if args.configpath is not None:
+            configfile = args.configpath
+
+        config.validate_conf(configfile)
+
+        # initialize logging
+        log.logger = logging.getLogger()
+        if not len(log.logger.handlers):
+            log.logger = log.LoggerQuickSetup(config.configs['log.dir'] + 'vizalerts.log', log_level=config.configs['log.level'])
+    except Exception as e:
+        print(u'Could not initialize configuration file due to an unknown error: {}'.format(e.message))
+
+    # we have our logger, so start writing
     log.logger.info(u'VizAlerts v{} is starting'.format(__version__))
-
-    # validate and load configs from yaml file
-    config.validate_conf(configfile)
-
-    # set the log level based on the config file
-    log.logger.setLevel(config.configs['log.level'])
 
     # cleanup old temp files
     try:
@@ -474,7 +485,6 @@ def cleanup_dir(path, expiry_s):
 if __name__ == "__main__":
     exitcode = 0
     try:
-        # main(*sys.argv)
         main()
         exitcode = 0
     except:

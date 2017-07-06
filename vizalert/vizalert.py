@@ -389,19 +389,23 @@ class VizAlert:
         # General
         # consolidated and sort have backwards-compatible options for v1.x
         self.action_field_dict[GENERAL_SORTORDER_FIELDKEY] = \
-            ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Consolidated.Sort|.*Email.Sort.Order')
+            ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False,
+                        u'.*Consolidated.Sort|.*Email.Sort.Order')
         self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY] = \
-            ActionField(CONSOLIDATE_LINES_FIELDKEY, GENERAL_ACTION_TYPE, False, False, u'.*Consolidate.Lines|.*Email.Consolidate')
+            ActionField(CONSOLIDATE_LINES_FIELDKEY, GENERAL_ACTION_TYPE, False, False,
+                        u'.*Consolidate.Lines|.*Email.Consolidate')
 
         # Email Action fields
         self.action_field_dict[EMAIL_ACTION_FIELDKEY] = \
             ActionField(EMAIL_ACTION_FIELDKEY, EMAIL_ACTION_TYPE, True, True, u' ?Email.Action')
         self.action_field_dict[EMAIL_SUBJECT_FIELDKEY] = \
-            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject', u'Alert triggered for {}'.format(self.view_name))
+            ActionField(EMAIL_SUBJECT_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.Subject',
+                        u'Alert triggered for {}'.format(self.view_name))
         self.action_field_dict[EMAIL_TO_FIELDKEY] = \
             ActionField(EMAIL_TO_FIELDKEY, EMAIL_ACTION_TYPE, True, False, u' ?Email.To', self.subscriber_email)
         self.action_field_dict[EMAIL_FROM_FIELDKEY] = \
-            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From', config.configs['smtp.address.from'])
+            ActionField(EMAIL_FROM_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.From',
+                        config.configs['smtp.address.from'])
         self.action_field_dict[EMAIL_CC_FIELDKEY] = \
             ActionField(EMAIL_CC_FIELDKEY, EMAIL_ACTION_TYPE, False, False, u' ?Email.CC')
         self.action_field_dict[EMAIL_BCC_FIELDKEY] = \
@@ -972,16 +976,16 @@ class VizAlert:
                     log.logger.error(errormessage)
                     raise UserWarning(errormessage)
 
-                # eliminate duplicate rows and ensure proper sorting
-                data = self.get_unique_vizdata()
-                rowcount_unique = len(data)
-
                 # determine whether we're consolidating lines
                 consolidate_lines_fieldname = self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name
 
                 # process emails
                 if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name:
                     log.logger.debug(u'Processing emails')
+
+                    # eliminate duplicate rows and ensure proper sorting
+                    data = self.get_unique_vizdata(EMAIL_ACTION_TYPE)
+                    rowcount_unique = len(data)
 
                     # get the field names we'll need
                     email_action_fieldname = self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name
@@ -1207,6 +1211,10 @@ class VizAlert:
 
                 # process sms messages
                 if self.action_field_dict[SMS_ACTION_FIELDKEY].field_name:
+
+                    # eliminate duplicate rows and ensure proper sorting
+                    data = self.get_unique_vizdata(SMS_ACTION_TYPE)
+                    rowcount_unique = len(data)
 
                     # get the field names we'll need
                     sms_action_fieldname = self.action_field_dict[SMS_ACTION_FIELDKEY].field_name
@@ -1593,21 +1601,26 @@ class VizAlert:
 
         return vizcompleterefs
 
-    def get_unique_vizdata(self):
-        """Returns a unique list of all relevant email fields in data. Also sorts data in proper order."""
+    def get_unique_vizdata(self, action_type):
+        """Returns a unique list of all relevant action records in data. Also sorts data in proper order."""
 
         preplist = []  # list of dicts containing only keys of concern for de-duplication from data
         uniquelist = []  # unique-ified list of dicts
 
         log.logger.debug(u'Start of get_unique_vizdata')
 
-        # copy in only relevant fields from each record. Non-VizAlerts fields will be ignored
+        # copy in only relevant fields from each record, specific to the action_type passed in.
+        #   Non-VizAlerts fields will be ignored
         for item in self.trigger_data:
             newitem = dict()
 
             for action_field in self.action_field_dict:
-                #  Should not assume fields passed validation
-                if self.action_field_dict[action_field].has_match() \
+                # Each action field we're looking for must:
+                #  Be of the correct type (email, sms, whatever else)
+                #  Have a field match in the actual trigger data
+                #  Have passed validation
+                if self.action_field_dict[action_field].action_type == action_type \
+                        and self.action_field_dict[action_field].has_match() \
                         and not self.action_field_dict[action_field].has_errors():
                     newitem[self.action_field_dict[action_field].field_name] = \
                         item[self.action_field_dict[action_field].field_name]
@@ -1633,27 +1646,39 @@ class VizAlert:
         # sort order is used first because the downloaded trigger csv can be re-ordered during
         #  the download process from the original csv
         if self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name:
-            uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name))
+            uniquelist = sorted(
+                uniquelist, key=itemgetter(self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name))
 
-        # special case for Email Actions, where the Email Consolidate flag is used
-        #  it's assumed here (and validated elsewhere) that if Email Consolidate is used, no other Actions are permitted
-        #  MC: Shouldn't Sort Order prevail over these? Otherwise we potentially override the user's intent on how
-        #   emails are consolidated...
-        if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name \
-                and self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name:
-            log.logger.debug(u'Sorting by BCC')
-            if self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name:
-                uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))
-            log.logger.debug(u'Sorting by CC')
-            if self.action_field_dict[EMAIL_CC_FIELDKEY].field_name:
-                uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_CC_FIELDKEY].field_name))
-            log.logger.debug(u'Sorting by From')
-            if self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name:
-                uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name))
-            log.logger.debug(u'Sorting by Subject, To')
-            # finally, sort by Subject and To
-            uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name,
-                                                           self.action_field_dict[EMAIL_TO_FIELDKEY].field_name))
+        # special case for Email Actions, where the Consolidate Lines flag is used
+        if action_type == EMAIL_ACTION_TYPE:
+            if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name \
+                    and self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name:
+                log.logger.debug(u'Sorting by BCC')
+                if self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name:
+                    uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))
+                log.logger.debug(u'Sorting by CC')
+                if self.action_field_dict[EMAIL_CC_FIELDKEY].field_name:
+                    uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_CC_FIELDKEY].field_name))
+                log.logger.debug(u'Sorting by From')
+                if self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name:
+                    uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name))
+                log.logger.debug(u'Sorting by To')
+                if self.action_field_dict[EMAIL_TO_FIELDKEY].field_name:
+                    uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_TO_FIELDKEY].field_name))
+                log.logger.debug(u'Sorting by Subject')
+                if self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name:
+                    uniquelist = sorted(uniquelist, key=itemgetter(
+                        self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name))
+
+        # special case for SMS Actions, where the Consolidate Lines flag is used
+        if action_type == SMS_ACTION_TYPE:
+            if self.action_field_dict[SMS_ACTION_FIELDKEY].field_name \
+                    and self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name:
+                log.logger.debug(u'Sorting by To')
+                if self.action_field_dict[SMS_TO_FIELDKEY].field_name:
+                    uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[SMS_TO_FIELDKEY].field_name))
+
+            # Alert authors currently can't specify the SMS From Number
 
         log.logger.debug(u'Done sorting, returning the list')
 

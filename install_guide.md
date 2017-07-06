@@ -1,6 +1,51 @@
 Tableau – VizAlerts Installation Guide
 
-What is VizAlerts?
+# Table of Contents
+-  [What is VizAlerts?](#what-is-vizalerts)
+-  [What does it do?](#what-does-it-do)
+-  [How does it work?](#how-does-it-work)
+-  [Changes in VizAlerts 2.0](#changes-in-vizalerts-2_1_0)
+-  [Upgrading from VizAlerts 2.0 or 2.0.1](#upgrading-from-vizalerts-2_0-or-2_0_1)
+-  [Installation Prerequisites](#installation-prerequisites)
+	- 		[Tableau Server](#tableau-server)
+	- 		[Tableau Desktop](#tableau-desktop)
+	- 		[Host Machine](#host-machine)
+	- 		[SMTP (Mail) Server](#smtp-mail-server)
+- [Installation](#installation)
+	- [Configure Tableau Server](#configure-tableau-server)
+		- [Trusted Tickets](#trusted-tickets)
+		- [Repository Access](#repository-access)
+		- [Restart](#restart)
+		- [Custom Subscription Schedules](#custom-subscription-schedules)
+	- [Open the VizAlertsConfig Workbook](#open-the-vizalertsconfig-workbook)
+	- [Configure the VizAlertsScheduledTriggerView Viz](#configure-the-vizalerts-scheduledtriggerview-viz)
+		- [Calculated Fields](#calculated-fields)
+		- [Regex Notation](#regex-notation)
+	- [Publish the ScheduledTriggerViews Viz](#publish-the-scheduledtriggerviews-viz)
+	- [Install Python & Required Modules](#install-python-required-modules)
+	- [Configure VizAlerts](#configure-vizalerts)
+	- [Testing](#testing)
+		- [Can VizAlerts Connect? Test](#can-vizalerts-connect-test)
+		- [Simple Alert Test](#simple-alert-test)
+		- [Put VizAlerts Through Its Paces Test](#put-vizalerts-through-its-paces-test)
+		- [Optional: Send Yourself Some SMS Messages Test](#optional-send-yourself-some-sms-messages-test)
+	- [Final Steps](#final-steps)
+		- [Set up a Scheduled Task](#set-up-a-scheduled-task)
+		- [Helper Datasource](#helper-datasource)
+- [FAQ](#faq)
+- [Common Errors](#common-errors)
+- [Getting VizAlerts Help](#getting-vizalerts-help)
+- [Contributing to VizAlerts](#contributing-to-vizalerts)
+- [Appendix A.](#appendix-a)
+	- [Installing Python modules with no Internet access](#installing-python-modules-with-no-internet-access)
+
+
+## Example <a id="#what-is-vizalerts"></a>
+## Example2 <a id="example2"></a>
+## Third Example <a id="third-example"></a>
+
+
+What is VizAlerts? <a id="#what-is-vizalerts"></a>
 ==================
 
 VizAlerts is an automation platform intended to seamlessly integrate
@@ -16,7 +61,7 @@ and SMS alerting is derived from the Tableau Server PostgreSQL
 repository, and the published views of the Tableau Server it is set to
 run against.
 
-What does it do?
+What does it do? <a id="#what-does-it-do"></a>
 ================
 
 VizAlerts has been designed to support many use cases:
@@ -57,7 +102,7 @@ VizAlerts has been designed to support many use cases:
 
 -   Whatever combinations of the above you can imagine!
 
-How does it work?
+How does it work? <a id="#how-does-it-work"></a>
 =================
 
 While the details on how to *set up* alerts will be left in the User
@@ -91,10 +136,11 @@ The general flow of a single execution of VizAlerts goes like this:
             CSV, sending emails or performing other actions as
             instructed by the data itself.
 
-<span id="_Toc474388486" class="anchor"></span>**Changes in VizAlerts
-2.0**
 
-**VizAlerts 2.0 (released November 2016) has the following new and
+Changes in VizAlerts 2.1.0 <a id="#changes-in-vizalerts-2_1_0"></a>
+=================
+
+**VizAlerts 2.1.0 (released July 2017) has the following new and
 changed features:**
 
 **Improved Administration**
@@ -105,66 +151,32 @@ change means that you’ll now have nearly unlimited flexibility in
 defining alert restrictions.
 
 Added config options around SSL certificate validation
+# REVISIT
 
-**Easier Advanced Alert Configuration**
 
-The fields used in Advanced Alerts no longer need to be exact! “Email To
-\*, “Email To”, or “Email To Two 2” will all be recognized as containing
-the To email addresses.
-
-This also means you can set up alerts with different content using a
-single datasource, simply by copying the fields and changing the names
-for use in a different sheet.
-
-**Faster**
-
-VizAlerts is now multi-threaded, which allows it to gracefully scale to
-process large numbers of alerts in a timely fashion. Scale it up to
-however much your Tableau Server can handle.
-
-**SMS support**
-
-VizAlerts is no longer restrained to just sending email! It can now use
-the Twilio service to send SMS messages.
-
-These are configured in an Advanced Alert with the new “SMS Action”
-fields. These can be used separately from the Email fields, or together
-if you wish to send both an email *and* an SMS.
-
-Upgrading from VizAlerts 1.0.0 or 1.1
+Upgrading from VizAlerts 2.0 or 2.0.1 <a id="#upgrading-from-vizalerts-2_0-or-2_0_1"></a>
 =====================================
 
-Here are instructions on how to upgrade from VizAlerts 1.x to VizAlerts
-2.0:
+There are two options for upgrading to 2.1.0. One is to continue to use the raw Python scripts. The other is to start using the compiled executuable (.exe) file instead.
 
-1.  Check the Installation Prerequisites below, the major change is that
-    you will need Tableau Desktop Professional available in order to
-    complete the installation.
+**Upgrading to use the compiled executable**
 
-2.  Backup your VizAlerts 1.x directory.
 
-3.  In Task Scheduler disable the existing VizAlerts scheduled task.
+1. Check the Installation Prerequisites below, the major change is that you will need Tableau Desktop Professional available in order to complete the installation.Backup your VizAlerts 1.x directory.
 
-4.  Download version 2 from GitHub
-    <https://github.com/tableau/VizAlerts> and unzip to a temporary
-    location alongside your existing VizAlerts folder.
+2. In Task Scheduler disable the existing VizAlerts scheduled task.
 
-5.  Install the two new Python packages:
+3. Download version 2 from GitHub <https://github.com/tableau/VizAlerts>, and unzip to a temporary location alongside your existing VizAlerts folder.
 
-    1.  *pip install twilio*
+4. Follow the instructions in the Installation section for:
 
-    2.  *pip install phonenumberslite* blah
+    a.  Open the ScheduledTriggerViews Viz.
 
-6.  Follow the instructions in the Installation section for:
+    b.  Configure the ScheduledTriggerViews Viz.
 
-    1.  Open the ScheduledTriggerViews Viz.
-
-    2.  Configure the ScheduledTriggerViews Viz.
-
-    3.  Publish the ScheduledTriggerViews Viz.  
+    c.  Publish the ScheduledTriggerViews Viz.  
           
-        You will likely need to look at your existing 1.x settsings in
-        the …\\\[VizAlerts 1.x folder\]\\config\\vizalerts.yaml file.
+        You will likely need to look at your existing 2.0.x settings in the …\\\[VizAlerts 2.0.x folder\]\\config\\vizalerts.yaml file.
 
 7.  Use a text editor (ideally with a diff function) to migrate the
     existing 1.x settings in the …\\\[VizAlerts 1.x
@@ -209,10 +221,11 @@ Here are instructions on how to upgrade from VizAlerts 1.x to VizAlerts
 10. In Task Scheduler edit the VizAlerts task Action to point to your
     new v2.0 folder and enable the task.
 
-<span id="_Toc474388488" class="anchor"></span>**Installation
-Prerequisites**
 
-Tableau Server
+Installation Prerequisites <a id="#installation-prerequisites"></a>
+=====================================
+
+Tableau Server <a id="#tableau-server"></a>
 --------------
 
 The Tableau Server instance that you wish to run VizAlerts against must
@@ -241,7 +254,7 @@ fulfill the following requirements:
     general you’ll want to limit access to the VizAlerts
     system administrator(s).
 
-Tableau Desktop
+Tableau Desktop <a id="#tableau-desktop"></a>
 ---------------
 
 To install VizAlerts you’ll need to use Tableau Desktop Professional
@@ -268,7 +281,7 @@ requirements:
     …\\VizAlerts\\config\\ScheduledTriggerView.twb in order to
     publish it.
 
-Host Machine
+Host Machine <a id="#host-machine"></a>
 ------------
 
 This is where VizAlerts will be run from, which means that this machine
@@ -291,7 +304,7 @@ VizAlerts has been built and tested on Windows, but it’s also been known
 to run on Linux and Mac.
 
   
-SMTP (Mail) Server
+SMTP (Mail) Server <a id="#smtp-mail-server"></a>
 ------------------
 
 VizAlerts needs to point to a mail server to send email. This can simply
@@ -299,19 +312,19 @@ be the same server you used when you set up Tableau Server for
 subscriptions. If your mail server is set up to support SSL encryption,
 that is ideal, but it’s not required.
 
-Installation
+Installation <a id="#installation"></a>
 ============
 
 You’ve got everything you need, now let’s get this thing running!
 
-Configure Tableau Server
+Configure Tableau Server <a id="#configure-tableau-server"></a>
 ------------------------
 
 Making any of these configuration changes requires a restart of Tableau
 Server, so if this is being done on a live / production server, make
 sure to do this during a maintenance window.
 
-### Trusted Tickets 
+### Trusted Tickets  <a id="#trusted-tickets"></a>
 
 VizAlerts uses [Trusted
 Authentication](http://onlinehelp.tableau.com/current/server/en-us/trusted_auth.htm)
@@ -321,7 +334,7 @@ command prompt on the Primary host of Tableau Server:
 
 tabadmin set wgserver.trusted\_hosts &lt;HOSTNAME OF VIZALERTS HOST&gt;
 
-### Repository Access
+### Repository Access <a id="#repository-access"></a>
 
 The Tableau Server repository database contains information VizAlerts
 needs to function. Grant it access by enabling the [readonly
@@ -329,7 +342,7 @@ user](http://onlinehelp.tableau.com/current/server/en-us/adminview_postgres_acce
 
 tabadmin dbpass --username readonly &lt;YOUR PASSWORD&gt;
 
-### Restart
+### Restart <a id="#restart"></a>
 
 Once you have finished the above steps, you must save the configuration
 and restart Tableau Server. When you’re ready to do this, run the
@@ -339,7 +352,7 @@ tabadmin configure
 
 tabadmin restart
 
-### Custom Subscription Schedules
+### Custom Subscription Schedules <a id="#custom-subscription-schedules"></a>
 
 A key component that allows VizAlerts to work in the intuitive way that
 it does is that users who wish to schedule an alert are able to
@@ -379,7 +392,7 @@ Create your new schedules like so:
 
 <img src="./media/image4.png" width="512" height="318" />
 
-Open the VizAlertsConfig Workbook
+Open the VizAlertsConfig Workbook <a id="#open-the-vizalertsconfig-workbook"></a>
 ---------------------------------
 
 VizAlerts gets the list of alerts that users want to run, and when they
@@ -428,7 +441,7 @@ of Tableau Desktop. To publish the viz, do the following:
 
 <img src="./media/image7.png" width="624" height="342" />
 
-Configure the VizAlerts ScheduledTriggerView Viz
+Configure the VizAlerts ScheduledTriggerView Viz <a id="#configure-the-vizalerts-scheduledtriggerview-viz"></a>
 ------------------------------------------------
 
 The scheduled trigger view will initially show as empty because we
@@ -459,37 +472,248 @@ ScheduledTriggerViews Viz](#_Publish_the_ScheduledTriggerViews)
 Here’s a list of the major calculated fields and the (default)
 parameters associated with them:
 
-| **General Settings**            |                                          |                                                                                                                                                                                             |
-|---------------------------------|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Calculated Field**            | **Parameter for default value**          | **Description**                                                                                                                                                                             |
-| data\_retrieval\_tries          | default\_data\_retrieval\_tries          | The number of times VizAlerts will attempt to retrieve data for a particular viz before notifying of the failure.                                                                           |
-| notify\_subscriber\_on\_failure | default\_notify\_subscriber\_on\_failure | When true (the default), the subscriber to the simple alert or the owner of the advanced alert is notified when there is a failure.                                                         |
-| timeout\_s                      | default\_timeout\_s                      | The number of seconds allowed to download a visualization before Tableau will notify of a failure. This prevents overloading Tableau Server with visualizations that are too slow to render |
-| viz\_data\_maxrows              | default\_data\_maxrows                   | The maximum number of alerts that can be sent at once.                                                                                                                                      |
-| viz\_png\_height                |                                          | Sets the default height of downloaded images for Simple Alerts as well as the VIZ\_IMAGE() content reference.                                                                               |
-| viz\_png\_width                 |                                          | Sets the default width of downloaded images for Simple Alerts as well as the VIZ\_IMAGE() content reference                                                                                 |
 
-| **Email Action Settings**     |                                        |                                                                                                                                                                                                                                              |
-|-------------------------------|----------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Calculated Field**          | **Parameter for default value**        | **Description**                                                                                                                                                                                                                              |
-| action\_enabled\_email        | default\_action\_enabled\_email        | Denotes whether alerts can send emails. 1 (the default) if email actions are supported, otherwise 0                                                                                                                                          |
-| allowed\_from\_address        | default\_allowed\_from\_address        | The email address you wish all email alerts to be sent from. **Note** that for Advanced Alerts, this is used only if the author did not specify their own “from” address in their viz. **This uses Regex notation (see below for details).** |
-| allowed\_recipient\_addresses | default\_allowed\_recipient\_addresses | The set of domains and addresses that email alerts can be sent to. **This uses Regex notation (see below for details).**                                                                                                                     |
+<table>
+<tbody>
+<tr>
+<td width="149">
+<p><strong>General Settings</strong></p>
+</td>
+<td width="186">&nbsp;</td>
+<td width="303">&nbsp;</td>
+</tr>
+<tr>
+<td width="149">
+<p><strong>Calculated Field</strong></p>
+</td>
+<td width="186">
+<p><strong>Parameter for default value</strong></p>
+</td>
+<td width="303">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>data_retrieval_tries</p>
+</td>
+<td width="186">
+<p>default_data_retrieval_tries</p>
+</td>
+<td width="303">
+<p>The number of times VizAlerts will attempt to retrieve data for a particular viz before notifying of the failure.</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>notify_subscriber_on_failure</p>
+</td>
+<td width="186">
+<p>default_notify_subscriber_on_failure</p>
+</td>
+<td width="303">
+<p>When true (the default), the subscriber to the simple alert or the owner of the advanced alert is notified when there is a failure.</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>timeout_s</p>
+</td>
+<td width="186">
+<p>default_timeout_s</p>
+</td>
+<td width="303">
+<p>The number of seconds allowed to download a visualization before Tableau will notify of a failure. This prevents overloading Tableau Server with visualizations that are too slow to render</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>viz_data_maxrows</p>
+</td>
+<td width="186">
+<p>default_data_maxrows</p>
+</td>
+<td width="303">
+<p>The maximum number of alerts that can be sent at once.</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>viz_png_height</p>
+</td>
+<td width="186">&nbsp;</td>
+<td width="303">
+<p>Sets the default height of downloaded images for Simple Alerts as well as the VIZ_IMAGE() content reference.</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>viz_png_width</p>
+</td>
+<td width="186">&nbsp;</td>
+<td width="303">
+<p>Sets the default width of downloaded images for Simple Alerts as well as the VIZ_IMAGE() content reference</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td width="152">
+<p><strong>Email Action Settings</strong></p>
+</td>
+<td width="186">&nbsp;</td>
+<td width="301">&nbsp;</td>
+</tr>
+<tr>
+<td width="152">
+<p><strong>Calculated Field</strong></p>
+</td>
+<td width="186">
+<p><strong>Parameter for default value</strong></p>
+</td>
+<td width="301">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td width="152">
+<p>action_enabled_email</p>
+</td>
+<td width="186">
+<p>default_action_enabled_email</p>
+</td>
+<td width="301">
+<p>Denotes whether alerts can send emails. 1 (the default) if email actions are supported, otherwise 0</p>
+</td>
+</tr>
+<tr>
+<td width="152">
+<p>allowed_from_address</p>
+</td>
+<td width="186">
+<p>default_allowed_from_address</p>
+</td>
+<td width="301">
+<p>The email address you wish all email alerts to be sent from. <strong>Note</strong> that for Advanced Alerts, this is used only if the author did not specify their own &ldquo;from&rdquo; address in their viz. <strong>This uses Regex notation (see below for details).</strong></p>
+</td>
+</tr>
+<tr>
+<td width="152">
+<p>allowed_recipient_addresses</p>
+</td>
+<td width="186">
+<p>default_allowed_recipient_addresses</p>
+</td>
+<td width="301">
+<p>The set of domains and addresses that email alerts can be sent to. <strong>This uses Regex notation (see below for details).</strong></p>
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td width="149">
+<p><strong>SMS Action Settings</strong></p>
+</td>
+<td width="186">&nbsp;</td>
+<td width="303">&nbsp;</td>
+</tr>
+<tr>
+<td width="149">
+<p><strong>Calculated Field</strong></p>
+</td>
+<td width="186">
+<p><strong>Parameter for default value</strong></p>
+</td>
+<td width="303">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>action_enabled_sms</p>
+</td>
+<td width="186">
+<p>default_action_enabled_sms</p>
+</td>
+<td width="303">
+<p>1 if SMS actions are supported, 0 (the default) if not.</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>allowed_recipient_numbers</p>
+</td>
+<td width="186">
+<p>default_allowed_recipient_numbers</p>
+</td>
+<td width="303">
+<p>The set of allowed recipient phone numbers (or partial numbers). <strong>This uses Regex notation (see below for details)</strong>.</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>from_number</p>
+</td>
+<td width="186">
+<p>default_from_number</p>
+</td>
+<td width="303">
+<p>The default number that SMS messages will originate from. This must be a number registered with Twilio that can do outbound SMS and be of the form +[country code][full phone number]</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>phone_country_code</p>
+</td>
+<td width="186">
+<p>default_phone_country_code</p>
+</td>
+<td width="303">
+<p>The default country code to use when recipient phone numbers do not have a country code.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td width="149">
+<p><strong>Schedule Settings</strong></p>
+</td>
+<td width="186">&nbsp;</td>
+<td width="303">&nbsp;</td>
+</tr>
+<tr>
+<td width="149">
+<p><strong>Calculated Field</strong></p>
+</td>
+<td width="186">
+<p><strong>Parameter for default value</strong></p>
+</td>
+<td width="303">
+<p><strong>Description</strong></p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>is_valid_schedule</p>
+</td>
+<td width="186">
+<p>schedule_name_filter</p>
+</td>
+<td width="303">
+<p>Use to determine what Tableau Server subscription schedules will be checked for alerts.</p>
+</td>
+</tr>
+</tbody>
+</table>
 
-| **SMS Action Settings**     |                                      |                                                                                                                                                                                           |
-|-----------------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Calculated Field**        | **Parameter for default value**      | **Description**                                                                                                                                                                           |
-| action\_enabled\_sms        | default\_action\_enabled\_sms        | 1 if SMS actions are supported, 0 (the default) if not.                                                                                                                                   |
-| allowed\_recipient\_numbers | default\_allowed\_recipient\_numbers | The set of allowed recipient phone numbers (or partial numbers). **This uses Regex notation (see below for details)**.                                                                    |
-| from\_number                | default\_from\_number                | The default number that SMS messages will originate from. This must be a number registered with Twilio that can do outbound SMS and be of the form +\[country code\]\[full phone number\] |
-| phone\_country\_code        | default\_phone\_country\_code        | The default country code to use when recipient phone numbers do not have a country code.                                                                                                  |
 
-| **Schedule Settings** |                                 |                                                                                         |
-|-----------------------|---------------------------------|-----------------------------------------------------------------------------------------|
-| **Calculated Field**  | **Parameter for default value** | **Description**                                                                         |
-| is\_valid\_schedule   | schedule\_name\_filter          | Use to determine what Tableau Server subscription schedules will be checked for alerts. |
-
-### Calculated Fields
+### Calculated Fields <a id="#calculated-fields"></a>
 
 The calculated fields such as action\_enabled\_email allow us to create
 formulas inside Tableau to give us more fine-grained control. For
@@ -509,7 +733,7 @@ it’s a Tableau viz! You can build out that calculation further using
 other criteria, or even blend or join other data sources to the original
 connection. It allows for almost unlimited flexibility.
 
-### Regex Notation
+### Regex Notation <a id="#regex-notation"></a>
 
 VizAlerts uses Regex Notation in setting the
 **allowed\_recipient\_addresses**, **allowed\_recipient\_numbers**, and
@@ -548,7 +772,7 @@ use <http://www.regular-expressions.info>. Here are the key elements:
     Example: To accept all datablick.com and tableau.com addresses then
     the regex would be .\*datablick\\.com|.\*tableau\\.com
 
-<span id="_Publish_the_ScheduledTriggerViews" class="anchor"><span id="_Toc474388503" class="anchor"></span></span>Publish the ScheduledTriggerViews Viz
+<span id="_Publish_the_ScheduledTriggerViews" class="anchor"><span id="_Toc474388503" class="anchor"></span></span>Publish the ScheduledTriggerViews Viz <a id="#publish-the-scheduledtriggerviews-viz"></a>
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Here’s how to publish the workbook:
@@ -584,26 +808,19 @@ Here’s how to publish the workbook:
 
 10. You can now close the browser window and Tableau Desktop.
 
-Install Python & Required Modules  
+Install Python & Required Modules <a id="#install-python-required-modules"></a>
 -----------------------------------
 
-1.  On the Windows host you want to run VizAlerts from, download and
-    install Python 2.7. This can be done in multiple ways, but we
-    suggest this MSI installer:
-    <https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi>
+1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi>
 
-2.  Add ";C:\\Python27\\;C:\\Python27\\Scripts\\" to your Path
-    environment variable (assuming you chose the installation defaults
-    when installing Python)
+2.  Add ";C:\\Python27\\;C:\\Python27\\Scripts\\" to your Path environment variable (assuming you chose the installation defaults when installing Python)
 
 3.  Install the following Python modules:
 
-    1.  [PyYAML](http://pyyaml.org/) (recommended:
-        <http://pyyaml.org/download/pyyaml/PyYAML-3.11.win32-py2.7.exe> )
+    1.  [PyYAML](http://pyyaml.org/) (recommended: <http://pyyaml.org/download/pyyaml/PyYAML-3.11.win32-py2.7.exe> )
 
-    2.  [psycopg2](http://www.stickpeople.com/projects/python/win-psycopg/)
-        (recommended Windows port:
-        <http://www.stickpeople.com/projects/python/win-psycopg/2.6.0/psycopg2-2.6.0.win32-py2.7-pg9.4.1-release.exe> )
+    2.  [psycopg2](http://www.stickpeople.com/projects/python/win-psycopg/) (recommended Windows port:
+        <http://www.stickpeople.com/projects/python/win-psycopg/2.6.0/psycopg2-2.6.0.win32-py2.7-pg9.4.1- release.exe> )
 
     3.  The final five modules,
         [requests](http://docs.python-requests.org/en/latest/user/install/#install),
@@ -636,7 +853,7 @@ Install Python & Required Modules
         SMS Actions section of the VizAlerts User Guide for
         more details.
 
-Configure VizAlerts
+Configure VizAlerts <a id="#configure-vizalerts"></a>
 -------------------
 
 Now that Python is installed, we can configure VizAlerts. Unzip the
@@ -649,45 +866,212 @@ this manual, we’ll assume the files were extracted to C:\\VizAlerts.
     configuration settings in that file are commented to explain what
     they do, but we’ll go over the most important ones here:
 
-| **Email Settings** |                                                                                                                                                                                         |
-|--------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| smtp.serv          | This is the name of your SMTP server.                                                                                                                                                   |
-| smtp.address.from  | The email address you wish all email alerts to be sent from. **Note** that for Advanced Alerts, this is used only if the author did not specify their own “from” address in their viz.  |
-| smtp.address.to    | When an alert fails to run, failure details will be sent to this address along with the Subscriber, so it makes the most sense to use your own address or Admin distribution list here. |
-| smtp.ssl           | When true, VizAlerts will attempt to use SSL for email encryption (which your SMTP server must support). If you do not wish to use encryption, leave it “false”.                        |
-| smtp.user          | Username for the account used to connect to your SMTP server. If no authentication is need, leave it “null”                                                                             |
-| smtp.password      | Password for the account used to connect to your SMTP server. If no authentication is need, leave it “null”. The password must be enclosed in single quotes.                            
-                                                                                                                                                                                                               
-                      If desired, this value can be a valid path to a .txt file containing the password, e.g. 'c:\\users\\mcoles\\password.txt', rather than the password itself.                              |
+<table>
+<tbody>
+<tr>
+<td width="174">
+<p><strong>Email Settings</strong></p>
+</td>
+<td width="450">&nbsp;</td>
+</tr>
+<tr>
+<td width="174">
+<p>smtp.serv</p>
+</td>
+<td width="450">
+<p>This is the name of your SMTP server.</p>
+</td>
+</tr>
+<tr>
+<td width="174">
+<p>smtp.address.from</p>
+</td>
+<td width="450">
+<p>The email address you wish all email alerts to be sent from. <strong>Note</strong> that for Advanced Alerts, this is used only if the author did not specify their own &ldquo;from&rdquo; address in their viz.</p>
+</td>
+</tr>
+<tr>
+<td width="174">
+<p>smtp.address.to</p>
+</td>
+<td width="450">
+<p>When an alert fails to run, failure details will be sent to this address along with the Subscriber, so it makes the most sense to use your own address or Admin distribution list here.</p>
+</td>
+</tr>
+<tr>
+<td width="174">
+<p>smtp.ssl</p>
+</td>
+<td width="450">
+<p>When true, VizAlerts will attempt to use SSL for email encryption (which your SMTP server must support). If you do not wish to use encryption, leave it &ldquo;false&rdquo;.</p>
+</td>
+</tr>
+<tr>
+<td width="174">
+<p>smtp.user</p>
+</td>
+<td width="450">
+<p>Username for the account used to connect to your SMTP server. If no authentication is need, leave it &ldquo;null&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td width="174">
+<p>smtp.password</p>
+</td>
+<td width="450">
+<p>Password for the account used to connect to your SMTP server. If no authentication is need, leave it &ldquo;null&rdquo;. The password must be enclosed in single quotes.</p>
+<p><br /> If desired, this value can be a valid path to a .txt file containing the password, e.g. 'c:\users\mcoles\password.txt', rather than the password itself.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td width="180">
+<p><strong>Tableau Server Settings</strong></p>
+</td>
+<td width="444">&nbsp;</td>
+</tr>
+<tr>
+<td width="180">
+<p>server</p>
+</td>
+<td width="444">
+<p>Name of the Tableau Server you wish to run this instance of VizAlerts against.</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.version</p>
+</td>
+<td width="444">
+<p>Major version of the Tableau Server you are running VizAlerts against (this must be 8, 9, or 10)</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.user</p>
+</td>
+<td width="444">
+<p>This is ANY user licensed in Tableau Server--it does not need to be an Admin, as it is only used in authenticating over HTTP.</p>
+<p>&middot; If you are using Active Directory authentication, prepend the domain name in front of the username, e.g. &ldquo;tableau.com\mcoles&rdquo;</p>
+<p>&middot; If you are using Local Authentication, simply supply the username, e.g., &ldquo;mcoles&rdquo;</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.user.domain</p>
+</td>
+<td width="444">
+<p>The Active Directory domain for the server.user account, leave as null if using local authentication.</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.ssl</p>
+</td>
+<td width="444">
+<p>When set to true, use SSL to connect to Tableau Server (recommended if you have enabled SSL).</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>vizalerts.source.viz</p>
+</td>
+<td width="444">
+<p>This identifies the VizAlerts scheduled alert viz. it must be of the form workbook/viewname. The publishing information for this viz will be used</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>vizalerts.source.site</p>
+</td>
+<td width="444">
+<p>Identifies the Tableau Server site for the vizalerts.source.viz.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td width="180">
+<p><strong>Security Settings</strong></p>
+</td>
+<td width="444">&nbsp;</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.ssl</p>
+</td>
+<td width="444">
+<p>When set to true, use SSL to connect to Tableau Server (recommended if you have enabled SSL).</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.certcheck</p>
+</td>
+<td width="444">
+<p>If using SSL then validate the certificate If set to true then you must also specify the server.certfile.</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>server.certfile</p>
+</td>
+<td width="444">
+<p>Full path to the set of trusted CA certificates in .pem format</p>
+</td>
+</tr>
+</tbody>
+</table>
+<table>
+<tbody>
+<tr>
+<td width="180">
+<p><strong>SMS Action Settings</strong></p>
+</td>
+<td width="444">&nbsp;</td>
+</tr>
+<tr>
+<td width="180">
+<p>smsaction.enable</p>
+</td>
+<td width="444">
+<p>Set to True to enable SMS Advanced Alerts to be sent. If set to False then all other smsaction fields are ignored. (Default False)</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>smsaction.provider</p>
+</td>
+<td width="444">
+<p>The only supported provider at this time is twilio.</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>smsaction.account_id</p>
+</td>
+<td width="444">
+<p>The account ID at the SMS provider.</p>
+</td>
+</tr>
+<tr>
+<td width="180">
+<p>smsaction.auth_token</p>
+</td>
+<td width="444">
+<p>Authorization token provided by the SMS provider.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Solving <a href="https://ruwix.com/" rel="nofollow">puzzles</a> you can improve your dexterity and problem solving skills.</p>
 
-| **Tableau Server Settings** |                                                                                                                                                   |
-|-----------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
-| server                      | Name of the Tableau Server you wish to run this instance of VizAlerts against.                                                                    |
-| server.version              | Major version of the Tableau Server you are running VizAlerts against (this must be 8, 9, or 10)                                                  |
-| server.user                 | This is ANY user licensed in Tableau Server--it does not need to be an Admin, as it is only used in authenticating over HTTP.                     
-                                                                                                                                                                                  
-                               -   If you are using Active Directory authentication, prepend the domain name in front of the username, e.g. “tableau.com\\mcoles”                 
-                                                                                                                                                                                  
-                               -   If you are using Local Authentication, simply supply the username, e.g., “mcoles”                                                              |
-| server.user.domain          | The Active Directory domain for the server.user account, leave as null if using local authentication.                                             |
-| server.ssl                  | When set to true, use SSL to connect to Tableau Server (recommended if you have enabled SSL).                                                     |
-| vizalerts.source.viz        | This identifies the VizAlerts scheduled alert viz. it must be of the form workbook/viewname. The publishing information for this viz will be used |
-| vizalerts.source.site       | Identifies the Tableau Server site for the vizalerts.source.viz.                                                                                  |
-
-| **Security Settings** |                                                                                                           |
-|-----------------------|-----------------------------------------------------------------------------------------------------------|
-| server.ssl            | When set to true, use SSL to connect to Tableau Server (recommended if you have enabled SSL).             |
-| server.certcheck      | If using SSL then validate the certificate If set to true then you must also specify the server.certfile. |
-| server.certfile       | Full path to the set of trusted CA certificates in .pem format                                            |
-
-| **SMS Action Settings** |                                                                                                                                    |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------------------|
-| smsaction.enable        | Set to True to enable SMS Advanced Alerts to be sent. If set to False then all other smsaction fields are ignored. (Default False) |
-| smsaction.provider      | The only supported provider at this time is twilio.                                                                                |
-| smsaction.account\_id   | The account ID at the SMS provider.                                                                                                |
-| smsaction.auth\_token   | Authorization token provided by the SMS provider.                                                                                  |
-
-Testing
+Testing <a id="#testing"></a>
 -------
 
 Whew! All that was lots of fun, but let’s get to the good stuff and test
@@ -695,7 +1079,7 @@ this thing to see if we did everything right. We’ve got a few tests to
 run to validate that everything is working, starting out from simple to
 more complicated:
 
-### Can VizAlerts Connect? Test
+### Can VizAlerts Connect? Test <a id="#can-vizalerts-connect-test"></a>
 
 Run the following from a command prompt on the Windows host you set
 VizAlerts up on. By default, VizAlerts will expect you are running it
@@ -711,7 +1095,7 @@ PostgreSQL database in Tableau Server, then realized there was nothing
 to do and quit without error. If it didn’t, please see the [Common
 Errors](#_Common_Errors:) section.
 
-### Simple Alert Test
+### Simple Alert Test <a id="#simple-alert-test"></a>
 
 Now for a more extensive test on a Simple Alert. Subscribe to any
 Tableau Server View on a VizAlerts schedule that you set up (pick a view
@@ -726,7 +1110,7 @@ Now, wait 15 minutes, then run the same command again. If data is
 present in the viz, you should receive an email! If not, you shouldn’t.
 Simple as that!
 
-### Put VizAlerts Through Its Paces Test
+### Put VizAlerts Through Its Paces Test <a id="#put-vizalerts-through-its-paces-test"></a>
 
 For this test you are going to use the same Tableau workbook that the
 VizAlerts contributors use to verify VizAlerts is working after we’ve
@@ -778,7 +1162,7 @@ version 9.0 and up.
     then check the Common Errors section below as well as the FAQ in the
     User Guide.
 
-### Optional: Send Yourself Some SMS Messages Test
+### Optional: Send Yourself Some SMS Messages Test <a id="#optional-send-yourself-some-sms-messages-test"></a>
 
 If you have set up the integration with Twilio now’s the time to see if
 it works, you’ll be using the same testing workbook from the prior demo.
@@ -826,10 +1210,10 @@ with Tableau version 9.0 and up.
     (which will be delivered by email) then check the Common Errors
     section below as well as the FAQ in the User Guide.
 
-Final Steps
+Final Steps <a id="#final-steps"></a>
 -----------
 
-### Set up a Scheduled Task
+### Set up a Scheduled Task <a id="#set-up-a-scheduled-task"></a>
 
 The last step, now that everything is working as expected, is to
 automate this so that VizAlerts can run regularly when it is supposed
@@ -864,7 +1248,7 @@ And save the task! You can now test out task by subscribing the
 VizAlertsDemo/AdvancedAlertsDemo view to a subscription and look for an
 email.
 
-### Helper Datasource
+### Helper Datasource <a id="#helper-datasource"></a>
 
 Last, but not least, publish the \[VizAlerts install
 folder\]\\demo\\VizAlerts.tdsx data source to Tableau Tableau Server,
@@ -874,7 +1258,7 @@ creating them (see the User Guide for more details).
 
 ### 
 
-FAQ
+FAQ <a id="#faq"></a>
 ===
 
 -   **How many alerts can be run at once?  
@@ -899,7 +1283,7 @@ FAQ
     progression for it. Currently it logs information into text
     files only.
 
-<span id="_Common_Errors:" class="anchor"><span id="_Toc474388515" class="anchor"></span></span>Common Errors
+Common Errors <a id="#common-errors"></a>
 =============================================================================================================
 
 This section mostly focuses on errors found at installation time. Many
@@ -990,7 +1374,7 @@ of the VizAlerts User Guide.
     -   The Tableau Server “run as” user must have read/write
         permissions on any folders used for exporting views.
 
-Getting VizAlerts Help
+Getting VizAlerts Help  <a id="#getting-vizalerts-help"></a>
 ======================
 
 First of all, check with any local admins and any local documentation
@@ -998,17 +1382,17 @@ that might exist. After that, the center for all things VizAlerts is the
 VizAlerts Group on the Tableau Community
 <https://community.tableau.com/vizalerts>
 
-<span id="_Toc320026886" class="anchor"><span id="_Toc474388517" class="anchor"></span></span>Contributing to VizAlerts
+Contributing to VizAlerts <a id="#contributing-to-vizalerts"></a>
 =======================================================================================================================
 
 VizAlerts is an open source project distributed under the MIT License.
 If you’d like to contribute ideas or code to VizAlerts, please visit the
 VizAlerts GitHub site at <https://github.com/tableau/VizAlerts>.
 
-<span id="_Appendix_A" class="anchor"><span id="_Toc474388518" class="anchor"></span></span>Appendix A
+Appendix A <a id="#appendix-a"></a>
 ======================================================================================================
 
-Installing Python modules with no Internet access
+Installing Python modules with no Internet access <a id="#installing-python-modules-with-no-internet-access"></a>
 -------------------------------------------------
 
 Setting VizAlerts up on a secure machine that isn’t connected to the
