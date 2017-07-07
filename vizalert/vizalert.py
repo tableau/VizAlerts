@@ -443,6 +443,10 @@ class VizAlert:
         """Construct the full URL of the trigger view for this VizAlert
              customviewurlsuffix is for generating URLs for other vizzes for content references"""
 
+        httpprefix = u'http://'
+        if config.configs['server.ssl']:
+            httpprefix = u'https://'
+
         # this logic should be removed--empty string should be passed in from SQL
         sitename = unicode(self.site_name).replace('Default', '')
 
@@ -451,9 +455,9 @@ class VizAlert:
 
         # (omitting hash preserves 8.x functionality)
         if sitename == '':
-            vizurl = u'http://' + config.configs['server'] + u'/views/' + customviewurlsuffix
+            vizurl = httpprefix + config.configs['server'] + u'/views/' + customviewurlsuffix
         else:
-            vizurl = u'http://' + config.configs['server'] + u'/t/' + sitename + u'/views/' + customviewurlsuffix
+            vizurl = httpprefix + config.configs['server'] + u'/t/' + sitename + u'/views/' + customviewurlsuffix
 
         return vizurl
 
