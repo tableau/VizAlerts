@@ -175,6 +175,12 @@ emails or SMS messages at the same time as the Admin will allow. (Note that cont
 one at a time, within a single VizAlert)
 
 
+**Python no longer required**
+
+With help from another Tableau Dev who was generous with their time, we now have VizAlerts in .exe form, so if you don't 
+want to use Python to run it, you don't need to (but you'll still have the option). 
+
+
 **Use the VizAlertsStarter workbook to build your alerts**
 
 We took a lot of tips and tricks we've learned over the years building VizAlerts and integrated them into a VizAlertsStarter 
@@ -435,6 +441,21 @@ Create your new schedules like so:
 
 <img src="./media/image4.png" width="512" height="318" />
 
+
+If you wish to allow your users to trigger their VizAlerts **when the workbook they are a part 
+of refreshes its data extract(s)**, then create two additional Subscription schedules using the 
+same method you did for the others, except that instead of:
+
+ѴizAlerts – \[frequency\]
+
+...they should be named:
+
+- ѴizAlerts – **On Refresh Success**
+- ѴizAlerts – **On Refresh Failure**
+
+These will automatically be picked up by VizAlerts when someone subscribes to them, and their 
+alert will be executed when the corresponding refresh activity occurs on their workbook.  
+
 Open the VizAlertsConfig Workbook <a id="open-the-vizalertsconfig-workbook"></a>
 ---------------------------------
 
@@ -567,6 +588,19 @@ parameters associated with them:
 </td>
 <td width="303">
 <p>The number of seconds allowed to download a visualization before Tableau will notify of a failure. This prevents overloading Tableau Server with visualizations that are too slow to render</p>
+</td>
+</tr>
+<tr>
+<td width="149">
+<p>task_threads</p>
+</td>
+<td width="186">
+<p>default_task_threads</p>
+</td>
+<td width="303">
+<p>The number of threads used for to process Email and SMS notifications for a given VizAlert. For high-volume alerts sending hundreds of notifications, 
+a count of 5 or more could be necessary for timely processing. Discuss with your IT team so that you don't end up beating your SMTP server up 
+too much!</p>
 </td>
 </tr>
 <tr>
@@ -851,8 +885,10 @@ Here’s how to publish the workbook:
 
 10. You can now close the browser window and Tableau Desktop.
 
-Install Python & Required Modules <a id="install-python-required-modules"></a>
+Optional: Install Python & Required Modules <a id="install-python-required-modules"></a>
 -----------------------------------
+
+If you wish to run VizAlerts as a Python script rather than a binary executable, you will need to follow these steps. Otherwise, you can skip this section.
 
 1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi>
 
@@ -878,10 +914,10 @@ Install Python & Required Modules <a id="install-python-required-modules"></a>
         pip install requests\_ntlm  
         pip install pypdf2  
         pip install twilio  
-        pip install phonenumberslite  
-        *  
-        If your computer does not have access to the Internet, see
-        [Appendix A](#_Appendix_A).
+        pip install phonenumberslite
+ 
+        *  If your computer does not have access to the Internet, see
+        [Appendix A](#_Appendix_A).<br><br>
 
     4.  **Note**: Despite the requirement to install the last two
         modules, deciding whether to *enable* the Twilio SMS integration
