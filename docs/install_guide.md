@@ -229,7 +229,7 @@ fulfill the following requirements:
 -   Must be v8.3 or higher.
 
 -   The [readonly
-    user](http://onlinehelp.tableau.com/current/server/en-us/adminview_postgres_access.htm)
+    user](https://onlinehelp.tableau.com/current/server/en-us/perf_collect_server_repo.htm)
     must be granted access on the Tableau Server repository.
 
 -   [Subscriptions](http://onlinehelp.tableau.com/current/server/en-us/subscribe.htm)
