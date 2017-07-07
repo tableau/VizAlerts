@@ -135,18 +135,52 @@ The general flow of a single execution of VizAlerts goes like this:
 Changes in VizAlerts 2.1.0 <a id="changes-in-vizalerts-2_1_0"></a>
 =================
 
-**VizAlerts 2.1.0 (released July 2017) has the following new and
-changed features:**
+VizAlerts 2.1.0 (released August 2017) has the following major new and
+changed features:
 
-**Improved Administration**
 
-Most of the administrator configuration in VizAlerts is now handled by
-editing a view on Tableau Server, rather than in the yaml file. This
-change means that you’ll now have nearly unlimited flexibility in
-defining alert restrictions.
+**Alerts are no longer conditional on "data being present"**  
 
-Added config options around SSL certificate validation
-# REVISIT
+For both Email and SMS Actions, the "Action" flag field on either is now the condition being checked to determine 
+if the action should be executed. This means that you no longer need to rely solely on filters to remove data 
+that should not trigger the alert. Instead, you can build your own criteria in the Email Action and SMS Action flags 
+as a calculation. A value of "1" signals that the action should be executed, whereas a 0 will cause no actions to be 
+executed.
+
+This is a great feature, because it means your vizzes can continue looking the way they normally do--all the non-alerting 
+data can be kept, which provides visual context for your alerts! No more ugly blank vizzes! You can also move the 
+Email Action field to the Color shelf to make it very clear which marks are triggering the alert, and which are not.
+
+
+**Smart Defaults**
+
+Another big change is that there are no "required" fields send email, anymore. All fields are optional. Don't want to 
+customize the Subject? Leave "Email Subject" off viz entirely, and VizAlerts will automatically generate it. Don't want 
+anything special in the Body? Leave that field off, and you'll automatically get the viz image with a hyperlink. Advanced 
+Alerts are now more flexible than ever. (Note that SMS messages still have required fields) 
+
+
+**Get alerts "when the extract refreshes"**
+
+If you've wanted to run your VizAlerts when the extracts in the workbook they're a part of refresh, you've got your wish. 
+The administrator may now set up two schedules; one for Refresh Success and one for Refresh Failure. Subscribe to either 
+or both of those, and your VizAlert will run when the extract(s) in the workbook refresh.
+
+
+**Email and SMS processing are now multithreaded within a single VizAlert**
+
+Several folks have brought up that they've got VizAlerts that send hundreds of emails out at once. Previous versions 
+took awhile to do this, because each was running in a single thread. No more. Now, each VizAlert can send as many 
+emails or SMS messages at the same time as the Admin will allow. (Note that content references are still processed 
+one at a time, within a single VizAlert)
+
+
+**Use the VizAlertsStarter workbook to build your alerts**
+
+We took a lot of tips and tricks we've learned over the years building VizAlerts and integrated them into a VizAlertsStarter 
+workbook, which replaces the published data source used previously. This workbook contains all the special fields that 
+you'll need to build your alerts, with copious comments and examples in the calcs. It's also been updated to 
+include the new Smart Defaults and conditional action flag features. 
 
 
 Upgrading from VizAlerts 2.0 or 2.0.1 <a id="upgrading-from-vizalerts-2_0-or-2_0_1"></a>
