@@ -7,9 +7,13 @@ Version 2.1.0
 -Implemented "smart default" behavior for Advanced Alerts (Issue #68)
 -Added custom scheduling to trigger alerts based on when the workbook extract refreshes (Issue #97)
 -Emails and SMS messages are now multithreaded within a single VizAlert (Issue #76)
+-Created a Starter workbook for building VizAlerts (Issue #96)
 -Updated to support the latest Twilio library (Issue #107)
 -Fixed issue with VizAlertsDemo SMS tests (Issue #105)
--Moved documentation from .docx format to Markdown (Issue #79)
+-Fixed problem where links in VizAlerts did not use https when server was using SSL (Issue #100)
+-Moved Install Guide from .docx format to Markdown (Issue #79)
+-Documentation updates (Issues #112, #109, #106)
+-Update vizalerts.yaml file for Tableau Server running on non-standard ports (Issue #101)
 =================================
 
 Version 2.0.1
