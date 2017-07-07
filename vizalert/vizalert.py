@@ -390,7 +390,7 @@ class VizAlert:
         # consolidated and sort have backwards-compatible options for v1.x
         self.action_field_dict[GENERAL_SORTORDER_FIELDKEY] = \
             ActionField(GENERAL_SORTORDER_FIELDKEY, GENERAL_ACTION_TYPE, False, False,
-                        u'.*Consolidated.Sort|.*Email.Sort.Order')
+                        u'.*Consolidated.Sort|.*Sort.Order')
         self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY] = \
             ActionField(CONSOLIDATE_LINES_FIELDKEY, GENERAL_ACTION_TYPE, False, False,
                         u'.*Consolidate.Lines|.*Email.Consolidate')
