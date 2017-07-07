@@ -20,6 +20,7 @@ smtp.password: null                             # password for account used to c
                                                     # OR it can be a valid path to a .txt file containing the password, e.g. 'c:\users\mcoles\password.txt'
 # Tableau Server settings
 server: localhost                               # the Tableau Server instance your alerts will reside on. Recommend using the fully-qualified name, e.g. 'myserver.mydomain.com'
+                                                    # If your server runs on a non-default port, add a colon and the port number, e.g., "myserver.mydomain.com:54321"
 server.version: 10                              # the major version of Tableau Server that this is running against (just ensures correct URLs in email footers)
 server.user: SomeTableauServerUser              # this is ANY user licensed in Tableau Server--it does not need to be an Admin. It must have access to download summary data from vizalerts.source.viz
 server.user.domain: null                        # the domain for the server.user account.
