@@ -31,18 +31,13 @@ Tableau – VizAlerts Installation Guide
 		- [Optional: Send Yourself Some SMS Messages Test](#optional-send-yourself-some-sms-messages-test)
 	- [Final Steps](#final-steps)
 		- [Set up a Scheduled Task](#set-up-a-scheduled-task)
-		- [Helper Datasource](#helper-datasource)
+		- [Starter Workbook](#starter-workbook)
 - [FAQ](#faq)
 - [Common Errors](#common-errors)
 - [Getting VizAlerts Help](#getting-vizalerts-help)
 - [Contributing to VizAlerts](#contributing-to-vizalerts)
 - [Appendix A.](#appendix-a)
 	- [Installing Python modules with no Internet access](#installing-python-modules-with-no-internet-access)
-
-
-## Example <a id="#what-is-vizalerts"></a>
-## Example2 <a id="example2"></a>
-## Third Example <a id="third-example"></a>
 
 
 What is VizAlerts? <a id="#what-is-vizalerts"></a>
@@ -54,7 +49,7 @@ able to easily build, share, and customize nearly **any** any email or
 SMS **automation** based on their own Tableau Server viz data. In the
 future, VizAlerts will be able to perform even more actions than these.
 
-In its current form, VizAlerts exists simply as a Python script that is
+In its current form, VizAlerts exists simply as an application that is
 set up by a system administrator to run at frequent and regular
 intervals. All of the information it needs to enable data-driven email
 and SMS alerting is derived from the Tableau Server PostgreSQL
@@ -534,7 +529,7 @@ parameters associated with them:
 <p>default_data_maxrows</p>
 </td>
 <td width="303">
-<p>The maximum number of alerts that can be sent at once.</p>
+<p>The maximum number of rows that VizAlerts will attempt to process from any VizAlert, when the viz data is downloaded. This applies to both Simple and Advanced alerts.</p>
 </td>
 </tr>
 <tr>
@@ -1248,21 +1243,22 @@ And save the task! You can now test out task by subscribing the
 VizAlertsDemo/AdvancedAlertsDemo view to a subscription and look for an
 email.
 
-### Helper Datasource <a id="#helper-datasource"></a>
+### Starter Workbook <a id="#starter-workbook"></a>
 
 Last, but not least, publish the \[VizAlerts install
-folder\]\\demo\\VizAlerts.tdsx data source to Tableau Tableau Server,
+folder\]\\demo\\VizAlertsStarter.tbwx workbook to Tableau Tableau Server,
 and grant permissions to anyone you wish to have an easier way to create
-Advanced Alerts. This datasource simply gives users a shortcut to
-creating them (see the User Guide for more details).
+Advanced Alerts. This workbook gives users a shortcut to creating them, 
+with all the necessary action fields and examples on how to use them.
 
 ### 
 
 FAQ <a id="#faq"></a>
 ===
 
--   **How many alerts can be run at once?  
-    **Alerts are processed in parallel, according to the number of
+-   **How many alerts can be run at once?**  
+    
+	Alerts are processed in parallel, according to the number of
     threads you set in the config\\vizalerts.yaml file. They are checked
     according to the Schedule they are associated with, in order of the
     “priority” field in the config workbook. Here’s an example: Alerts
@@ -1277,9 +1273,14 @@ FAQ <a id="#faq"></a>
     and/or views that are slow to render), and the number of alerts that
     are simultaneously scheduled.
 
+	When an alert is triggered, it begins sending emails / SMS notifications.
+	These tasks are *also* processed in parallel, according to the number 
+	defined in the "task_threads" field in the VizAlertsConfig workbook.  
+
 -   **Does VizAlerts use a database to log information about what it has
-    done?  
-    **No, not in its current state, though this is the next logical
+    done?**
+
+	No, not in its current state, though this is the next logical
     progression for it. Currently it logs information into text
     files only.
 
@@ -1419,12 +1420,10 @@ you’ll be running VizAlerts from.
 
     *pip install --download c:\\mypythonpackages pypdf2*
 
-    Optional packages for SMS messaging:
-
     *pip install --download c:\\mypythonpackages phonenumberslite*
 
-    *pip install --download c:\\mypythonpackages twilio  
-    *
+    *pip install --download c:\\mypythonpackages twilio*
+
 
 3.  Copy the entire folder to your offline machine (I'm assuming here
     that it's copied to the same path).
@@ -1441,19 +1440,12 @@ you’ll be running VizAlerts from.
     *pip install --no-index --find-links file:c:\\mypythonpackages
     pypdf2 *
 
-    Optional packages for SMS messaging:
-
     *pip install --no-index --find-links file:c:\\mypythonpackages
     phonenumberslite*
 
     *pip install --no-index --find-links file:c:\\mypythonpackages
     twilio  
-    *
 
 5.  Check for errors in the output. If there are none, you’ve
     successfully got Python and all the modules installed!
-
-    *  
-    *
-
 
