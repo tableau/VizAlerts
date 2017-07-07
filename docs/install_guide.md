@@ -21,7 +21,7 @@ Tableau – VizAlerts Installation Guide
 	- [Configure the VizAlertsScheduledTriggerView Viz](#configure-the-vizalerts-scheduledtriggerview-viz)
 		- [Calculated Fields](#calculated-fields)
 		- [Regex Notation](#regex-notation)
-	- [Publish the ScheduledTriggerViews Viz](#publish-the-scheduledtriggerviews-viz)
+	- [Publish the VizAlertsConfig Workbook](#publish-the-scheduledtriggerviews-viz)
 	- [Install Python & Required Modules](#install-python-required-modules)
 	- [Configure VizAlerts](#configure-vizalerts)
 	- [Testing](#testing)
@@ -531,7 +531,7 @@ fields. For example:
     be “vizalerts@tableau.com”)
 
 If you’re just trying to get things up and running, skip to [Publish the
-ScheduledTriggerViews Viz](#_Publish_the_ScheduledTriggerViews)
+VizAlertsConfig workbook](#_Publish_the_ScheduledTriggerViews)
 
 Here’s a list of the major calculated fields and the (default)
 parameters associated with them:
@@ -849,7 +849,7 @@ use <http://www.regular-expressions.info>. Here are the key elements:
     Example: To accept all datablick.com and tableau.com addresses then
     the regex would be .\*datablick\\.com|.\*tableau\\.com
 
-<span id="_Publish_the_ScheduledTriggerViews" class="anchor"><span id="_Toc474388503" class="anchor"></span></span>Publish the ScheduledTriggerViews Viz <a id="publish-the-scheduledtriggerviews-viz"></a>
+<span id="_Publish_the_ScheduledTriggerViews" class="anchor"><span id="_Toc474388503" class="anchor"></span></span>Publish the VizAlertsConfig workbook<a id="publish-the-scheduledtriggerviews-viz"></a>
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Here’s how to publish the workbook:
@@ -888,7 +888,7 @@ Here’s how to publish the workbook:
 Optional: Install Python & Required Modules <a id="install-python-required-modules"></a>
 -----------------------------------
 
-If you wish to run VizAlerts as a Python script rather than a binary executable, you will need to follow these steps. Otherwise, you can skip this section.
+If you wish to run VizAlerts as a Python script rather than a binary executable, you will need to follow these steps. Otherwise, you can skip this section. Note that the rest of the documentation assumes that you are running the binary executable, so whenever you see instructions to run vizalerts.exe, know that you'll need to use *python .\vizalerts.py* instead.
 
 1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi>
 
@@ -1167,12 +1167,12 @@ directory first, then run the script:
 
 cd C:\\VizAlerts
 
-python C:\\VizAlerts\\vizalerts.py
+C:\\VizAlerts\\vizalerts.exe
 
 It should have successfully generated a Trusted Ticket, queried the
 PostgreSQL database in Tableau Server, then realized there was nothing
 to do and quit without error. If it didn’t, please see the [Common
-Errors](#_Common_Errors:) section.
+Errors](#common-errors) section.
 
 ### Simple Alert Test <a id="simple-alert-test"></a>
 
@@ -1183,7 +1183,7 @@ a VizAlerts schedule that runs every 15 minutes for this test, even if
 you just remove it afterward. After you subscribe, run the command
 again:
 
-python C:\\VizAlerts\\vizalerts.py
+C:\\VizAlerts\\vizalerts.exe
 
 Now, wait 15 minutes, then run the same command again. If data is
 present in the viz, you should receive an email! If not, you shouldn’t.
@@ -1230,7 +1230,7 @@ version 9.0 and up.
 8.  After the comment has been posted, go back to your Windows command
     prompt and enter:  
       
-    python C:\\VizAlerts\\vizalerts.py  
+    C:\\VizAlerts\\vizalerts.exe
       
     If the script runs and exits the first time without processing
     anything, run it again. (Tableau can take a moment to update the
@@ -1278,7 +1278,7 @@ with Tableau version 9.0 and up.
 8.  After the comment has been posted, go back to your Windows command
     prompt and enter:  
       
-    python C:\\VizAlerts\\vizalerts.py  
+    C:\\VizAlerts\\vizalerts.exe
       
     If the script runs and exits the first time without processing
     anything, run it again. (Tableau can take a moment to update the
@@ -1323,7 +1323,7 @@ Set the Action on the Task (what will it do?)
 
 <img src="./media/image20.png" width="423" height="238" />
 
-And save the task! You can now test out task by subscribing the
+And save the task! You can now test out the task by subscribing the
 VizAlertsDemo/AdvancedAlertsDemo view to a subscription and look for an
 email.
 
@@ -1393,7 +1393,8 @@ of the VizAlerts User Guide.
 
 -   **Invalid regular expression found**
 
-    -   If VizAlerts won’t start, and sends you an email with this
+    -   If VizAlerts won’t start, and sends 
+    -   you an email with this
         message, it means one of two things:
 
         -   You live in an area where the default delimiter is another
@@ -1413,7 +1414,7 @@ of the VizAlerts User Guide.
         Code: 406 Reason: Not Acceptable  
           
         This would be due to not embedding the password for the readonly
-        user into the ScheduledTriggerViews workbook.
+        user into the VizAlertsConfig workbook.
 
     -   If you see a 406 on a standard VizAlert, it generally means that
         Tableau Server could not export the view for some reason. This
