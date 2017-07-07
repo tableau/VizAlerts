@@ -152,69 +152,83 @@ Added config options around SSL certificate validation
 Upgrading from VizAlerts 2.0 or 2.0.1 <a id="#upgrading-from-vizalerts-2_0-or-2_0_1"></a>
 =====================================
 
-There are two options for upgrading to 2.1.0. One is to continue to use the raw Python scripts. The other is to start using the compiled executuable (.exe) file instead.
+1. Backup your current VizAlerts directory to a separate location.
 
-**Upgrading to use the compiled executable**
+2. Download version 2.1.0 from <https://github.com/tableau/VizAlerts/releases>, and unzip to a *new* folder alongside your existing VizAlerts folder.
 
+3. **Optional:** Create new schedules for On Refresh Success/Failure
+	- If you wish to schedule VizAlerts for when their workbook extract refreshes, create two new schedules on Tableau Server with the following properties:
+		- The name must match the existing naming convention for your Vizalerts schedules (e.g., has "Alerts" somewhere in it, or whatever you picked for the other schedules)
+		- The name of each will also determine whether it represents extracts succeeding or extracts failing. Indicate this by putting "On Extract Success" Each of the two  that also contain the words "Refresh Success" and "Refresh Failure" somewhere in them.
+		- Type must be Subscription
+		- Priority will dictate the priority in the VizAlerts queue, if other alerts happen to running at the same time
+		- Execution doesn't matter, so leave it Parallel
+		- Frequency doesn't matter, so leave it Hourly
+		- They must be disabled, just as the standard VizAlerts schedules are, so make sure to disable them after you create them.
+<br><br>
 
-1. Check the Installation Prerequisites below, the major change is that you will need Tableau Desktop Professional available in order to complete the installation.Backup your VizAlerts 1.x directory.
+4. Merge VizAlertsConfig changes into new workbook
+	- There is a new version of \config\VizAlertsConfig.twb that you'll want to move your existing configuration settings to. To do so, here are the steps:
+		- Download your existing VizAlertsConfig workbook from Tableau Server and open it in Tableau Desktop
+		- Locate the *new* VizAlertsConfig workbook from the new VizAlerts folder, in the config subfolder, and open it in Tableau Desktop (you'll need to edit the connection to point to your Tableau Server postgreSQL database)
+		- Set the default value for the new parameter, "task\_threads" in the new workbook. This represents how many emails or SMS messages a single alert can be sending at once time.
+		- Carefully update the *new* VizAlertsConfig workbook with all of the settings you have in the version you downloaded from Tableau Server.
+			- This is best done manually, I find, rather than with a diffing tool.
+			- Copy all the Parameter values from the current VizAlertsConfig workbook into the new one.
+			- Now, examine the calculated dimension fields carefully--did you customize anything? Copy the same logic into the new workbook's calculation.
+			- If you made changes to the Custom SQL, you are very very naughty--never do that! You're just asking for trouble.
+		- **Optional validation steps for the extra-cautious**
+			- Publish the new VizAlertsConfig workbook to Tableau Server, **MAKING SURE** that:
+				- You are embedding the password in the connection.
+				- You are **NOT** overwriting the existing VizAlertsConfig workbook! Publish it as VizAlertsConfig-new or somesuch
+			- Now, validate that you migrated the changes properly by exporting the data from each viz. Best way to do this:
+				- Go to the active version of VizAlertsConfig/ScheduledTriggerViews on Tableau Server. Add ?:format=csv to the end of the URL like so:
+					- http://myserver/#/views/VizAlertsConfig/ScheduledTriggerViews?:format=csv
+					- Name the file that is downloaded something like "ScheduledTriggerViews-current.csv"
+				- Go to the *new* version of VizAlertsConfig/ScheduledTriggerViews on Tableau Server. Add ?:format=csv to the end of the URL like so:
+					- http://myserver/#/views/VizAlertsConfig-**new**/ScheduledTriggerViews?:format=csv
+					- Name the file that is downloaded something like "ScheduledTriggerViews-**new**.csv"
+				- Use a diffing tool such as [BeyondCompare](https://www.scootersoftware.com/download.php) to compare the two files. Yeah, even with that, this is a pain. That's why all this is optional. The only difference between the two files should be two new columns: "is\_triggered\_by\_refresh" and "task\_threads".
+<br><br>
+5. Copy config files
+	- Copy the \config\vizalerts.yaml file from your *current* VizAlerts folder *over* the same file in the *new* VizAlerts folder
+		- No significant changes were made to this file, so it will work just fine the way it is
+	- If you're using SSL to connect to Tableau Server, and have a certificate file you're storing in the VizAlerts folder, make sure it's copied to the new location
+	- If you've or have referenced any other files for passwords or anything else, make sure they're copied as well.
+<br><br>
+6. In Task Scheduler, disable the existing VizAlerts scheduled task.
 
-2. In Task Scheduler disable the existing VizAlerts scheduled task.
+7. <font color='red'>**VizAlerts outage begins**</font>
 
-3. Download version 2 from GitHub <https://github.com/tableau/VizAlerts>, and unzip to a temporary location alongside your existing VizAlerts folder.
+8. Rename folders
+	- Rename the existing VizAlerts folder with something like "-old" at the end of it
+	- Rename the new VizAlerts folder whatever the old one was called
+<br><br>
+9. **Optional**: Update Scheduled Task
+	- There are two options for upgrading to 2.1.0: Continue to use the raw Python scripts, or start using the compiled executuable (.exe) file instead
+		- **Benefits of Python**: Can make on-the-fly changes if an urgent fix is required, or customization is needed.
+		- **Benefits of Executable**: No need to keep Python and modules installed and up-to-date.
+	- If you want to run the Executable version, change your Scheduled Task to point to the exe file for the "Program/Script" setting. Keep the "Start In" value, but remove the "Add arguments" value so that it is blank.
+	- If you want to continue with the Python version, make no changes to the scheduled task. 
+<br><br>
+10. Testing
+	- Open a command prompt, navigate to the VizAlerts folder, and execute VizAlerts one time. Ensure it runs properly, and review the logs if there are any errors.
+	- Test a single alert by adding a test\_alert comment to a viz, and then run it again in the command prompt, again ensuring that no errors are logged.
+<br><br>
+11. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
 
-4. Follow the instructions in the Installation section for:
+12. In Task Scheduler, enable the VizAlerts task
 
-    a.  Open the ScheduledTriggerViews Viz.
+13. <font color='green'>**VizAlerts outage ends**</font>
 
-    b.  Configure the ScheduledTriggerViews Viz.
+14. Update Published content
+	- Publish \demo\VizAlertsStarter.twbx to Tableau Server, with permissions being open to All Users. This is a starter workbook that replaces the old \demo\VizAlerts.tdsx published data source.
+	- Identify any workbooks referencing the old VizAlerts published data source on Tableau Server and ensure that the authors update their workbooks 
+		so that they no longer depend on it. Then, delete the data source.
+<br><br>
+15. Notify your users! Mention the new starter workbook!
 
-    c.  Publish the ScheduledTriggerViews Viz.  
-          
-        You will likely need to look at your existing 2.0.x settings in the …\\\[VizAlerts 2.0.x folder\]\\config\\vizalerts.yaml file.
-
-7.  Use a text editor (ideally with a diff function) to migrate the
-    existing 1.x settings in the …\\\[VizAlerts 1.x
-    folder\]\\config\\vizalerts.yaml to the new v2.0 vizalerts.yaml.  
-      
-    Note that many configuration options are now MISSING from the new
-    yaml file because they are now in the ScheduledTriggerViews viz that
-    you configured in step 5.  
-      
-    Migrate all your old setting wherever the same option remains in the
-    new file.  
-      
-    Set the values for new settings:
-
-    1.  server.user.domain (remove the domain name you used in the v1.x
-        server.user and put it here instead).
-
-    2.  If when publishing in step 5 above you changed the
-        ScheduledTriggerViews site from default, workbook name, and/or
-        view name then you will need to update the vizalerts.source.viz
-        and vizalerts.viz.site, otherwise leave them as the default.
-
-    3.  server.certfile : if you want to validate the SSL certificate
-        for your Tableau Server, you’ll need to specify a path to the
-        certificate bundle in .pem format.
-
-    4.  SMS Settings : You can leave the defaults for right now if you
-        don’t want to test SMS messaging at this point. If you have set
-        up an account on Twilio then you can add that information here
-        from your Twilio account page.
-
-    5.  threads : **Two** is a safe number to start with. We recommend
-        roughly **four** threads if you have 50+ active alerts running.
-
-8.  Run VizAlerts from the command line in the v2.0 folder to verify
-    that it runs without error.
-
-9.  Run a test\_alert from an existing Tableau view, then run VizAlerts
-    v2.0 from the command line to verify that it is able to deliver
-    messages as before.
-
-10. In Task Scheduler edit the VizAlerts task Action to point to your
-    new v2.0 folder and enable the task.
+16. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
 
 
 Installation Prerequisites <a id="#installation-prerequisites"></a>
