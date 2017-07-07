@@ -7,10 +7,10 @@ Tableau – VizAlerts Installation Guide
 -  [Changes in VizAlerts 2.0](#changes-in-vizalerts-2_1_0)
 -  [Upgrading from VizAlerts 2.0 or 2.0.1](#upgrading-from-vizalerts-2_0-or-2_0_1)
 -  [Installation Prerequisites](#installation-prerequisites)
-	- 		[Tableau Server](#tableau-server)
-	- 		[Tableau Desktop](#tableau-desktop)
-	- 		[Host Machine](#host-machine)
-	- 		[SMTP (Mail) Server](#smtp-mail-server)
+	- [Tableau Server](#tableau-server)
+	- [Tableau Desktop](#tableau-desktop)
+	- [Host Machine](#host-machine)
+	- [SMTP (Mail) Server](#smtp-mail-server)
 - [Installation](#installation)
 	- [Configure Tableau Server](#configure-tableau-server)
 		- [Trusted Tickets](#trusted-tickets)
@@ -40,7 +40,7 @@ Tableau – VizAlerts Installation Guide
 	- [Installing Python modules with no Internet access](#installing-python-modules-with-no-internet-access)
 
 
-What is VizAlerts? <a id="#what-is-vizalerts"></a>
+What is VizAlerts?<a id="what-is-vizalerts"></a>
 ==================
 
 VizAlerts is an automation platform intended to seamlessly integrate
@@ -56,7 +56,7 @@ and SMS alerting is derived from the Tableau Server PostgreSQL
 repository, and the published views of the Tableau Server it is set to
 run against.
 
-What does it do? <a id="#what-does-it-do"></a>
+What does it do? <a id="what-does-it-do"></a>
 ================
 
 VizAlerts has been designed to support many use cases:
@@ -97,7 +97,7 @@ VizAlerts has been designed to support many use cases:
 
 -   Whatever combinations of the above you can imagine!
 
-How does it work? <a id="#how-does-it-work"></a>
+How does it work? <a id="how-does-it-work"></a>
 =================
 
 While the details on how to *set up* alerts will be left in the User
@@ -132,7 +132,7 @@ The general flow of a single execution of VizAlerts goes like this:
             instructed by the data itself.
 
 
-Changes in VizAlerts 2.1.0 <a id="#changes-in-vizalerts-2_1_0"></a>
+Changes in VizAlerts 2.1.0 <a id="changes-in-vizalerts-2_1_0"></a>
 =================
 
 **VizAlerts 2.1.0 (released July 2017) has the following new and
@@ -149,7 +149,7 @@ Added config options around SSL certificate validation
 # REVISIT
 
 
-Upgrading from VizAlerts 2.0 or 2.0.1 <a id="#upgrading-from-vizalerts-2_0-or-2_0_1"></a>
+Upgrading from VizAlerts 2.0 or 2.0.1 <a id="upgrading-from-vizalerts-2_0-or-2_0_1"></a>
 =====================================
 
 1. Backup your current VizAlerts directory to a separate location.
@@ -231,10 +231,10 @@ Upgrading from VizAlerts 2.0 or 2.0.1 <a id="#upgrading-from-vizalerts-2_0-or-2_
 16. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
 
 
-Installation Prerequisites <a id="#installation-prerequisites"></a>
+Installation Prerequisites <a id="installation-prerequisites"></a>
 =====================================
 
-Tableau Server <a id="#tableau-server"></a>
+Tableau Server <a id="tableau-server"></a>
 --------------
 
 The Tableau Server instance that you wish to run VizAlerts against must
@@ -263,7 +263,7 @@ fulfill the following requirements:
     general you’ll want to limit access to the VizAlerts
     system administrator(s).
 
-Tableau Desktop <a id="#tableau-desktop"></a>
+Tableau Desktop <a id="tableau-desktop"></a>
 ---------------
 
 To install VizAlerts you’ll need to use Tableau Desktop Professional
@@ -290,7 +290,7 @@ requirements:
     …\\VizAlerts\\config\\ScheduledTriggerView.twb in order to
     publish it.
 
-Host Machine <a id="#host-machine"></a>
+Host Machine <a id="host-machine"></a>
 ------------
 
 This is where VizAlerts will be run from, which means that this machine
@@ -313,7 +313,7 @@ VizAlerts has been built and tested on Windows, but it’s also been known
 to run on Linux and Mac.
 
   
-SMTP (Mail) Server <a id="#smtp-mail-server"></a>
+SMTP (Mail) Server <a id="smtp-mail-server"></a>
 ------------------
 
 VizAlerts needs to point to a mail server to send email. This can simply
@@ -321,19 +321,19 @@ be the same server you used when you set up Tableau Server for
 subscriptions. If your mail server is set up to support SSL encryption,
 that is ideal, but it’s not required.
 
-Installation <a id="#installation"></a>
+Installation <a id="installation"></a>
 ============
 
 You’ve got everything you need, now let’s get this thing running!
 
-Configure Tableau Server <a id="#configure-tableau-server"></a>
+Configure Tableau Server <a id="configure-tableau-server"></a>
 ------------------------
 
 Making any of these configuration changes requires a restart of Tableau
 Server, so if this is being done on a live / production server, make
 sure to do this during a maintenance window.
 
-### Trusted Tickets  <a id="#trusted-tickets"></a>
+### Trusted Tickets  <a id="trusted-tickets"></a>
 
 VizAlerts uses [Trusted
 Authentication](http://onlinehelp.tableau.com/current/server/en-us/trusted_auth.htm)
@@ -343,7 +343,7 @@ command prompt on the Primary host of Tableau Server:
 
 tabadmin set wgserver.trusted\_hosts &lt;HOSTNAME OF VIZALERTS HOST&gt;
 
-### Repository Access <a id="#repository-access"></a>
+### Repository Access <a id="repository-access"></a>
 
 The Tableau Server repository database contains information VizAlerts
 needs to function. Grant it access by enabling the [readonly
@@ -351,7 +351,7 @@ user](http://onlinehelp.tableau.com/current/server/en-us/adminview_postgres_acce
 
 tabadmin dbpass --username readonly &lt;YOUR PASSWORD&gt;
 
-### Restart <a id="#restart"></a>
+### Restart <a id="restart"></a>
 
 Once you have finished the above steps, you must save the configuration
 and restart Tableau Server. When you’re ready to do this, run the
@@ -361,7 +361,7 @@ tabadmin configure
 
 tabadmin restart
 
-### Custom Subscription Schedules <a id="#custom-subscription-schedules"></a>
+### Custom Subscription Schedules <a id="custom-subscription-schedules"></a>
 
 A key component that allows VizAlerts to work in the intuitive way that
 it does is that users who wish to schedule an alert are able to
@@ -401,7 +401,7 @@ Create your new schedules like so:
 
 <img src="./media/image4.png" width="512" height="318" />
 
-Open the VizAlertsConfig Workbook <a id="#open-the-vizalertsconfig-workbook"></a>
+Open the VizAlertsConfig Workbook <a id="open-the-vizalertsconfig-workbook"></a>
 ---------------------------------
 
 VizAlerts gets the list of alerts that users want to run, and when they
@@ -450,7 +450,7 @@ of Tableau Desktop. To publish the viz, do the following:
 
 <img src="./media/image7.png" width="624" height="342" />
 
-Configure the VizAlerts ScheduledTriggerView Viz <a id="#configure-the-vizalerts-scheduledtriggerview-viz"></a>
+Configure the VizAlerts ScheduledTriggerView Viz <a id="configure-the-vizalerts-scheduledtriggerview-viz"></a>
 ------------------------------------------------
 
 The scheduled trigger view will initially show as empty because we
@@ -722,7 +722,7 @@ parameters associated with them:
 </table>
 
 
-### Calculated Fields <a id="#calculated-fields"></a>
+### Calculated Fields <a id="calculated-fields"></a>
 
 The calculated fields such as action\_enabled\_email allow us to create
 formulas inside Tableau to give us more fine-grained control. For
@@ -742,7 +742,7 @@ it’s a Tableau viz! You can build out that calculation further using
 other criteria, or even blend or join other data sources to the original
 connection. It allows for almost unlimited flexibility.
 
-### Regex Notation <a id="#regex-notation"></a>
+### Regex Notation <a id="regex-notation"></a>
 
 VizAlerts uses Regex Notation in setting the
 **allowed\_recipient\_addresses**, **allowed\_recipient\_numbers**, and
@@ -781,7 +781,7 @@ use <http://www.regular-expressions.info>. Here are the key elements:
     Example: To accept all datablick.com and tableau.com addresses then
     the regex would be .\*datablick\\.com|.\*tableau\\.com
 
-<span id="_Publish_the_ScheduledTriggerViews" class="anchor"><span id="_Toc474388503" class="anchor"></span></span>Publish the ScheduledTriggerViews Viz <a id="#publish-the-scheduledtriggerviews-viz"></a>
+<span id="_Publish_the_ScheduledTriggerViews" class="anchor"><span id="_Toc474388503" class="anchor"></span></span>Publish the ScheduledTriggerViews Viz <a id="publish-the-scheduledtriggerviews-viz"></a>
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Here’s how to publish the workbook:
@@ -817,7 +817,7 @@ Here’s how to publish the workbook:
 
 10. You can now close the browser window and Tableau Desktop.
 
-Install Python & Required Modules <a id="#install-python-required-modules"></a>
+Install Python & Required Modules <a id="install-python-required-modules"></a>
 -----------------------------------
 
 1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi>
@@ -862,7 +862,7 @@ Install Python & Required Modules <a id="#install-python-required-modules"></a>
         SMS Actions section of the VizAlerts User Guide for
         more details.
 
-Configure VizAlerts <a id="#configure-vizalerts"></a>
+Configure VizAlerts <a id="configure-vizalerts"></a>
 -------------------
 
 Now that Python is installed, we can configure VizAlerts. Unzip the
@@ -1080,7 +1080,7 @@ this manual, we’ll assume the files were extracted to C:\\VizAlerts.
 </table>
 <p>Solving <a href="https://ruwix.com/" rel="nofollow">puzzles</a> you can improve your dexterity and problem solving skills.</p>
 
-Testing <a id="#testing"></a>
+Testing <a id="testing"></a>
 -------
 
 Whew! All that was lots of fun, but let’s get to the good stuff and test
@@ -1088,7 +1088,7 @@ this thing to see if we did everything right. We’ve got a few tests to
 run to validate that everything is working, starting out from simple to
 more complicated:
 
-### Can VizAlerts Connect? Test <a id="#can-vizalerts-connect-test"></a>
+### Can VizAlerts Connect? Test <a id="can-vizalerts-connect-test"></a>
 
 Run the following from a command prompt on the Windows host you set
 VizAlerts up on. By default, VizAlerts will expect you are running it
@@ -1104,7 +1104,7 @@ PostgreSQL database in Tableau Server, then realized there was nothing
 to do and quit without error. If it didn’t, please see the [Common
 Errors](#_Common_Errors:) section.
 
-### Simple Alert Test <a id="#simple-alert-test"></a>
+### Simple Alert Test <a id="simple-alert-test"></a>
 
 Now for a more extensive test on a Simple Alert. Subscribe to any
 Tableau Server View on a VizAlerts schedule that you set up (pick a view
@@ -1119,7 +1119,7 @@ Now, wait 15 minutes, then run the same command again. If data is
 present in the viz, you should receive an email! If not, you shouldn’t.
 Simple as that!
 
-### Put VizAlerts Through Its Paces Test <a id="#put-vizalerts-through-its-paces-test"></a>
+### Put VizAlerts Through Its Paces Test <a id="put-vizalerts-through-its-paces-test"></a>
 
 For this test you are going to use the same Tableau workbook that the
 VizAlerts contributors use to verify VizAlerts is working after we’ve
@@ -1171,7 +1171,7 @@ version 9.0 and up.
     then check the Common Errors section below as well as the FAQ in the
     User Guide.
 
-### Optional: Send Yourself Some SMS Messages Test <a id="#optional-send-yourself-some-sms-messages-test"></a>
+### Optional: Send Yourself Some SMS Messages Test <a id="optional-send-yourself-some-sms-messages-test"></a>
 
 If you have set up the integration with Twilio now’s the time to see if
 it works, you’ll be using the same testing workbook from the prior demo.
@@ -1219,10 +1219,10 @@ with Tableau version 9.0 and up.
     (which will be delivered by email) then check the Common Errors
     section below as well as the FAQ in the User Guide.
 
-Final Steps <a id="#final-steps"></a>
+Final Steps <a id="final-steps"></a>
 -----------
 
-### Set up a Scheduled Task <a id="#set-up-a-scheduled-task"></a>
+### Set up a Scheduled Task <a id="set-up-a-scheduled-task"></a>
 
 The last step, now that everything is working as expected, is to
 automate this so that VizAlerts can run regularly when it is supposed
@@ -1257,7 +1257,7 @@ And save the task! You can now test out task by subscribing the
 VizAlertsDemo/AdvancedAlertsDemo view to a subscription and look for an
 email.
 
-### Starter Workbook <a id="#starter-workbook"></a>
+### Starter Workbook <a id="starter-workbook"></a>
 
 Last, but not least, publish the \[VizAlerts install
 folder\]\\demo\\VizAlertsStarter.tbwx workbook to Tableau Tableau Server,
@@ -1267,7 +1267,7 @@ with all the necessary action fields and examples on how to use them.
 
 ### 
 
-FAQ <a id="#faq"></a>
+FAQ <a id="faq"></a>
 ===
 
 -   **How many alerts can be run at once?**  
@@ -1298,7 +1298,7 @@ FAQ <a id="#faq"></a>
     progression for it. Currently it logs information into text
     files only.
 
-Common Errors <a id="#common-errors"></a>
+Common Errors <a id="common-errors"></a>
 =============================================================================================================
 
 This section mostly focuses on errors found at installation time. Many
@@ -1389,7 +1389,7 @@ of the VizAlerts User Guide.
     -   The Tableau Server “run as” user must have read/write
         permissions on any folders used for exporting views.
 
-Getting VizAlerts Help  <a id="#getting-vizalerts-help"></a>
+Getting VizAlerts Help  <a id="getting-vizalerts-help"></a>
 ======================
 
 First of all, check with any local admins and any local documentation
@@ -1397,17 +1397,17 @@ that might exist. After that, the center for all things VizAlerts is the
 VizAlerts Group on the Tableau Community
 <https://community.tableau.com/vizalerts>
 
-Contributing to VizAlerts <a id="#contributing-to-vizalerts"></a>
+Contributing to VizAlerts <a id="contributing-to-vizalerts"></a>
 =======================================================================================================================
 
 VizAlerts is an open source project distributed under the MIT License.
 If you’d like to contribute ideas or code to VizAlerts, please visit the
 VizAlerts GitHub site at <https://github.com/tableau/VizAlerts>.
 
-Appendix A <a id="#appendix-a"></a>
+Appendix A <a id="appendix-a"></a>
 ======================================================================================================
 
-Installing Python modules with no Internet access <a id="#installing-python-modules-with-no-internet-access"></a>
+Installing Python modules with no Internet access <a id="installing-python-modules-with-no-internet-access"></a>
 -------------------------------------------------
 
 Setting VizAlerts up on a secure machine that isn’t connected to the
