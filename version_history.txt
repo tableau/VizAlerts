@@ -12,7 +12,7 @@ Version 2.1.0
 -Fixed issue with VizAlertsDemo SMS tests (Issue #105)
 -Fixed problem where links in VizAlerts did not use https when server was using SSL (Issue #100)
 -Moved Install Guide from .docx format to Markdown (Issue #79)
--Documentation updates (Issues #112, #109, #106)
+-Documentation updates (Issues #112, #109, #106, #104)
 -Update vizalerts.yaml file for Tableau Server running on non-standard ports (Issue #101)
 =================================
 

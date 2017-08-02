@@ -139,7 +139,7 @@ VizAlerts 2.1.0 (released August 2017) has the following major new and
 changed features:
 
 
-**Alerts are no longer conditional on "data being present"**  
+**Alert Criteria is a Calc**
 
 For both Email and SMS Actions, the "Action" flag field on either is now the condition being checked to determine 
 if the action should be executed. This means that you no longer need to rely solely on filters to remove data 
@@ -152,7 +152,7 @@ data can be kept, which provides visual context for your alerts! No more ugly bl
 Email Action field to the Color shelf to make it very clear which marks are triggering the alert, and which are not.
 
 
-**Smart Defaults**
+**Smart Notification Defaults**
 
 Another big change is that there are no "required" fields send email, anymore. All fields are optional. Don't want to 
 customize the Subject? Leave "Email Subject" off viz entirely, and VizAlerts will automatically generate it. Don't want 
@@ -167,10 +167,10 @@ The administrator may now set up two schedules; one for Refresh Success and one 
 or both of those, and your VizAlert will run when the extract(s) in the workbook refresh.
 
 
-**Email and SMS processing are now multithreaded within a single VizAlert**
+**Multithreaded Notifications**
 
 Several folks have brought up that they've got VizAlerts that send hundreds of emails out at once. Previous versions 
-took awhile to do this, because each was running in a single thread. No more. Now, each VizAlert can send as many 
+took a while to do this, because each was running in a single thread. No more. Now, each VizAlert can send as many 
 emails or SMS messages at the same time as the Admin will allow. (Note that content references are still processed 
 one at a time, within a single VizAlert)
 
@@ -181,7 +181,7 @@ With help from another Tableau Dev who was generous with their time, we now have
 want to use Python to run it, you don't need to (but you'll still have the option). 
 
 
-**Use the VizAlertsStarter workbook to build your alerts**
+**Use the VizAlertsDemo workbook to build your alerts**
 
 We took a lot of tips and tricks we've learned over the years building VizAlerts and integrated them into a VizAlertsStarter 
 workbook, which replaces the published data source used previously. This workbook contains all the special fields that 
