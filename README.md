@@ -14,7 +14,7 @@ Once VizAlerts is installed and running, all of the work to build and manage you
 
 Do we ever! There are two files included in the \docs folder, [install_guide.md](docs/install_guide.md) and [user_guide.md](docs/user_guide.md), intended for Tableau Server administrators and for alert authors, respectively. They're the best way to learn about what VizAlerts can do.
 
-If you're an impatient Millenial like me, here's a [video](https://www.youtube.com/watch?v=NQW3w64cXiU&t=22s) that skims the very basics.
+If you're an impatient Millenial like me, here's a [video](https://youtu.be/NQW3w64cXiU) that skims the very basics.
 
 ## How do I set it up?
 
