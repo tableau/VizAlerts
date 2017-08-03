@@ -1936,9 +1936,10 @@
     <action caption='Go to Install Guide Walkthrough' name='[Action13]'>
       <activation type='on-select' />
       <source dashboard='Start' type='sheet' worksheet='demo' />
-      <link caption='Go to Install Guide Walkthrough' expression='https://github.com/tableau/VizAlerts/blob/master/docs/install_guide.md#simple-alert-test' />
+      <link caption='Go to Install Guide Walkthrough' expression='https://github.com/tableau/VizAlerts/blob/master/docs/user_guide.md#advanced_alerts_walkthrough__1_%E2%80%93_send_the_trigger_viz' />
     </action>
     <action caption='Go to User Guide' name='[Action14]'>
+      <activation type='on-select' />
       <source dashboard='Start' type='sheet' worksheet='manual' />
       <link caption='Go to User Guide' expression='https://github.com/tableau/VizAlerts/blob/master/docs/user_guide.md' />
     </action>
@@ -2410,6 +2411,7 @@
           <formatted-text>
             <run bold='true' fontsize='28'>Build your own VizAlert</run>
             <run>Æ&#10;</run>
+            <run bold='true'>&#10;To build your own VizAlert, open this workbook in Tableau Desktop and follow the instructions below.</run>
             <run bold='true' fontsize='12'>Æ&#10;</run>
             <run fontsize='11'>&#10;1. The VizAlerts connection on the left contains all the fields you can use in an Advanced Alert. Hover over each to see what it does. Helpful formulas are built into most calculations.&#10;&#10;2. You can either copy </run>
             <run fontsize='11' italic='true'>this</run>
@@ -2418,7 +2420,7 @@
             <run fontsize='11'> workbook (if you do that, though, just make sure to remove all the sheets and data you don&apos;t want)&#10;&#10;3. Once this sheet and the data you want to build your alert on are in the same workbook, click the VizAlerts data source. Hold Shift or Cntrl, and select all the fields you think you might need for your alert. Right-click them and select Copy.&#10;&#10;4. Click the data source that you want to build your alert against. Right-click in the Dimensions pane and select Paste. All the VizAlerts fields will now live in your data source.&#10;&#10;5. Edit the VizAlerts fields as appropriate for the kind of alert you want to build. Don&apos;t forget to add them to your viz in some capacity, or VizAlerts will not recognize them! Use the Detail shelf if you don&apos;t want them to be represented visually.&#10;&#10;6. Finally, delete the VizAlerts data source and this sheet, if you want.&#10;&#10;7. Publish your new alert to Tableau Server and test it out by entering a comment: &quot;test_alert&quot;. Once it&apos;s working how you like, subscribe to it on a VizAlerts schedule, and you&apos;re off and running!&#10;&#10;</run>
             <run bold='true' fontcolor='#26794a' fontsize='11'>&#10;Need more help?</run>
             <run fontsize='11'>&#10;&#10;See the User Guide at </run>
-            <run auto-url='true' fontsize='11' hyperlink='tabdoc:load-url url=&amp;quot;https://github.com/tableau/VizAlerts&amp;quot;'>https://github.com/tableau/VizAlerts</run>
+            <run auto-url='true' fontsize='11' hyperlink='tabdoc:load-url url=&amp;quot;https://github.com/tableau/VizAlerts/blob/master/docs/user_guide.md&amp;quot;'>https://github.com/tableau/VizAlerts/blob/master/docs/user_guide.md</run>
             <run fontsize='11'> for more details on how to build alerts.&#10;&#10;Please visit the VizAlerts Community at </run>
             <run auto-url='true' fontsize='11' hyperlink='tabdoc:load-url url=&amp;quot;https://community.tableau.com/vizalerts&amp;quot;'>https://community.tableau.com/vizalerts</run>
             <run fontsize='11'> if you need to talk to a human!</run>
@@ -2493,6 +2495,7 @@
         <style>
           <style-rule element='header'>
             <format attr='width-header' value='52' />
+            <format attr='width' field='[VizAlerts].[none:Calculation_5020330152519186:nk]' value='1396' />
           </style-rule>
         </style>
         <panes>
@@ -6133,6 +6136,8 @@
           <field>[excel-direct.42449.220166458334].[none:Text:nk]</field>
         </color-one-way>
       </highlight>
+      <viewpoint>
+      </viewpoint>
     </window>
     <window auto-hidden='0' class='worksheet' maximized='0' name='Walkthrough #2 - 1'>
       <cards>

@@ -199,7 +199,7 @@ Upgrading from VizAlerts 2.0 or 2.0.1 <a id="upgrading-from-vizalerts-2_0-or-2_0
 3. **Optional:** Create new schedules for On Refresh Success/Failure
 	- If you wish to schedule VizAlerts for when their workbook extract refreshes, create two new schedules on Tableau Server with the following properties:
 		- The name must match the existing naming convention for your Vizalerts schedules (e.g., has "Alerts" somewhere in it, or whatever you picked for the other schedules)
-		- The name of each will also determine whether it represents extracts succeeding or extracts failing. Indicate this by putting "On Extract Success" Each of the two  that also contain the words "Refresh Success" and "Refresh Failure" somewhere in them.
+		- The name of each will also determine whether it represents extracts succeeding or extracts failing. Indicate this by putting the words "Refresh Success" and "Refresh Failure" somewhere in each.
 		- Type must be Subscription
 		- Priority will dictate the priority in the VizAlerts queue, if other alerts happen to running at the same time
 		- Execution doesn't matter, so leave it Parallel
@@ -234,41 +234,44 @@ Upgrading from VizAlerts 2.0 or 2.0.1 <a id="upgrading-from-vizalerts-2_0-or-2_0
 	- Copy the \config\vizalerts.yaml file from your *current* VizAlerts folder *over* the same file in the *new* VizAlerts folder
 		- No significant changes were made to this file, so it will work just fine the way it is
 	- If you're using SSL to connect to Tableau Server, and have a certificate file you're storing in the VizAlerts folder, make sure it's copied to the new location
-	- If you've or have referenced any other files for passwords or anything else, make sure they're copied as well.
+	- If you've referenced any other files for passwords or anything else, make sure they're copied as well.
 <br><br>
 6. In Task Scheduler, disable the existing VizAlerts scheduled task.
 
 7. <font color='red'>**VizAlerts outage begins**</font>
 
-8. Rename folders
+8. If you didn't already publish the new version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
+ 
+9. Rename folders
 	- Rename the existing VizAlerts folder with something like "-old" at the end of it
 	- Rename the new VizAlerts folder whatever the old one was called
 <br><br>
-9. **Optional**: Update Scheduled Task
+10. **Optional**: Update Scheduled Task
 	- There are two options for upgrading to 2.1.0: Continue to use the raw Python scripts, or start using the compiled executuable (.exe) file instead
 		- **Benefits of Python**: Can make on-the-fly changes if an urgent fix is required, or customization is needed.
 		- **Benefits of Executable**: No need to keep Python and modules installed and up-to-date.
 	- If you want to run the Executable version, change your Scheduled Task to point to the exe file for the "Program/Script" setting. Keep the "Start In" value, but remove the "Add arguments" value so that it is blank.
-	- If you want to continue with the Python version, make no changes to the scheduled task. 
+	- If you want to continue with the Python version, make no changes to the scheduled task.
+	- If using the Python version, make sure to upgrade the Twilio library by running the command 'pip uninstall twilio' then 'pip install twilio'
 <br><br>
-10. Testing
+11. Testing
 	- Open a command prompt, navigate to the VizAlerts folder, and execute VizAlerts one time. Ensure it runs properly, and review the logs if there are any errors.
 	- Test a single alert by adding a test\_alert comment to a viz, and then run it again in the command prompt, again ensuring that no errors are logged.
 <br><br>
-11. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
+12. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
 
-12. In Task Scheduler, enable the VizAlerts task
+13. In Task Scheduler, enable the VizAlerts task
 
-13. <font color='green'>**VizAlerts outage ends**</font>
+14. <font color='green'>**VizAlerts outage ends**</font>
 
-14. Update Published content
-	- Publish \demo\VizAlertsStarter.twbx to Tableau Server, with permissions being open to All Users. This is a starter workbook that replaces the old \demo\VizAlerts.tdsx published data source.
+15. Update Published content
+	- Publish \demo\VizAlertsDemo.twb to Tableau Server, with permissions being open to All Users. This is a starter workbook that replaces the old \demo\VizAlerts.tdsx published data source.
 	- Identify any workbooks referencing the old VizAlerts published data source on Tableau Server and ensure that the authors update their workbooks 
 		so that they no longer depend on it. Then, delete the data source.
 <br><br>
-15. Notify your users! Mention the new starter workbook!
+16. Notify your users! Mention the new starter workbook!
 
-16. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
+17. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
 
 
 Installation Prerequisites <a id="installation-prerequisites"></a>
@@ -890,7 +893,7 @@ Optional: Install Python & Required Modules <a id="install-python-required-modul
 
 If you wish to run VizAlerts as a Python script rather than a binary executable, you will need to follow these steps. Otherwise, you can skip this section. Note that the rest of the documentation assumes that you are running the binary executable, so whenever you see instructions to run vizalerts.exe, know that you'll need to use *python .\vizalerts.py* instead.
 
-1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.9/python-2.7.9.msi>
+1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.13/python-2.7.13.msi>
 
 2.  Add ";C:\\Python27\\;C:\\Python27\\Scripts\\" to your Path environment variable (assuming you chose the installation defaults when installing Python)
 
@@ -910,7 +913,7 @@ If you wish to run VizAlerts as a Python script rather than a binary executable,
         are best installed by opening a *new* command prompt and running
         the following commands:  
           
-        *pip install requests  
+        pip install requests  
         pip install requests\_ntlm  
         pip install pypdf2  
         pip install twilio  

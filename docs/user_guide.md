@@ -150,22 +150,22 @@ data can be kept, which provides visual context for your alerts! No more ugly bl
 Email Action field to the Color shelf to make it very clear which marks are triggering the alert, and which are not.
 
 
-**Smart Notification Defaults** <a id="smart_notification_defaults></a>
+**Smart Notification Defaults** <a id="smart_notification_defaults"></a>
 
 Another big change is that there are no "required" fields send email, anymore. All fields are optional. Don't want to 
 customize the Subject? Leave "Email Subject" off viz entirely, and VizAlerts will automatically generate it. Don't want 
 anything special in the Body? Leave that field off, and you'll automatically get the viz image with a hyperlink. Advanced 
-Alerts are now more flexible than ever. (Note that SMS messages still have required fields) 
+Alerts are now more intuitive and flexible than ever. (Note that SMS messages still have required fields) 
 
 
-**Get alerts "when the extract refreshes"** <a id="get_alerts_when_the_extract_refreshes></a>
+**Get alerts "when the extract refreshes"** <a id="get_alerts_when_the_extract_refreshes"></a>
 
 If you've wanted to run your VizAlerts when the extracts in the workbook they're a part of refresh, you've got your wish. 
 The administrator may now set up two schedules; one for Refresh Success and one for Refresh Failure. Subscribe to either 
 or both of those, and your VizAlert will run when the extract(s) in the workbook refresh.
 
 
-**Multithreaded Notifications** <a id="multithreaded_notifications></a>
+**Multithreaded Notifications** <a id="multithreaded_notifications"></a>
 
 Several folks have brought up that they've got VizAlerts that send hundreds of emails out at once. Previous versions 
 took a while to do this, because each was running in a single thread. No more. Now, each VizAlert can send as many 
@@ -173,13 +173,13 @@ emails or SMS messages at the same time as the Admin will allow. (Note that cont
 one at a time, within a single VizAlert)
 
 
-**Python no longer required** <a id="python_no_longer_required></a>
+**Python no longer required** <a id="python_no_longer_required"></a>
 
 With help from another Tableau Dev who was generous with their time, we now have VizAlerts in .exe form, so if you don't 
 want to use Python to run it, you don't need to (but you'll still have the option). 
 
 
-**Use the VizAlertsDemo workbook to build your alerts** <a id="use_the_vizalertsdemo_workbook_to_build_your_alerts></a>
+**Use the VizAlertsDemo workbook to build your alerts** <a id="use_the_vizalertsdemo_workbook_to_build_your_alerts"></a>
 
 We took a lot of tips and tricks we've learned over the years building VizAlerts and integrated them into a VizAlertsStarter 
 workbook, which replaces the published data source used previously. This workbook contains all the special fields that 
