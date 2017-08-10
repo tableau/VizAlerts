@@ -872,7 +872,7 @@ Here’s how to publish the workbook:
 4.  Under Data Sources click Edit. The Manage Data Sources dialog will
     appear:  
       
-    <img src="./media/image10.png" width="468" height="140" />
+    <img src="./media/image10.png" width="616" height="253" />
 
 5.  Set the Publish Type to Embedded in workbook.
 
@@ -882,7 +882,7 @@ Here’s how to publish the workbook:
 
 8.  Click Publish. Tableau will now publish the viz and open it in your
     default web browser:  
-    <img src="./media/image11.png" width="456" height="366" />
+    <img src="./media/image11.png" width="496" height="353" />
 
 9.  Click on the view to verify that it works as expected.
 

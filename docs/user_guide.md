@@ -618,7 +618,7 @@ This next part goes through these steps to set up the alert:
     The secondary source is an Excel spreadsheet that is mostly set up
     with formulas, we’ll describe what’s happening in the Email Body
     further down.  
-    <img src="./media/image16-ug.png" width="624" height="93" />  
+    <img src="./media/image16-ug.png" width="1024" height="409" />  
       
     You can see this spreadsheet in the \[VizAlerts install
     folder\]\\demo\\test.xlsx file.
@@ -628,7 +628,7 @@ This next part goes through these steps to set up the alert:
         dimension from the Superstore primary and then the Manager and
         Email To from the secondary, blending on Category:  
           
-        <img src="./media/image17-ug.png" width="561" height="234" />
+        <img src="./media/image17-ug.png" width="701" height="292" />
 
     2.  Now we need to set up our alert criteria. We can specify our criteria
 		either by filtering all data out that we don't want to use to trigger 
@@ -682,7 +682,7 @@ This next part goes through these steps to set up the alert:
         2.  **VizAlertsDemo/LowMarginWarning** is a custom view
             reference to the workbook and view name, this is what we see
             in our browser bar after http://\[myservername\]/\#/views:  
-            <img src="./media/image19-ug.png" width="279" height="225" />  
+            <img src="./media/image19-ug.png" width="491" height="397" />  
             Note that in this case the trigger view and the custom view
             reference are both in the same workbook, they don’t have to
             be!
@@ -716,7 +716,7 @@ This next part goes through these steps to set up the alert:
         that don’t start with “Email”. However we can clean up the view
         even more and get rid of those other fields, this is the
         Walkthrough \#2 – 4 worksheet:  
-        <img src="./media/image22-ug.png" width="724" height="154" />
+        <img src="./media/image22-ug.png" width="1115" height="237" />
 
 3.  Now we’re ready to publish the views to Tableau Server.
 
@@ -788,8 +788,8 @@ the Advanced Alerts trigger view.
     footer to the email in addition to any other text in the Email
     Footer field.
 
--   **VIZ\_LINK()  
-    **This can be used in the Email Body, Email Header, Email
+-   **VIZ\_LINK()**
+    This can be used in the Email Body, Email Header, Email
     Footer, or SMS Message fields, and will include an hyperlink to
     the referenced viz as an alternative to having to create http: links
     yourself, see below for more details.
@@ -1080,7 +1080,7 @@ recipient fields (To, From, CC, BCC) are the same. So in this view below
 the three rows for Test 25: Consolidate emails w/no extras will be
 consolidated into one email:
 
-<img src="./media/image27-ug.png" width="624" height="283" />
+<img src="./media/image27-ug.png" width="1056" height="480" />
 
 Here’s the email:
 
@@ -1167,7 +1167,7 @@ Here’s an example where three dashboards are merged into a single PDF
 using a consolidated email using test 30 from the
 VizAlertsDemo\\AdvancedAlertsTests worksheet:
 
-<img src="./media/image30-ug.png" width="624" height="120" />
+<img src="./media/image30-ug.png" width="1186" height="229" />
 
 The email:
 
@@ -1177,7 +1177,7 @@ One nice feature here is that VizAlerts respects the Landscape/Portrait
 orientation of each referenced view in the merged PDF, here are
 screenshots of the first two pages of the above example:
 
-<img src="./media/image32-ug.png" width="330" height="552" />
+<img src="./media/image32-ug.png" width="456" height="753" />
 
 <span id="_Toc447638004" class="anchor"><span id="_Toc447790168" class="anchor"><span id="_Toc339900931" class="anchor"></span></span></span>SMS Text Message Alerts <a id='sms_text_message_alerts'></a>
 ====================================================================================================================================================================
@@ -1220,7 +1220,7 @@ Alerts. Here’s a screenshot of the SMS test view located at \[VizAlerts
 install folder\]\\demo\\VizAlertsTests.twb that has a couple of outgoing
 emails along with various SMS alerts:
 
-<img src="./media/image33-ug.png" width="508" height="246" />
+<img src="./media/image33-ug.png" />
 
 The trigger view for SMS Alerts uses the field names described at the
 beginning of the Advanced Alerts section.
@@ -1332,7 +1332,7 @@ permissions could set up a view that had a list of email addresses and
 body that included custom URL parameters, for example to email out a
 daily dashboard filtered for certain data:
 
-<img src="./media/image36-ug.png" width="624" height="63" />
+<img src="./media/image36-ug.png" />
 
 Since the data source could be generated with some simple formulas in
 Excel, Tableau, or the data source, this offers a lot of flexibility for
@@ -1345,13 +1345,13 @@ Alerts that will consolidate across the rows in the triggering viz. For
 example this data would send out one email to Arundhati and
 automatically include all the images of her direct reports:
 
-<img src="./media/image37-ug.png" width="624" height="65" />
+<img src="./media/image37-ug.png" />
 
 You can also embed multiple VIZ\_IMAGE() calls in the header, footer,
 and/or body. So the same email could be generated using a single
 (larger) email body:
 
-<img src="./media/image38-ug.png" width="624" height="70" />
+<img src="./media/image38-ug.png" />
 
 ### Dashboard with Hidden Embedded Alert
 <a id='dashboard_with_hidden_embedded_alert'></a>
@@ -1376,13 +1376,13 @@ For Advanced Alerts in particular, you often don’t. To make it
 invisible, use the Format menu to change text colors to the background
 of the dashboard and remove borders:
 
-<img src="./media/image39-ug.png" width="488" height="251" />
+<img src="./media/image39-ug.png" />
 
 Then, place it in your Dashboard as a “floating” view, and drag the
 container around it into as small a rectangle as possible. Place it
 somewhere unobtrusive:
 
-<img src="./media/image40-ug.png" width="592" height="317" />
+<img src="./media/image40-ug.png" />
 
 Now, just subscribe to the Dashboard just like any other Alert based on
 a standard View, and you’re good to go!
@@ -1399,7 +1399,7 @@ VizAlerts allows an alert to be tested on a one-off basis without being
 scheduled through the use of a specific **comment**:
 
 <span id="_Toc432407540"
-class="anchor"></span><img src="./media/image23-ug.png" width="461" height="155" />
+class="anchor"></span><img src="./media/image23-ug.png"  />
 
 If the owner of the View adds a Comment with the content
 “**test\_alert**” (case insensitive), then the Alert will be tested one
@@ -1539,7 +1539,7 @@ for each of the measure names. To have more control over this the
 solution for this is to build a separate worksheet with the fields that
 we want as discrete pills on rows:
 
-<img src="./media/image41-ug.png" width="624" height="270" />
+<img src="./media/image41-ug.png"/>
 
 Don’t worry at all about formatting this viz, it’ll never be seen by the
 user. Once you’ve built this, you have a few options for publishing this
