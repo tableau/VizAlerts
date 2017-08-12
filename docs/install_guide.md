@@ -4,7 +4,7 @@ Tableau – VizAlerts Installation Guide
 -  [What is VizAlerts?](#what-is-vizalerts)
 -  [What does it do?](#what-does-it-do)
 -  [How does it work?](#how-does-it-work)
--  [Changes in VizAlerts 2.0](#changes-in-vizalerts-2_1_0)
+-  [Changes in VizAlerts 2.1.0](#changes-in-vizalerts-2_1_0)
 -  [Upgrading from VizAlerts 2.0 or 2.0.1](#upgrading-from-vizalerts-2_0-or-2_0_1)
 -  [Installation Prerequisites](#installation-prerequisites)
 	- [Tableau Server](#tableau-server)
@@ -217,18 +217,7 @@ Upgrading from VizAlerts 2.0 or 2.0.1 <a id="upgrading-from-vizalerts-2_0-or-2_0
 			- Copy all the Parameter values from the current VizAlertsConfig workbook into the new one.
 			- Now, examine the calculated dimension fields carefully--did you customize anything? Copy the same logic into the new workbook's calculation.
 			- If you made changes to the Custom SQL, you are very very naughty--never do that! You're just asking for trouble.
-		- **Optional validation steps for the extra-cautious**
-			- Publish the new VizAlertsConfig workbook to Tableau Server, **MAKING SURE** that:
-				- You are embedding the password in the connection.
-				- You are **NOT** overwriting the existing VizAlertsConfig workbook! Publish it as VizAlertsConfig-new or somesuch
-			- Now, validate that you migrated the changes properly by exporting the data from each viz. Best way to do this:
-				- Go to the active version of VizAlertsConfig/ScheduledTriggerViews on Tableau Server. Add ?:format=csv to the end of the URL like so:
-					- http://myserver/#/views/VizAlertsConfig/ScheduledTriggerViews?:format=csv
-					- Name the file that is downloaded something like "ScheduledTriggerViews-current.csv"
-				- Go to the *new* version of VizAlertsConfig/ScheduledTriggerViews on Tableau Server. Add ?:format=csv to the end of the URL like so:
-					- http://myserver/#/views/VizAlertsConfig-**new**/ScheduledTriggerViews?:format=csv
-					- Name the file that is downloaded something like "ScheduledTriggerViews-**new**.csv"
-				- Use a diffing tool such as [BeyondCompare](https://www.scootersoftware.com/download.php) to compare the two files. Yeah, even with that, this is a pain. That's why all this is optional. The only difference between the two files should be two new columns: "is\_triggered\_by\_refresh" and "task\_threads".
+		- Now publish the new VizAlertsConfig workbook to Tableau Server, **making sure** that you are embedding the password in the connection.
 <br><br>
 5. Copy config files
 	- Copy the \config\vizalerts.yaml file from your *current* VizAlerts folder *over* the same file in the *new* VizAlerts folder

@@ -1,5 +1,5 @@
 del .\dist\*.* /F /Q
-pyinstaller --additional-hooks-dir=. --hidden-import=Queue --noconfirm vizalerts.py --onedir
+pyinstaller --additional-hooks-dir=. --hidden-import=Queue --noconfirm vizalerts.py --onefile
 pushd .\dist\vizalerts
 mkdir twilio
 mkdir twilio\conf
@@ -11,7 +11,7 @@ mkdir tests
 mkdir logs
 mkdir ops
 mkdir vizalert
-mkdir tabutil
+mkdir tabUtil
 mkdir temp
 popd
 
@@ -23,7 +23,7 @@ copy .\tests\* .\dist\vizalerts\tests
 copy .\logs\* .\dist\vizalerts\logs
 copy .\ops\* .\dist\vizalerts\ops
 copy .\vizalert\* .\dist\vizalerts\vizalert
-copy .\tabutil\* .\dist\vizalerts\tabutil
+copy .\tabutil\* .\dist\vizalerts\tabUtil
 copy .\temp\* .\dist\vizalerts\temp
 copy .\tests\* .\dist\vizalerts\tests
 
@@ -34,5 +34,7 @@ copy .\vizalerts.py .\dist\vizalerts
 
 pandoc .\docs\install_guide.md -f markdown -t html -o  .\dist\vizalerts\docs\install_guide.html
 pandoc .\docs\user_guide.md -f markdown -t html -o .\dist\vizalerts\docs\user_guide.html
+
+copy .\dist\vizalerts.exe .\dist\vizalerts
 
 7z a -r .\dist\vizalerts.zip .\dist\vizalerts\*
