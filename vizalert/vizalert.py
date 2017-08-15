@@ -432,7 +432,7 @@ class VizAlert:
             ActionField(SMS_FOOTER_FIELDKEY, SMS_ACTION_TYPE, False, False, u' ?SMS.Footer')
 
     def get_action_flag_field(self, action_type):
-        """Return the appropriate action field representing an aciton flag based on the type
+        """Return the appropriate action field representing an action flag based on the type
         Note that no validation is done here """
         for action_field_name, action_field in self.action_field_dict.iteritems():
             if self.action_field_dict[action_field_name].action_type == action_type \
@@ -1620,14 +1620,16 @@ class VizAlert:
 
             for action_field in self.action_field_dict:
                 # Each action field we're looking for must:
-                #  Be of the correct type (email, sms, whatever else)
+                #  Be of the correct type (email, sms, whatever else--or a generic type)
                 #  Have a field match in the actual trigger data
                 #  Have passed validation
-                if self.action_field_dict[action_field].action_type == action_type \
+                if (self.action_field_dict[action_field].action_type == action_type or 
+                     self.action_field_dict[action_field].action_type == GENERAL_ACTION_TYPE) \
                         and self.action_field_dict[action_field].has_match() \
                         and not self.action_field_dict[action_field].has_errors():
                     newitem[self.action_field_dict[action_field].field_name] = \
                         item[self.action_field_dict[action_field].field_name]
+
             # add the new trimmed row to our list
             preplist.append(newitem)
 

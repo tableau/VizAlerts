@@ -1,5 +1,6 @@
 del .\dist\*.* /F /Q
-pyinstaller --additional-hooks-dir=. --hidden-import=Queue --noconfirm vizalerts.py --onefile
+pyinstaller --additional-hooks-dir=. --hidden-import=Queue --noconfirm vizalerts.py --onefile --clean
+mkdir .\dist\vizalerts
 pushd .\dist\vizalerts
 mkdir twilio
 mkdir twilio\conf

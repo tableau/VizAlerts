@@ -890,10 +890,7 @@ If you wish to run VizAlerts as a Python script rather than a binary executable,
 
     1.  [PyYAML](http://pyyaml.org/) (recommended: <http://pyyaml.org/download/pyyaml/PyYAML-3.11.win32-py2.7.exe> )
 
-    2.  [psycopg2](http://www.stickpeople.com/projects/python/win-psycopg/) (recommended Windows port:
-        <http://www.stickpeople.com/projects/python/win-psycopg/2.6.0/psycopg2-2.6.0.win32-py2.7-pg9.4.1- release.exe> )
-
-    3.  The final five modules,
+    2.  The final five modules,
         [requests](http://docs.python-requests.org/en/latest/user/install/#install),
         [requests\_ntlm](https://github.com/requests/requests-ntlm/),
         [pypdf2](https://github.com/mstamy2/PyPDF2),
@@ -911,7 +908,7 @@ If you wish to run VizAlerts as a Python script rather than a binary executable,
         *  If your computer does not have access to the Internet, see
         [Appendix A](#_Appendix_A).<br><br>
 
-    4.  **Note**: Despite the requirement to install the last two
+    3.  **Note**: Despite the requirement to install the last two
         modules, deciding whether to *enable* the Twilio SMS integration
         feature is up to you—either at the environment level, or at more
         flexible sub-levels. Enabling the Twilio SMS integration
