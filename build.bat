@@ -1,5 +1,6 @@
-del .\dist\*.* /F /Q
-pyinstaller --additional-hooks-dir=. --hidden-import=Queue --noconfirm vizalerts.py --onefile --clean
+del .\dist\*.* /F /Q /S
+python .\setup.py py2exe
+
 mkdir .\dist\vizalerts
 pushd .\dist\vizalerts
 mkdir twilio
@@ -16,26 +17,26 @@ mkdir tabUtil
 mkdir temp
 popd
 
-copy .\config\* .\dist\vizalerts\config
-copy .\docs\* .\dist\vizalerts\docs
-copy .\docs\media\* .\dist\vizalerts\docs\media
-copy .\demo\* .\dist\vizalerts\demo
-copy .\tests\* .\dist\vizalerts\tests
-copy .\logs\* .\dist\vizalerts\logs
-copy .\ops\* .\dist\vizalerts\ops
-copy .\vizalert\* .\dist\vizalerts\vizalert
-copy .\tabutil\* .\dist\vizalerts\tabUtil
-copy .\temp\* .\dist\vizalerts\temp
-copy .\tests\* .\dist\vizalerts\tests
+copy .\config\* .\dist\vizalerts\config /Y
+copy .\docs\* .\dist\vizalerts\docs /Y
+copy .\docs\media\* .\dist\vizalerts\docs\media /Y
+copy .\demo\* .\dist\vizalerts\demo /Y
+copy .\tests\* .\dist\vizalerts\tests /Y
+copy .\logs\* .\dist\vizalerts\logs /Y
+copy .\ops\* .\dist\vizalerts\ops /Y
+copy .\vizalert\* .\dist\vizalerts\vizalert /Y
+copy .\tabutil\* .\dist\vizalerts\tabUtil /Y
+copy .\temp\* .\dist\vizalerts\temp /Y
+copy .\tests\* .\dist\vizalerts\tests /Y
+copy .\twilio\conf\* .\dist\vizalerts\twilio\conf /Y
 
-copy .\version_history.txt .\dist\vizalerts
-copy .\LICENSE .\dist\vizalerts
-copy .\README.md .\dist\vizalerts
-copy .\vizalerts.py .\dist\vizalerts
+copy .\version_history.txt .\dist\vizalerts /Y
+copy .\LICENSE .\dist\vizalerts /Y
+copy .\README.md .\dist\vizalerts /Y
+copy .\vizalerts.py .\dist\vizalerts /Y
+copy .\dist\vizalerts.exe .\dist\vizalerts\vizalerts.exe /Y
 
 pandoc .\docs\install_guide.md -f markdown -t html -o  .\dist\vizalerts\docs\install_guide.html
 pandoc .\docs\user_guide.md -f markdown -t html -o .\dist\vizalerts\docs\user_guide.html
-
-copy .\dist\vizalerts.exe .\dist\vizalerts
 
 7z a -r .\dist\vizalerts.zip .\dist\vizalerts\*

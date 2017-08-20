@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # This is a utility module for integrating SMS providers into VizAlerts.
 
+import os
 import re
 import phonenumbers
 import twilio
@@ -45,7 +46,17 @@ def get_sms_client():
         # these need to be in the global name space to send SMS messages
         global twilio
         import twilio
-        
+
+        # Monkey patch to allow Twilio to find the cacert.pem file even when compiled into an exe
+        #    See: https://stackoverflow.com/questions/17158529/fixing-ssl-certificate-error-in-exe-compiled-with-py2exe-or-pyinstaller
+        #       and https://github.com/twilio/twilio-python/issues/167
+        ca_cert_path = os.path.join('twilio', 'conf', 'cacert.pem')
+
+        from twilio.http import get_cert_file
+        get_cert_file = lambda: ca_cert_path
+
+        twilio.http.get_cert_file = get_cert_file
+
         global twiliorest
         import twilio.rest as twiliorest
         
@@ -115,9 +126,9 @@ def send_sms(sms_instance):
         return e
 
     except Exception as e:
-        errormessage = u'Could not send SMS message to {} with body {}, error {}'.format(
+        errormessage = u'Could not send SMS message to {} with body {}, error {}, type {}'.format(
             sms_instance.sms_to,
-            sms_instance.msgbody, e)
+            sms_instance.msgbody, e, e.__class__.__name__)
         log.logger.error(errormessage)
         return e
 
