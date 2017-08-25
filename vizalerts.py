@@ -77,7 +77,7 @@ def main():
     try:
         # parse command-line arguments
         parser = argparse.ArgumentParser(description='Execute the VizAlerts process.')
-        parser.add_argument('-C', '--configpath', help='Path to .yml configuration file')
+        parser.add_argument('-c', '--configpath', help='Path to .yml configuration file')
         args = parser.parse_args()
 
         # validate and load configs from yaml file

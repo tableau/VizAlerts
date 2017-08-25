@@ -437,11 +437,11 @@ If present, the Body rows *within* a given consolidated email are sorted alphanu
 
 You do **not** need to match these fields exactly for VizAlerts to
 recognize them. You can prepend and append whatever characters you like,
-the key is the “Email To”, SMS Action”, etc. For example VizAlerts will
-recognize “Email To”, “ Email To”, “ Email To”, “Jim’s Email To”,
-“Jacqui’s Email To”, “Email To Boris”, all work. This lets you create in
-a single data source multiple fields that you can use on different
-alerts.
+the key is the “Email To”, SMS Action”, etc. For example, names like
+“Email To”, “ Email To”, “Jim’s Email To”, “Jacqui’s Email To”, 
+“Email To Boris”, would all be recognized as the Email To field. Besides being 
+easier to get the fieldnames right, this flexibility 
+allows you create fields for different alerts that use the same data source.
 
 ### Important Info About Advanced Alerts <a id='important_info_about_advanced_alerts'></a>
 
