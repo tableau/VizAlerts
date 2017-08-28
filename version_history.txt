@@ -9,6 +9,7 @@ Version 2.1.0
 -Emails and SMS messages are now multithreaded within a single VizAlert (Issue #76)
 -Added a Starter sheet for building VizAlerts (Issue #96)
 -Updated to support the latest Twilio library (Issue #107)
+-Fixed the ability to point to a custom yaml configuration file (Issue #120)
 -Fixed issue with VizAlertsDemo SMS tests (Issue #105)
 -Fixed problem where links in VizAlerts did not use https when server was using SSL (Issue #100)
 -Moved Install Guide from .docx format to Markdown (Issue #79)
