@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 # This is a utility module for integrating SMS providers into VizAlerts.
 
+import os
 import re
 import phonenumbers
 import twilio
@@ -21,6 +22,16 @@ SMS_RECIP_SPLIT_REGEX = u'[;,]*'
 # expecting smsfooter.format(subscriber_email)
 smsfooter = u'\r\rThis VizAlert SMS sent on behalf of {}'
 
+
+class SMS:
+    """Represents an SMS to be sent"""
+
+    def __init__(self, sms_from, sms_to, msgbody=None):
+        self.sms_from = sms_from
+        self.sms_to = sms_to
+        self.msgbody = msgbody  # REVISIT--why is it okay for this to be blank?
+
+
 def get_sms_client():
     """Generic function get an SMS client object. This only works with Twilio at this time."""
 
@@ -35,12 +46,22 @@ def get_sms_client():
         # these need to be in the global name space to send SMS messages
         global twilio
         import twilio
-        
+
+        # Monkey patch to allow Twilio to find the cacert.pem file even when compiled into an exe
+        #    See: https://stackoverflow.com/questions/17158529/fixing-ssl-certificate-error-in-exe-compiled-with-py2exe-or-pyinstaller
+        #       and https://github.com/twilio/twilio-python/issues/167
+        ca_cert_path = os.path.join('twilio', 'conf', 'cacert.pem')
+
+        from twilio.http import get_cert_file
+        get_cert_file = lambda: ca_cert_path
+
+        twilio.http.get_cert_file = get_cert_file
+
         global twiliorest
         import twilio.rest as twiliorest
         
         global smsclient
-        smsclient = twiliorest.TwilioRestClient(
+        smsclient = twiliorest.Client(
             config.configs['smsaction.account_id'],
             config.configs['smsaction.auth_token'])
         
@@ -54,35 +75,48 @@ def get_sms_client():
         raise ValueError(errormessage)      
 
 
-def send_sms(sms_from, sms_to, msgbody=None):
-    """function to send an sms using Twilio's REST API, see https://www.twilio.com/docs/python/install for details.
+def send_sms(sms_instance):
+    """REVISIT: This and the other SMS methods should probably be members of the SMS class
+
+    function to send an sms using Twilio's REST API, see https://www.twilio.com/docs/python/install for details.
     Presumes that numbers have gone through a first level of checks for validity
     Returns nothing on success, error string back on failure"""
 
-    log.logger.info(u'Sending SMS: {},{},{}'.format(sms_from, sms_to, msgbody))
-
     # shouldn't happen but setting content to '' if it's None
-    if not msgbody:
-        msgbody = ''
+    if not sms_instance.msgbody:
+        sms_instance.msgbody = ''
+
+    log.logger.info(u'Sending SMS: {},{},{}'.format(sms_instance.sms_from, sms_instance.sms_to, sms_instance.msgbody))
 
     # now to send the message
     try:
-        if sms_from.startswith('+'):
+        if sms_instance.sms_from.startswith('+'):
             # kinda kloogy, but if we think it's an E.164 number, assume it is...
-            message = smsclient.messages.create(body=msgbody, to=sms_to, from_=sms_from)
+            message = smsclient.messages.create(body=sms_instance.msgbody, to=sms_instance.sms_to,
+                                                from_=sms_instance.sms_from)
         else:
             # if not, assume it must be a message service SID
-            message = smsclient.messages.create(body=msgbody, to=sms_to, messaging_service_sid=sms_from)
+            message = smsclient.messages.create(body=sms_instance.msgbody, to=sms_instance.sms_to,
+                                                messaging_service_sid=sms_instance.sms_from)
 
         # this may never happen since the Twilio REST API throws exceptions, it's a failsafe check
         if message.status == 'failed':
             raise ValueError(u'Failed to deliver SMS message to {} with body {},'
-                             u' no additional information is available'.format(sms_to, msgbody))
+                             u' no additional information is available'.format(
+                                sms_instance.sms_to,
+                                sms_instance.msgbody))
 
     # check for Twilio REST API exceptions
-    except twilio.TwilioRestException as e:
+    except twilio.base.exceptions.TwilioRestException as e:
         errormessage = u'Could not send SMS message to {} with body {}.\nHTTP status {} returned for request: ' \
-                       u'{} {}\nWith error {}: {} '.format(sms_to, msgbody, e.status, e.method, e.uri, e.code, e.msg)
+                       u'{} {}\nWith error {}: {} '.format(
+                            sms_instance.sms_to,
+                            sms_instance.msgbody,
+                            e.status,
+                            e.method,
+                            e.uri,
+                            e.code,
+                            e.msg)
         log.logger.error(errormessage)
         return errormessage
 
@@ -92,7 +126,9 @@ def send_sms(sms_from, sms_to, msgbody=None):
         return e
 
     except Exception as e:
-        errormessage = u'Could not send SMS message to {} with body {}, error {}'.format(sms_to, msgbody, e)
+        errormessage = u'Could not send SMS message to {} with body {}, error {}, type {}'.format(
+            sms_instance.sms_to,
+            sms_instance.msgbody, e, e.__class__.__name__)
         log.logger.error(errormessage)
         return e
 

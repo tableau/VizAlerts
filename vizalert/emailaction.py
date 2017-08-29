@@ -32,8 +32,24 @@ import vizalert
 EMAIL_RECIP_SPLIT_REGEX = u'[\t\n; ,]*'
 
 
-def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None, inlineattachments=None,
+class Email:
+    """Represents an email to be sent"""
+
+    def __init__(self, fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None, inlineattachments=None,
                appendattachments=None):
+        self.fromaddr = fromaddr
+        self.toaddrs = toaddrs
+        self.subject = subject
+        self.content = content
+        self.ccaddrs = ccaddrs
+        self.bccaddrs = bccaddrs
+        self.inlineattachments = inlineattachments
+        self.appendattachments = appendattachments
+
+        # REVISIT: Should add other methods in this module to this class? Validation, at least.
+
+
+def send_email(email_instance):
     """Generic function to send an email. The presumption is that all arguments have been validated prior to the call
         to this function.
 
@@ -53,48 +69,58 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
     """
     try:
         log.logger.info(
-            u'sending email: {},{},{},{},{},{},{}'.format(config.configs['smtp.serv'], fromaddr, toaddrs, ccaddrs, bccaddrs,
-                                                          subject, inlineattachments, appendattachments))
-        log.logger.debug(u'email body: {}'.format(content))
+            u'sending email: {},{},{},{},{},{},{}'.format(config.configs['smtp.serv'], email_instance.fromaddr,
+                                                          email_instance.toaddrs, email_instance.ccaddrs,
+                                                          email_instance.bccaddrs,
+                                                          email_instance.subject, email_instance.inlineattachments,
+                                                          email_instance.appendattachments))
+        log.logger.debug(u'email body: {}'.format(email_instance.content))
 
         # using mixed type because there can be inline and non-inline attachments
         msg = MIMEMultipart('mixed')
         msg.set_charset('utf-8')
-        msg.preamble = subject.encode('utf-8')
-        msg['From'] = Header(fromaddr)
-        msg['Subject'] = Header(subject.encode('utf-8'), 'UTF-8').encode()
+        msg.preamble = email_instance.subject.encode('utf-8')
+        msg['From'] = Header(email_instance.fromaddr)
+        msg['Subject'] = Header(email_instance.subject.encode('utf-8'), 'UTF-8').encode()
+
+        log.logger.debug('TO ADDRESS: {}'.format(email_instance.toaddrs))
 
         # Process direct recipients
-        toaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, toaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
+        toaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.toaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
         msg['To'] = Header(', '.join(toaddrs))
         allrecips = toaddrs
 
+        log.logger.debug('CC ADDRESS: {}'.format(email_instance.ccaddrs))
+
         # Process indirect recipients
-        if ccaddrs:
-            ccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, ccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
+        if email_instance.ccaddrs:
+            ccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.ccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
             msg['CC'] = Header(', '.join(ccaddrs))
             allrecips.extend(ccaddrs)
 
-        if bccaddrs:
-            bccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, bccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
+        log.logger.debug('BCC ADDRESS: {}'.format(email_instance.bccaddrs))
+
+
+        if email_instance.bccaddrs:
+            bccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.bccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
             # don't add to header, they are blind carbon-copied
             allrecips.extend(bccaddrs)
 
         # Create a section for the body and inline attachments
         msgalternative = MIMEMultipart(u'related')
         msg.attach(msgalternative)
-        msgalternative.attach(MIMEText(content.encode('utf-8'), 'html', 'utf-8'))
+        msgalternative.attach(MIMEText(email_instance.content.encode('utf-8'), 'html', 'utf-8'))
 
         # Add inline attachments
-        if inlineattachments != None:
-            for vizref in inlineattachments:
+        if email_instance.inlineattachments != None:
+            for vizref in email_instance.inlineattachments:
                 msgalternative.attach(mimify_file(vizref['imagepath'], inline=True))
 
         # Add appended attachments from Email Attachments field and prevent dup custom filenames
         #  MC: Feels like this code should be in VizAlert class? Or module? Not sure, leaving it here for now
         appendedfilenames = []
-        if appendattachments != None:
-            appendattachments = vizalert.merge_pdf_attachments(appendattachments)
+        if email_instance.appendattachments != None:
+            appendattachments = vizalert.merge_pdf_attachments(email_instance.appendattachments)
             for vizref in appendattachments:
                 # if there is no |filename= option set then use the exported imagepath
                 if 'filename' not in vizref:
@@ -123,7 +149,8 @@ def send_email(fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None,
         g = Generator(io, False)  # second argument means "should I mangle From?"
         g.flatten(msg)
 
-        server.sendmail(fromaddr.encode('utf-8'), [addr.encode('utf-8') for addr in allrecips], io.getvalue())
+        server.sendmail(email_instance.fromaddr.encode('utf-8'), [addr.encode('utf-8') for addr in allrecips],
+                        io.getvalue())
         server.quit()
     except smtplib.SMTPConnectError as e:
         log.logger.error(u'Email failed to send; there was an issue connecting to the SMTP server: {}'.format(e))
@@ -283,10 +310,11 @@ def get_mimetype(filename):
 def validate_addresses(vizdata,
                        allowed_from_address,
                        allowed_recipient_addresses,
-                       email_to_field,
-                       email_from_field,
-                       email_cc_field,
-                       email_bcc_field):
+                       email_action_actionfield,
+                       email_to_actionfield,
+                       email_from_actionfield,
+                       email_cc_actionfield,
+                       email_bcc_actionfield):
     """Loops through the viz data for an Advanced Alert and returns a list of dicts
         containing any errors found in recipients"""
 
@@ -295,31 +323,36 @@ def validate_addresses(vizdata,
 
     for row in vizdata:
         if len(row) > 0:
-            log.logger.debug(u'Validating "To" addresses: {}'.format(row[email_to_field]))
-            result = addresses_are_invalid(row[email_to_field], False,
-                                           allowed_recipient_addresses)  # empty string not acceptable as a To address
-            if result:
-                errorlist.append(
-                    {'Row': rownum, 'Field': email_to_field, 'Value': result['address'], 'Error': result['errormessage']})
-            if email_from_field:
-                log.logger.debug(u'Validating "From" addresses')
-                result = addresses_are_invalid(row[email_from_field], False,
-                                               allowed_from_address)  # empty string not acceptable as a From address
+            if email_action_actionfield.get_value_from_dict(row) == '1':\
+
+                email_to = email_to_actionfield.get_value_from_dict(row)
+                log.logger.debug(u'Validating "To" addresses: {}'.format(email_to))
+                result = addresses_are_invalid(email_to, False, allowed_recipient_addresses)  # empty string not acceptable as a To address
                 if result:
-                    errorlist.append({'Row': rownum, 'Field': email_from_field, 'Value': result['address'],
-                                      'Error': result['errormessage']})
-            if email_cc_field:
-                log.logger.debug(u'Validating "CC" addresses')
-                result = addresses_are_invalid(row[email_cc_field], True, allowed_recipient_addresses)
+                    errorlist.append(
+                        {'Row': rownum, 'Field': (email_to_actionfield.field_name if email_to_actionfield.field_name else email_to_actionfield.name),
+                        'Value': result['address'], 'Error': result['errormessage']})
+                
+                email_from = email_from_actionfield.get_value_from_dict(row)
+                log.logger.debug(u'Validating "From" addresses: {}'.format(email_from))
+                result = addresses_are_invalid(email_from, False, allowed_from_address)  # empty string not acceptable as a From address
                 if result:
-                    errorlist.append({'Row': rownum, 'Field': email_cc_field, 'Value': result['address'],
-                                      'Error': result['errormessage']})
-            if email_bcc_field:
-                log.logger.debug(u'Validating "BCC" addresses')
-                result = addresses_are_invalid(row[email_bcc_field], True, allowed_recipient_addresses)
-                if result:
-                    errorlist.append({'Row': rownum, 'Field': email_bcc_field, 'Value': result['address'],
-                                      'Error': result['errormessage']})
+                    errorlist.append({'Row': rownum, 'Field': (email_from_actionfield.field_name if email_from_actionfield.field_name else email_from_actionfield.name),
+                        'Value': result['address'], 'Error': result['errormessage']})
+
+                # REVISIT THIS!
+                if email_cc_actionfield.field_name:
+                    log.logger.debug(u'Validating "CC" addresses')
+                    result = addresses_are_invalid(row[email_cc_actionfield.field_name], True, allowed_recipient_addresses)
+                    if result:
+                        errorlist.append({'Row': rownum, 'Field': email_cc_actionfield.field_name, 'Value': result['address'],
+                                          'Error': result['errormessage']})
+                if email_bcc_actionfield.field_name:
+                    log.logger.debug(u'Validating "BCC" addresses')
+                    result = addresses_are_invalid(row[email_bcc_actionfield.field_name], True, allowed_recipient_addresses)
+                    if result:
+                        errorlist.append({'Row': rownum, 'Field': email_bcc_actionfield.field_name, 'Value': result['address'],
+                                          'Error': result['errormessage']})
         rownum += 1
 
     return errorlist
