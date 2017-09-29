@@ -1137,7 +1137,6 @@ this manual, we’ll assume the files were extracted to C:\\VizAlerts.
 </tr>
 </tbody>
 </table>
-<p>Solving <a href="https://ruwix.com/" rel="nofollow">puzzles</a> you can improve your dexterity and problem solving skills.</p>
 
 Testing <a id="testing"></a>
 -------
