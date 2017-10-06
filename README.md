@@ -1,4 +1,5 @@
 ## What is it?
+[![Community Supported](https://img.shields.io/badge/Support%20Level-Community%20Supported-457387.svg)](https://www.tableau.com/support-levels-it-and-developer-tools)
 
 VizAlerts is a data-driven automation platform for Tableau Server. It allows any user to author dashboards that perform various actions based on any criteria you can define in your viz.
 
@@ -30,7 +31,7 @@ Please see the LICENSE file in the root path for details.
 
 ## Is VizAlerts supported?
 
-VizAlerts is made available AS-IS. While Tableau's Professional Services team may be engaged to assist with the deployment and usage of this tool, VizAlerts is not officially supported by Tableau Software: It is a community-built and community-supported tool.
+VizAlerts is supported by the community. While Tableau's Professional Services team may be engaged to assist with the deployment and usage of this tool, VizAlerts is not officially supported by Tableau Software: It is a community-built and community-supported tool.
 
 For general questions or issues, please bring them to the [VizAlerts Group](http://community.tableau.com/vizalerts) created on the Tableau Community site.
 
