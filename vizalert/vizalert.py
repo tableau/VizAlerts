@@ -1388,11 +1388,16 @@ class VizAlert:
 
         # MCOLES: These local variables are being set to avoid refactoring everything in this function
         #   Yes, this is redundant and awful but we'll address it later
+
         viewurlsuffix = self.view_url_suffix
+
+        email_action_fieldname = self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name
         email_body_fieldname = self.action_field_dict[EMAIL_BODY_FIELDKEY].field_name
         email_header_fieldname = self.action_field_dict[EMAIL_HEADER_FIELDKEY].field_name
         email_footer_fieldname = self.action_field_dict[EMAIL_FOOTER_FIELDKEY].field_name
         email_attachment_fieldname = self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name
+
+        sms_action_fieldname = self.action_field_dict[SMS_ACTION_FIELDKEY].field_name
         sms_message_fieldname = self.action_field_dict[SMS_MESSAGE_FIELDKEY].field_name
 
         vizcompleterefs = dict()
@@ -1405,24 +1410,30 @@ class VizAlert:
         # data is the CSV that has been downloaded for a given view
         # loop through it to make a result set of all viz references
         for item in data:
-            # this might be able to be more efficient code
-            if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
-                or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
-                    results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
-                        self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
+            if email_action_fieldname:
+                if self.action_field_dict[EMAIL_ACTION_FIELDKEY].get_value_from_dict(item) == '1':
 
-            if email_header_fieldname:
-                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
+                    # this might be able to be more efficient code
+                    if email_body_fieldname:
+                        if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
+                            or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
+                                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
+                                    self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
 
-            if email_footer_fieldname:
-                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_footer_fieldname]))
+                    if email_header_fieldname:
+                        results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
 
-            if email_attachment_fieldname:
-                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_CSV\(.*?\)|VIZ_PDF\(.*?\)|VIZ_TWB\(.*?\)",
-                                          item[email_attachment_fieldname]))
+                    if email_footer_fieldname:
+                        results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_footer_fieldname]))
 
-            if sms_message_fieldname:
-                results.extend(re.findall(u"VIZ_LINK\(.*?\)", item[sms_message_fieldname]))
+                    if email_attachment_fieldname:
+                        results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_CSV\(.*?\)|VIZ_PDF\(.*?\)|VIZ_TWB\(.*?\)",
+                                                  item[email_attachment_fieldname]))
+
+            if sms_action_fieldname:
+                if self.action_field_dict[SMS_ACTION_FIELDKEY].get_value_from_dict(item) == '1':
+                    if sms_message_fieldname:
+                        results.extend(re.findall(u"VIZ_LINK\(.*?\)", item[sms_message_fieldname]))
 
         # loop through each found viz reference, i.e. everything in the VIZ_*(*).
         for vizref in results:
