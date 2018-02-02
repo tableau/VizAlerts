@@ -1534,9 +1534,10 @@ class VizAlert:
                                     # using ($L) option to set locale to handle accented characters
                                     nonallowedchars = re.findall(u'(?L)[^\w \-._+]', filename)
                                     if len(nonallowedchars) > 0:
-                                        errormessage = u'Found non-allowed character(s): {} in filename {} for content reference '
-                                        u'{}, only allowed characters are alphanumeric, space, hyphen, underscore, '
-                                        u'period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref)
+                                        errormessage = u'Found non-allowed character(s): ' \
+                                            u'{} in filename {} for content reference ' \
+                                            u'{}, only allowed characters are alphanumeric, space, hyphen, underscore, ' \
+                                            u'period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref)
                                         self.error_list.append(errormessage)
                                         raise ValueError(errormessage)
 
