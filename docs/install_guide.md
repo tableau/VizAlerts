@@ -4,8 +4,7 @@ Tableau – VizAlerts Installation Guide
 -  [What is VizAlerts?](#what-is-vizalerts)
 -  [What does it do?](#what-does-it-do)
 -  [How does it work?](#how-does-it-work)
--  [Changes in VizAlerts 2.1.0](#changes-in-vizalerts-2_1_0)
--  [Upgrading from VizAlerts 2.0 or 2.0.1](#upgrading-from-vizalerts-2_0-or-2_0_1)
+-  [Upgrading from VizAlerts 2.1.0](#upgrading-from-vizalerts-2_1_0)
 -  [Installation Prerequisites](#installation-prerequisites)
 	- [Tableau Server](#tableau-server)
 	- [Tableau Desktop](#tableau-desktop)
@@ -132,135 +131,50 @@ The general flow of a single execution of VizAlerts goes like this:
             instructed by the data itself.
 
 
-Changes in VizAlerts 2.1.0 <a id="changes-in-vizalerts-2_1_0"></a>
-=================
-
-VizAlerts 2.1.0 (released August 2017) has the following major new and
-changed features:
-
-
-**Alert Criteria is a Calc**
-
-For both Email and SMS Actions, the "Action" flag field on either is now the condition being checked to determine 
-if the action should be executed. This means that you no longer need to rely solely on filters to remove data 
-that should not trigger the alert. Instead, you can build your own criteria in the Email Action and SMS Action flags 
-as a calculation. A value of "1" signals that the action should be executed, whereas a 0 will cause no actions to be 
-executed.
-
-This is a great feature, because it means your vizzes can continue looking the way they normally do--all the non-alerting 
-data can be kept, which provides visual context for your alerts! No more ugly blank vizzes! You can also move the 
-Email Action field to the Color shelf to make it very clear which marks are triggering the alert, and which are not.
-
-
-**Smart Notification Defaults**
-
-Another big change is that there are no "required" fields send email, anymore. All fields are optional. Don't want to 
-customize the Subject? Leave "Email Subject" off viz entirely, and VizAlerts will automatically generate it. Don't want 
-anything special in the Body? Leave that field off, and you'll automatically get the viz image with a hyperlink. Advanced 
-Alerts are now more flexible than ever. (Note that SMS messages still have required fields) 
-
-
-**Get alerts "when the extract refreshes"**
-
-If you've wanted to run your VizAlerts when the extracts in the workbook they're a part of refresh, you've got your wish. 
-The administrator may now set up two schedules; one for Refresh Success and one for Refresh Failure. Subscribe to either 
-or both of those, and your VizAlert will run when the extract(s) in the workbook refresh.
-
-
-**Multithreaded Notifications**
-
-Several folks have brought up that they've got VizAlerts that send hundreds of emails out at once. Previous versions 
-took a while to do this, because each was running in a single thread. No more. Now, each VizAlert can send as many 
-emails or SMS messages at the same time as the Admin will allow. (Note that content references are still processed 
-one at a time, within a single VizAlert)
-
-
-**Python no longer required**
-
-With help from another Tableau Dev who was generous with their time, we now have VizAlerts in .exe form, so if you don't 
-want to use Python to run it, you don't need to (but you'll still have the option). 
-
-
-**Use the VizAlertsDemo workbook to build your alerts**
-
-We took a lot of tips and tricks we've learned over the years building VizAlerts and integrated them into a VizAlertsStarter 
-workbook, which replaces the published data source used previously. This workbook contains all the special fields that 
-you'll need to build your alerts, with copious comments and examples in the calcs. It's also been updated to 
-include the new Smart Defaults and conditional action flag features. 
-
-
-Upgrading from VizAlerts 2.0 or 2.0.1 <a id="upgrading-from-vizalerts-2_0-or-2_0_1"></a>
+Upgrading from VizAlerts 2.1.0<a id="upgrading-from-vizalerts-2_1_0"></a>
 =====================================
 
 1. Backup your current VizAlerts directory to a separate location.
 
-2. Download version 2.1.0 from <https://github.com/tableau/VizAlerts/releases>, and unzip to a *new* folder alongside your existing VizAlerts folder.
+2. Download version 2.1.1 from <https://github.com/tableau/VizAlerts/releases>, and unzip to a *new* folder alongside your existing VizAlerts folder. You should have three folders at this point: The live, current installation, the backup of the current installation, and a new folder you unzipped v2.1.1 into.
 
-3. **Optional:** Create new schedules for On Refresh Success/Failure
-	- If you wish to schedule VizAlerts for when their workbook extract refreshes, create two new schedules on Tableau Server with the following properties:
-		- The name must match the existing naming convention for your Vizalerts schedules (e.g., has "Alerts" somewhere in it, or whatever you picked for the other schedules)
-		- The name of each will also determine whether it represents extracts succeeding or extracts failing. Indicate this by putting the words "Refresh Success" and "Refresh Failure" somewhere in each.
-		- Type must be Subscription
-		- Priority will dictate the priority in the VizAlerts queue, if other alerts happen to running at the same time
-		- Execution doesn't matter, so leave it Parallel
-		- Frequency doesn't matter, so leave it Hourly
-		- They must be disabled, just as the standard VizAlerts schedules are, so make sure to disable them after you create them.
-<br><br>
-
-4. Merge VizAlertsConfig changes into new workbook
-	- There is a new version of \config\VizAlertsConfig.twb that you'll want to move your existing configuration settings to. To do so, here are the steps:
+3. Merge VizAlertsConfig changes into new workbook
+	- There is a new version of \config\VizAlertsConfig.twb that contains a new Custom SQL query. It's easiest to simply drop this into your existing VizAlertsConfig workbook. To do so, here are the steps:
 		- Download your existing VizAlertsConfig workbook from Tableau Server and open it in Tableau Desktop
 		- Locate the *new* VizAlertsConfig workbook from the new VizAlerts folder, in the config subfolder, and open it in Tableau Desktop (you'll need to edit the connection to point to your Tableau Server postgreSQL database)
-		- Set the default value for the new parameter, "task\_threads" in the new workbook. This represents how many emails or SMS messages a single alert can be sending at once time.
-		- Carefully update the *new* VizAlertsConfig workbook with all of the settings you have in the version you downloaded from Tableau Server.
-			- This is best done manually, I find, rather than with a diffing tool.
-			- Copy all the Parameter values from the current VizAlertsConfig workbook into the new one.
-			- Now, examine the calculated dimension fields carefully--did you customize anything? Copy the same logic into the new workbook's calculation.
-			- If you made changes to the Custom SQL, you are very very naughty--never do that! You're just asking for trouble.
-		- Now publish the new VizAlertsConfig workbook to Tableau Server, **making sure** that you are embedding the password in the connection.
+		- Edit the connection in the new VizAlertsConfig workbook, then edit the one table in the connection pane. This will open the Custom SQL dialog.
+		- Copy the Custom SQL Query.  
+		- Carefully update your *current* VizAlertsConfig workbook with the new Custom SQL query.
+		- Now re-publish the current VizAlertsConfig workbook to Tableau Server, **making sure** that you are embedding the password in the connection. This will not break v2.1.0 of VizAlerts.
 <br><br>
-5. Copy config files
+
+4. Copy config files
 	- Copy the \config\vizalerts.yaml file from your *current* VizAlerts folder *over* the same file in the *new* VizAlerts folder
-		- No significant changes were made to this file, so it will work just fine the way it is
+		- No changes were made to this file, so it will work just fine the way it is
 	- If you're using SSL to connect to Tableau Server, and have a certificate file you're storing in the VizAlerts folder, make sure it's copied to the new location
 	- If you've referenced any other files for passwords or anything else, make sure they're copied as well.
 <br><br>
-6. In Task Scheduler, disable the existing VizAlerts scheduled task.
+5. In Task Scheduler, disable the existing VizAlerts scheduled task.
 
-7. <font color='red'>**VizAlerts outage begins**</font>
+6. <font color='red'>**VizAlerts outage begins**</font>
 
-8. If you didn't already publish the new version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
- 
-9. Rename folders
+7. If you didn't already publish the updated version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
+
+8. Rename folders
 	- Rename the existing VizAlerts folder with something like "-old" at the end of it
 	- Rename the new VizAlerts folder whatever the old one was called
 <br><br>
-10. **Optional**: Update Scheduled Task
-	- There are two options for upgrading to 2.1.0: Continue to use the raw Python scripts, or start using the compiled executuable (.exe) file instead
-		- **Benefits of Python**: Can make on-the-fly changes if an urgent fix is required, or customization is needed.
-		- **Benefits of Executable**: No need to keep Python and modules installed and up-to-date.
-	- If you want to run the Executable version, change your Scheduled Task to point to the exe file for the "Program/Script" setting. Keep the "Start In" value, but remove the "Add arguments" value so that it is blank.
-	- If you want to continue with the Python version, make no changes to the scheduled task.
-	- If using the Python version, make sure to upgrade the Twilio library by running the command 'pip uninstall twilio' then 'pip install twilio'
-<br><br>
-11. Testing
+9. Testing
 	- Open a command prompt, navigate to the VizAlerts folder, and execute VizAlerts one time. Ensure it runs properly, and review the logs if there are any errors.
 	- Test a single alert by adding a test\_alert comment to a viz, and then run it again in the command prompt, again ensuring that no errors are logged.
 <br><br>
-12. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
+10. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
 
-13. In Task Scheduler, enable the VizAlerts task
+11. In Task Scheduler, enable the VizAlerts task
 
-14. <font color='green'>**VizAlerts outage ends**</font>
+12. <font color='green'>**VizAlerts outage ends**</font>
 
-15. Update Published content
-	- Publish \demo\VizAlertsDemo.twb to Tableau Server, with permissions being open to All Users. This is a starter workbook that replaces the old \demo\VizAlerts.tdsx published data source.
-	- Identify any workbooks referencing the old VizAlerts published data source on Tableau Server and ensure that the authors update their workbooks 
-		so that they no longer depend on it. Then, delete the data source.
-<br><br>
-16. Notify your users! Mention the new starter workbook!
-
-17. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
+13. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
 
 
 Installation Prerequisites <a id="installation-prerequisites"></a>
