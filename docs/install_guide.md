@@ -373,7 +373,11 @@ to impersonate users and obtain access to Tableau Server views in CSV
 and PNG format. To grant it this access, run the following command at a
 command prompt on the Primary host of Tableau Server:
 
-tabadmin set wgserver.trusted\_hosts &lt;HOSTNAME OF VIZALERTS HOST&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>For versions 10.5 and higher:</strong><br />
+&nbsp;&nbsp;&nbsp;&nbsp;tsm configuration set -k wgserver.trusted\_hosts -v &lt;HOSTNAME OF VIZALERTS HOST&gt;
+
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>For pre-10.5 versions:</strong><br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabadmin set wgserver.trusted\_hosts &lt;HOSTNAME OF VIZALERTS HOST&gt;
 
 ### Repository Access <a id="repository-access"></a>
 
@@ -381,7 +385,11 @@ The Tableau Server repository database contains information VizAlerts
 needs to function. Grant it access by enabling the [readonly
 user](http://onlinehelp.tableau.com/current/server/en-us/adminview_postgres_access.htm):
 
-tabadmin dbpass --username readonly &lt;YOUR PASSWORD&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>For versions 10.5 and higher:</strong><br />
+&nbsp;&nbsp;&nbsp;&nbsp;tsm data-access repository-access enable --repository-username readonly --repository-password &lt;YOUR PASSWORD&gt;
+
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>For pre-10.5 versions:</strong><br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabadmin dbpass --username readonly &lt;YOUR PASSWORD&gt;
 
 ### Restart <a id="restart"></a>
 
@@ -389,9 +397,13 @@ Once you have finished the above steps, you must save the configuration
 and restart Tableau Server. When you’re ready to do this, run the
 following commands in the command prompt:
 
-tabadmin configure
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>For versions 10.5 and higher:</strong><br />
+&nbsp;&nbsp;&nbsp;&nbsp;tsm pending-changes apply<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tsm restart
 
-tabadmin restart
+&nbsp;&nbsp;&nbsp;&nbsp;<strong>For pre-10.5 versions:</strong><br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabadmin configure<br />
+&nbsp;&nbsp;&nbsp;&nbsp;tabadmin restart
 
 ### Custom Subscription Schedules <a id="custom-subscription-schedules"></a>
 

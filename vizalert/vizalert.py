@@ -1414,11 +1414,10 @@ class VizAlert:
                 if self.action_field_dict[EMAIL_ACTION_FIELDKEY].get_value_from_dict(item) == '1':
 
                     # this might be able to be more efficient code
-                    if email_body_fieldname:
-                        if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
-                            or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
-                                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
-                                    self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
+                    if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
+                        or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
+                            results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
+                                self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
 
                     if email_header_fieldname:
                         results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
@@ -1666,25 +1665,26 @@ class VizAlert:
         if self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name:
             uniquelist = sorted(
                 uniquelist, key=itemgetter(self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name))
+            log.logger.debug(u'Sorting by {}'.format(self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name))
 
         # special case for Email Actions, where the Consolidate Lines flag is used
         if action_type == EMAIL_ACTION_TYPE:
             if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name \
                     and self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name:
-                log.logger.debug(u'Sorting by BCC')
                 if self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by BCC field {}'.format(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by CC')
                 if self.action_field_dict[EMAIL_CC_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by CC field {}'.format(self.action_field_dict[EMAIL_CC_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_CC_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by From')
                 if self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by From field {}'.format(self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by To')
                 if self.action_field_dict[EMAIL_TO_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by To field {}'.format(self.action_field_dict[EMAIL_TO_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_TO_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by Subject')
                 if self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by Subject field {}'.format(self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(
                         self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name))
 
@@ -1697,7 +1697,7 @@ class VizAlert:
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[SMS_TO_FIELDKEY].field_name))
 
             # Alert authors currently can't specify the SMS From Number
-
+        
         log.logger.debug(u'Done sorting, returning the list')
 
         # return the list
