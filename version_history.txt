@@ -2,6 +2,17 @@
 VERSION HISTORY
 ===============
 
+Version 2.1.1
+=================================
+-Documentation updates (Issue #124)
+-Fixed problem where content references were unnecessarily processed (Issue #126)
+-Updated for 2019.1 compatibility (Issue #142)
+-Fixed issue where ad-hoc extract refreshes do not trigger alert execution (Issue #138)
+-Remove advertisement from install_guide (Issue #124)
+-Clarify Sort Order field behavior (Issue #141)
+-Update install_guide for TSM commands (Issue #139)
+=================================
+
 Version 2.1.0
 =================================
 -Implemented "smart default" behavior for Advanced Alerts (Issue #68)

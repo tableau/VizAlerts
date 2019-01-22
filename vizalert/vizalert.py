@@ -1388,11 +1388,16 @@ class VizAlert:
 
         # MCOLES: These local variables are being set to avoid refactoring everything in this function
         #   Yes, this is redundant and awful but we'll address it later
+
         viewurlsuffix = self.view_url_suffix
+
+        email_action_fieldname = self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name
         email_body_fieldname = self.action_field_dict[EMAIL_BODY_FIELDKEY].field_name
         email_header_fieldname = self.action_field_dict[EMAIL_HEADER_FIELDKEY].field_name
         email_footer_fieldname = self.action_field_dict[EMAIL_FOOTER_FIELDKEY].field_name
         email_attachment_fieldname = self.action_field_dict[EMAIL_ATTACHMENT_FIELDKEY].field_name
+
+        sms_action_fieldname = self.action_field_dict[SMS_ACTION_FIELDKEY].field_name
         sms_message_fieldname = self.action_field_dict[SMS_MESSAGE_FIELDKEY].field_name
 
         vizcompleterefs = dict()
@@ -1405,24 +1410,29 @@ class VizAlert:
         # data is the CSV that has been downloaded for a given view
         # loop through it to make a result set of all viz references
         for item in data:
-            # this might be able to be more efficient code
-            if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
-                or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
-                    results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
-                        self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
+            if email_action_fieldname:
+                if self.action_field_dict[EMAIL_ACTION_FIELDKEY].get_value_from_dict(item) == '1':
 
-            if email_header_fieldname:
-                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
+                    # this might be able to be more efficient code
+                    if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
+                        or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
+                            results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
+                                self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
 
-            if email_footer_fieldname:
-                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_footer_fieldname]))
+                    if email_header_fieldname:
+                        results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_header_fieldname]))
 
-            if email_attachment_fieldname:
-                results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_CSV\(.*?\)|VIZ_PDF\(.*?\)|VIZ_TWB\(.*?\)",
-                                          item[email_attachment_fieldname]))
+                    if email_footer_fieldname:
+                        results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", item[email_footer_fieldname]))
 
-            if sms_message_fieldname:
-                results.extend(re.findall(u"VIZ_LINK\(.*?\)", item[sms_message_fieldname]))
+                    if email_attachment_fieldname:
+                        results.extend(re.findall(u"VIZ_IMAGE\(.*?\)|VIZ_CSV\(.*?\)|VIZ_PDF\(.*?\)|VIZ_TWB\(.*?\)",
+                                                  item[email_attachment_fieldname]))
+
+            if sms_action_fieldname:
+                if self.action_field_dict[SMS_ACTION_FIELDKEY].get_value_from_dict(item) == '1':
+                    if sms_message_fieldname:
+                        results.extend(re.findall(u"VIZ_LINK\(.*?\)", item[sms_message_fieldname]))
 
         # loop through each found viz reference, i.e. everything in the VIZ_*(*).
         for vizref in results:
@@ -1523,9 +1533,10 @@ class VizAlert:
                                     # using ($L) option to set locale to handle accented characters
                                     nonallowedchars = re.findall(u'(?L)[^\w \-._+]', filename)
                                     if len(nonallowedchars) > 0:
-                                        errormessage = u'Found non-allowed character(s): {} in filename {} for content reference '
-                                        u'{}, only allowed characters are alphanumeric, space, hyphen, underscore, '
-                                        u'period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref)
+                                        errormessage = u'Found non-allowed character(s): ' \
+                                            u'{} in filename {} for content reference ' \
+                                            u'{}, only allowed characters are alphanumeric, space, hyphen, underscore, ' \
+                                            u'period, and plus sign'.format(u''.join(nonallowedchars), filename, vizref)
                                         self.error_list.append(errormessage)
                                         raise ValueError(errormessage)
 
@@ -1654,25 +1665,26 @@ class VizAlert:
         if self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name:
             uniquelist = sorted(
                 uniquelist, key=itemgetter(self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name))
+            log.logger.debug(u'Sorting by {}'.format(self.action_field_dict[GENERAL_SORTORDER_FIELDKEY].field_name))
 
         # special case for Email Actions, where the Consolidate Lines flag is used
         if action_type == EMAIL_ACTION_TYPE:
             if self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name \
                     and self.action_field_dict[CONSOLIDATE_LINES_FIELDKEY].field_name:
-                log.logger.debug(u'Sorting by BCC')
                 if self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by BCC field {}'.format(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_BCC_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by CC')
                 if self.action_field_dict[EMAIL_CC_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by CC field {}'.format(self.action_field_dict[EMAIL_CC_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_CC_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by From')
                 if self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by From field {}'.format(self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_FROM_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by To')
                 if self.action_field_dict[EMAIL_TO_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by To field {}'.format(self.action_field_dict[EMAIL_TO_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[EMAIL_TO_FIELDKEY].field_name))
-                log.logger.debug(u'Sorting by Subject')
                 if self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name:
+                    log.logger.debug(u'Sorting by Subject field {}'.format(self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name))
                     uniquelist = sorted(uniquelist, key=itemgetter(
                         self.action_field_dict[EMAIL_SUBJECT_FIELDKEY].field_name))
 
@@ -1685,7 +1697,7 @@ class VizAlert:
                     uniquelist = sorted(uniquelist, key=itemgetter(self.action_field_dict[SMS_TO_FIELDKEY].field_name))
 
             # Alert authors currently can't specify the SMS From Number
-
+        
         log.logger.debug(u'Done sorting, returning the list')
 
         # return the list

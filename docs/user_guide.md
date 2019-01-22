@@ -426,7 +426,7 @@ Note that the *value* for this field is completely disregarded; its mere presenc
 <tr>
 <td width="149">Sort Order</td>
 <td width="500">This can be used with the Consolidate Lines option to determine the ordering of which lines are processed first.<br /><br />
-If present, the Body rows *within* a given consolidated email are sorted alphanumerically (ascending) by the value of the Sort Order field.   
+If present, the Body rows *within* a given consolidated email are sorted alphabetically (ascending) by the value of the Sort Order field.<br /><br /> <strong>Note that numbers are treated as text, so "11" will come before "2". If using numbers, it's recommended to prepend 0 for the maximum number of digits you will have, e.g. "001, 002, ... 133, 134.<strong>
 </td>
 </tr>
 </tbody>
