@@ -5,7 +5,7 @@ VizAlerts is a data-driven automation platform for Tableau Server. It allows any
 
 Actions currently supported are:
 
-* Send email to any audience, with flexible control over who is sent what, and the ability to embed or attach images of your vizualizations as PNGs or PDFs
+* Send email to any audience, with flexible control over who is sent what, and the ability to embed or attach images of your visualizations as PNGs or PDFs
 * Send SMS messages to any audience using the Twilio service
 * (Future) Export viz data and/or images to a file share
 
@@ -15,7 +15,7 @@ Once VizAlerts is installed and running, all of the work to build and manage you
 
 Do we ever! There are two files included in the \docs folder, [install_guide.md](docs/install_guide.md) and [user_guide.md](docs/user_guide.md), intended for Tableau Server administrators and for alert authors, respectively. They're the best way to learn about what VizAlerts can do.
 
-If you're an impatient Millenial like me, here's a [video](https://youtu.be/NQW3w64cXiU) that skims the very basics.
+If you're an impatient Millennial like me, here's a [video](https://youtu.be/NQW3w64cXiU) that skims the very basics.
 
 ## How do I set it up?
 
