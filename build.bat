@@ -1,5 +1,5 @@
 del .\dist\*.* /F /Q /S
-python .\setup.py py2exe
+pyinstaller \vizalerts.py
 
 mkdir .\dist\vizalerts
 pushd .\dist\vizalerts
