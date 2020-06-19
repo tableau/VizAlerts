@@ -8,7 +8,7 @@ import urllib.request, urllib.error, urllib.parse
 import requests
 import time
 import datetime
-import cgi
+import html
 import codecs
 import re
 import ssl
@@ -50,7 +50,7 @@ def get_trusted_ticket(server, sitename, username, encrypt, certcheck=True, cert
     if sitename != '':
         postdata['target_site'] = sitename
 
-    data = urllib.parse.urlencode(postdata)
+    data = urllib.parse.urlencode(postdata).encode("utf-8")
     requestdetails = 'Server: {}, Site: {}, Username: {}, Url: {}, Postdata: {}.'.format(
                             server,
                             sitename,
@@ -70,7 +70,8 @@ def get_trusted_ticket(server, sitename, username, encrypt, certcheck=True, cert
                     certfile = requests.utils.DEFAULT_CA_BUNDLE_PATH
                 log.logger.debug('using SSL and verifying cert using certfile {}'.format(certfile))
                 request = urllib.request.Request(trustedurl, data)
-                response = urllib.request.urlopen(request, cafile=certfile)
+                context = ssl.create_default_context(cafile=certfile)
+                response = urllib.request.urlopen(request, context=context)
             else:
                 # We're either not using SSL, or just not validating the certificate
                 if encrypt:
@@ -81,7 +82,7 @@ def get_trusted_ticket(server, sitename, username, encrypt, certcheck=True, cert
                 request = urllib.request.Request(trustedurl, data)
                 response = urllib.request.urlopen(request, context=context)
 
-            ticket = response.read()
+            ticket = response.read().decode()
             log.logger.debug('Got ticket: {}'.format(ticket))
 
             if ticket == '-1' or not ticket:
@@ -90,25 +91,25 @@ def get_trusted_ticket(server, sitename, username, encrypt, certcheck=True, cert
                 raise UserWarning(errormessage)
 
         except urllib.error.HTTPError as e:
-            errormessage = cgi.escape('HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
+            errormessage = html.escape('HTTPError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             log.logger.error(errormessage)
             if attempts >= tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except urllib.error.URLError as e:
-            errormessage = cgi.escape('URLError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
+            errormessage = html.escape('URLError generating trusted ticket: {}  Request details: {}'.format(str(e.reason), requestdetails))
             log.logger.error(errormessage)
             if attempts >= tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except UserWarning as e:
-            errormessage = cgi.escape('UserWarning generating trusted ticket: {}  Request details: {}'.format(str(e.message), requestdetails))
+            errormessage = html.escape(u'UserWarning generating trusted ticket: {}  Request details: {}'.format(str(e.args[0]), requestdetails))
             log.logger.error(errormessage)
             raise UserWarning(errormessage)
         except Exception as e:
-            errormessage = cgi.escape('Generic exception generating trusted ticket: {}  Request details: {}'.format(str(e.message), requestdetails))
+            errormessage = html.escape('Generic exception generating trusted ticket: {}  Request details: {}'.format(str(e.args[0]), requestdetails))
             log.logger.error(errormessage)
             if attempts >= tries:
                 raise UserWarning(errormessage)
@@ -186,9 +187,10 @@ def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, for
 
             # get a trusted ticket
             ticket = get_trusted_ticket(server, site_name, user_sysname, encrypt, certcheck, certfile, user_domain, clientip)
-
+			
             # build final URL
             url = protocol + '://' + server + '/trusted/' + ticket + sitepart + '/views/' + viewurlsuffix + extraurlparameter + formatparam
+
             if force_refresh:
                 url = url + '&:refresh=y'   # force a force_refresh of the data--we don't want alerts based on cached (stale) data
 
@@ -230,8 +232,12 @@ def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, for
             log.logger.info('Attempting to write to: {}'.format(filepath))
 
             if format == Format.CSV:
-                f = open(filepath, 'w')
-                f.write(response.content.replace('\r\n', '\n')) # remove extra carriage returns
+                f = open(filepath, 'wb')
+                filebytes = response.content
+                realstr = filebytes.decode(encoding='utf-8')
+                lateststr = realstr.replace('\r\n', '\n')
+                finalbinary = lateststr.encode()
+                f.write(finalbinary) # remove extra carriage returns
             else:
                 f = open(filepath, 'wb')
                 for block in response.iter_content(1024):
@@ -239,30 +245,30 @@ def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, for
                         break
                     f.write(block)
             f.close()
-            return str(filepath)
+            return filepath
         except requests.exceptions.Timeout as e:
-            errormessage = cgi.escape('Timeout error. Could not retrieve vizdata from url {} within {} seconds, after {} tries'.format(displayurl, timeout_s, attempts))
+            errormessage = html.escape('Timeout error. Could not retrieve vizdata from url {} within {} seconds, after {} tries'.format(displayurl, timeout_s, attempts))
             log.logger.error(errormessage)
             if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except requests.exceptions.HTTPError as e:
-            errormessage = cgi.escape('HTTP error getting vizdata from url {}. Code: {} Reason: {}'.format(displayurl, e.response.status_code, e.response.reason))
+            errormessage = html.escape('HTTP error getting vizdata from url {}. Code: {} Reason: {}'.format(displayurl, e.response.status_code, e.response.reason))
             log.logger.error(errormessage)
             if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except requests.exceptions.SSLError as e:
-            errormessage = cgi.escape('SSL error getting vizdata from url {}. Error: {}'.format(displayurl, e))
+            errormessage = html.escape('SSL error getting vizdata from url {}. Error: {}'.format(displayurl, e))
             log.logger.error(errormessage)
             if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except requests.exceptions.RequestException as e:
-            errormessage = cgi.escape('Request Exception getting vizdata from url {}. Error: {}'.format(displayurl, e))
+            errormessage = html.escape('Request Exception getting vizdata from url {}. Error: {}'.format(displayurl, e))
             if response:
                 errormessage += ' Response: {}'.format(response)
             if hasattr(e, 'code'):
@@ -275,14 +281,14 @@ def export_view(view_url_suffix, site_name, timeout_s, data_retrieval_tries, for
             else:
                 continue
         except IOError as e:
-            errormessage = cgi.escape('Unable to write the file {} for url {}, error: {}'.format(filepath, displayurl, e))
+            errormessage = html.escape('Unable to write the file {} for url {}, error: {}'.format(filepath, displayurl, e))
             log.logger.error(errormessage)
             if attempts >= data_retrieval_tries:
                 raise UserWarning(errormessage)
             else:
                 continue
         except Exception as e:
-            errormessage = cgi.escape('Generic exception trying to export the url {} to {}, error: {}'.format(displayurl, format, e))
+            errormessage = html.escape('Generic exception trying to export the url {} to {}, error: {}'.format(displayurl, format, e))
             if response:
                 errormessage = errormessage + ', response: {}'.format(response)
             if hasattr(e, 'code'):

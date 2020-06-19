@@ -4,7 +4,7 @@
 
 __author__ = 'Matt Coles'
 __credits__ = 'Jonathan Drummey'
-__version__ = '2.1.1'
+__version__ = '2.2.0'
 
 # generic modules
 import logging
@@ -65,7 +65,7 @@ class VizAlertWorker(threading.Thread):
                 except Exception as e:
                     errormessage = 'Unable to process alert {} as {}, error: {}'.format(alert.view_name,
                                                                                          tabhttp.Format.CSV,
-                                                                                         e.message)
+                                                                                         e.args[0])
                     log.logger.error(errormessage)
                     alert.error_list.append(errormessage)
                     alert.alert_failure()
@@ -92,7 +92,7 @@ def main():
         if not len(log.logger.handlers):
             log.logger = log.LoggerQuickSetup(config.configs['log.dir'] + 'vizalerts.log', log_level=config.configs['log.level'])
     except Exception as e:
-        print(('Could not initialize configuration file due to an unknown error: {}'.format(e.message)))
+        print('Could not initialize configuration file due to an unknown error: {}'.format(e.args[0]))
 
     # we have our logger, so start writing
     log.logger.info('VizAlerts v{} is starting'.format(__version__))
@@ -134,7 +134,7 @@ def main():
             smsaction.smsclient = smsaction.get_sms_client()
             log.logger.info('SMS Actions are enabled')
         except Exception as e:
-            errormessage = 'Unable to get SMS client, error: {}'.format(e.message)
+            errormessage = 'Unable to get SMS client, error: {}'.format(e.args[0])
             log.logger.error(errormessage)
             quit_script(errormessage)
 
@@ -143,7 +143,7 @@ def main():
         alerts = get_alerts()
         log.logger.info('Processing a total of {} alerts'.format(len(alerts)))
     except Exception as e:
-        errormessage = 'Unable to get alerts to process, error: {}'.format(e.message)
+        errormessage = 'Unable to get alerts to process, error: {}'.format(e.args[0])
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -200,7 +200,7 @@ def trusted_ticket_test():
             clientip)
         log.logger.debug('Generated test trusted ticket. Value is: {}'.format(test_ticket))
     except Exception as e:
-        errormessage = e.message
+        errormessage = e.args[0]
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -225,7 +225,6 @@ def get_alerts():
         source_viz.download_trigger_data()
         if len(source_viz.error_list) > 0:
             raise UserWarning(''.join(source_viz.error_list))
-
         results = source_viz.read_trigger_data()
         if len(source_viz.error_list) > 0:
             raise UserWarning(''.join(source_viz.error_list))
@@ -233,14 +232,13 @@ def get_alerts():
     except Exception as e:
         quit_script('Could not process source viz data from {} for the following reasons:<br/><br/>{}'.format(
 			config.configs['vizalerts.source.viz'],
-            e.message))
+            e.args[0]))
 
     # test for regex invalidity
     try:
         fieldlist = ('allowed_from_address','allowed_recipient_addresses','allowed_recipient_numbers')
         currentfield = ''
         currentfieldvalue = ''
-
         for line in results:
             for field in fieldlist:
                 currentfield = field
@@ -252,7 +250,7 @@ def get_alerts():
                 config.configs['vizalerts.source.viz'],
                 currentfieldvalue,
                 currentfield,
-                e.message))
+                e.args[0]))
 
     # retrieve schedule data from the last run and compare to current
     statefile = config.configs['schedule.state.dir'] + SCHEDULE_STATE_FILENAME
@@ -270,7 +268,7 @@ def get_alerts():
             f = codecs.open(statefile, encoding='utf-8', mode='w+')
             f.close()
     except IOError as e:
-        errormessage = 'Invalid schedule state file: {}'.format(e.message)
+        errormessage = 'Invalid schedule state file: {}'.format(e.args[0])
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -453,7 +451,7 @@ def get_alerts():
                                                                alert.ran_last_at, alert.run_next_at,
                                                                alert.schedule_id))
     except IOError as e:
-        errormessage = 'IOError accessing {} while getting views to process: {}'.format(e.filename, e.message)
+        errormessage = 'IOError accessing {} while getting views to process: {}'.format(e.filename, e.args[0])
         log.logger.error(errormessage)
         quit_script(errormessage)
     except Exception as e:
@@ -470,7 +468,7 @@ def quit_script(message):
                                config.configs['smtp.subject'], message)
         emailaction.send_email(email_instance)
     except Exception as e:
-        log.logger.error('Unknown error-sending exception alert email: {}'.format(e.message))
+        log.logger.error('Unknown error-sending exception alert email: {}'.format(e.args[0]))
     sys.exit(1)
 
 def cleanup_dir(path, expiry_s):

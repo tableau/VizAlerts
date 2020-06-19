@@ -116,7 +116,7 @@ class UnicodeDictReader(csv.DictReader):
         self.reader = UnicodeCsvReader(f, encoding=encoding, **kwds)
 
 
-class ActionField:
+class ActionField(object):
     """Represents a mapping of a field found in a trigger CSV to an action property"""
 
     def __init__(self, name, action_type, is_required, is_action_flag, pattern, default_value=None):
@@ -176,7 +176,7 @@ class TaskType(object):
     # VALIDATE_TRIGGER_DATA = 'validate_trigger_data'
 
 
-class Task:
+class Task(object):
     """Represents a task within an Alert to be executed. It need not be an actual alert Action"""
 
     def __init__(self, alert, task_type, task_instance):
@@ -238,7 +238,7 @@ class Task:
         except Exception as e:
             self.task_succeeded = False
             self.task_completed_at = datetime.datetime.now()
-            log.logger.error('Could not execute task {}: {}'.format(self.task_uuid, e.message))
+            log.logger.error('Could not execute task {}: {}'.format(self.task_uuid, e.args[0]))
             raise e
 
     def has_errors(self):
@@ -307,14 +307,14 @@ class TaskWorker(threading.Thread):
                     errormessage = 'Unable to process task {} from alert {}, error: {}'.format(
                                                                                         task.task_uuid,
                                                                                         task.alert.view_name,
-                                                                                        e.message)
+                                                                                        e.args[0])
                     log.logger.error(errormessage)
                     task.alert.error_list.append(errormessage)
                     task.alert.alert_failure()
                     continue
 
 
-class VizAlert:
+class VizAlert(object):
     """Standard class representing a VizAlert"""
 
     def __init__(self, view_url_suffix, site_name, subscriber_sysname, subscriber_domain, subscriber_email='', view_name=''):
@@ -434,7 +434,7 @@ class VizAlert:
     def get_action_flag_field(self, action_type):
         """Return the appropriate action field representing an action flag based on the type
         Note that no validation is done here """
-        for action_field_name, action_field in self.action_field_dict.items():
+        for action_field_name, action_field in list(self.action_field_dict.items()):
             if self.action_field_dict[action_field_name].action_type == action_type \
                     and self.action_field_dict[action_field_name].is_action_flag:
                 return action_field_name
@@ -511,6 +511,7 @@ class VizAlert:
             reader = self.read_trigger_data()
 
             rowcount = 0
+
             for row in reader:
                 if rowcount > self.viz_data_maxrows:
                     errormessage = 'Maximum rows of {} exceeded.'.format(self.viz_data_maxrows)
@@ -521,20 +522,19 @@ class VizAlert:
                 # read data in anyway
                 self.trigger_data.append(row)
                 rowcount += 1
-
             # set the rowcount value in the alert itself
             self.trigger_data_rowcount = rowcount
         except Exception as e:
             log.logger.error(e)
-            self.error_list.append(e.message)
+            self.error_list.append(e.args[0])
             return
 
     def read_trigger_data(self):
         """ Returns a CSV reader to read the trigger data file downloaded for the alert
             Requests for the data itself should use the trigger_data list member to avoid multiple reads """
         try:
-            f = open(self.trigger_data_file, 'rU')
-            return UnicodeDictReader(f)
+            f = open(self.trigger_data_file, 'r', encoding="utf-8")
+            return csv.DictReader(f)
 
         except Exception as e:
             log.logger.error('Error accessing {} while getting processing alert {}: {}'.format(
@@ -564,7 +564,7 @@ class VizAlert:
 
             # collect all the action flags we found
             action_flags = []
-            for i, found_flag in self.action_field_dict.items():
+            for i, found_flag in list(self.action_field_dict.items()):
                 if found_flag.is_action_flag and found_flag.has_match():
                     action_flags.append(found_flag.name)
 
@@ -686,7 +686,7 @@ class VizAlert:
             self.error_list.extend(field_error_list)
             return field_error_list
         except Exception as e:
-            errormessage = 'Error parsing trigger data fields: {}'.format(e.message)
+            errormessage = 'Error parsing trigger data fields: {}'.format(e.args[0])
             log.logger.debug(errormessage)
             self.error_list.append(errormessage)
             raise e
@@ -887,7 +887,7 @@ class VizAlert:
                 except Exception as e:
                     log.logger.error('Encountered error processing alert tasks for alert {}: {} '.format(
                         self.alert_uuid,
-                        e.message))
+                        e.args[0]))
                 # REVISIT
                 # check for any outstanding errors
 
@@ -955,7 +955,7 @@ class VizAlert:
                         # enqueue the task for later execution
                         self.task_queue.put(Task(self, TaskType.SEND_EMAIL, email_instance))
                     except Exception as e:
-                        errormessage = 'Could not send email, error: {}'.format(e.message)
+                        errormessage = 'Could not send email, error: {}'.format(e.args[0])
                         log.logger.error(errormessage)
                         self.error_list.append(errormessage)
                         self.alert_failure()
@@ -963,7 +963,7 @@ class VizAlert:
                     return
                 except Exception as e:
                     errormessage = 'Alert was triggered, but encountered a failure rendering data/image:<br> {}'.format(
-                        e.message)
+                        e.args[0])
                     log.logger.error(errormessage)
                     self.error_list.append(errormessage)
                     raise UserWarning(errormessage)
@@ -976,7 +976,7 @@ class VizAlert:
                     vizcompleterefs = self.find_viz_refs(self.trigger_data)
                 except Exception as e:
                     errormessage = 'Alert was triggered, but encountered a failure getting data/image references' \
-                                   ':<br /> {}'.format(e.message)
+                                   ':<br /> {}'.format(e.args[0])
                     log.logger.error(errormessage)
                     raise UserWarning(errormessage)
 
@@ -1277,7 +1277,7 @@ class VizAlert:
                                             self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
                                         except Exception as e:
                                             self.error_list.append(
-                                                'Could not send SMS, error: {}'.format(e.message))
+                                                'Could not send SMS, error: {}'.format(e.args[0]))
                                             self.alert_failure()
                                             return
 
@@ -1326,7 +1326,7 @@ class VizAlert:
                                                 self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
                                             except Exception as e:
                                                 self.error_list.append(
-                                                    'Could not send SMS, error: {}'.format(e.message))
+                                                    'Could not send SMS, error: {}'.format(e.args[0]))
                                                 self.alert_failure()
                                                 return
 
@@ -1356,7 +1356,7 @@ class VizAlert:
                                         self.task_queue.put(Task(self, TaskType.SEND_SMS, sms_instance))
                                     except Exception as e:
                                         self.error_list.append(
-                                            'Could not send SMS, error: {}'.format(e.message))
+                                            'Could not send SMS, error: {}'.format(e.args[0]))
                                         self.alert_failure()
                                         return
 
@@ -1531,7 +1531,7 @@ class VizAlert:
                                     # check for non-allowed characters
                                     # code based on https://mail.python.org/pipermail/tutor/2010-December/080883.html
                                     # using ($L) option to set locale to handle accented characters
-                                    nonallowedchars = re.findall('(?L)[^\w \-._+]', filename)
+                                    nonallowedchars = re.findall('[^\w \-._+]', filename)
                                     if len(nonallowedchars) > 0:
                                         errormessage = 'Found non-allowed character(s): ' \
                                             '{} in filename {} for content reference ' \
@@ -1561,7 +1561,7 @@ class VizAlert:
 
                         except Exception as e:
                             errormessage = 'Alert was triggered, but unable to process arguments to a ' \
-                                           'content reference with error:<br><br> {}'.format(e.message)
+                                           'content reference with error:<br><br> {}'.format(e.args[0])
                             self.error_list.append(errormessage)
                             log.logger.error(errormessage)
                             raise UserWarning(errormessage)
@@ -1601,7 +1601,7 @@ class VizAlert:
                     self.subscriber_domain)
 
             except Exception as e:
-                errormessage = 'Unable to render content reference {} with error:<br> {}'.format(vizref, e.message)
+                errormessage = 'Unable to render content reference {} with error:<br> {}'.format(vizref, e.args[0])
                 log.logger.error(errormessage)
                 self.error_list.append(errormessage)
                 raise UserWarning(errormessage)
@@ -1876,7 +1876,7 @@ class VizAlert:
             )
             emailaction.send_email(email_instance)
         except Exception as e:
-            log.logger.error('Unknown error sending exception alert email: {}'.format(e.message))
+            log.logger.error('Unknown error sending exception alert email: {}'.format(e.args[0]))
 
 
 def merge_pdf_attachments(appendattachments):

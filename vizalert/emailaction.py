@@ -15,7 +15,6 @@ from subprocess import Popen, PIPE
 
 from io import StringIO
 from email.header import Header
-from email import Charset
 from email.generator import Generator
 from email.mime.base import MIMEBase
 from email.mime.text import MIMEText
@@ -29,10 +28,10 @@ from . import log
 from . import vizalert
 
 # regular expression used to split recipient address strings into separate email addresses
-EMAIL_RECIP_SPLIT_REGEX = '[\t\n; ,]*'
+EMAIL_RECIP_SPLIT_REGEX = '[\t\n\s;,]'
 
 
-class Email:
+class Email(object):
     """Represents an email to be sent"""
 
     def __init__(self, fromaddr, toaddrs, subject, content, ccaddrs=None, bccaddrs=None, inlineattachments=None,
@@ -78,15 +77,14 @@ def send_email(email_instance):
 
         # using mixed type because there can be inline and non-inline attachments
         msg = MIMEMultipart('mixed')
-        msg.set_charset('utf-8')
-        msg.preamble = email_instance.subject.encode('utf-8')
+        msg.set_charset('UTF-8')
         msg['From'] = Header(email_instance.fromaddr)
-        msg['Subject'] = Header(email_instance.subject.encode('utf-8'), 'UTF-8').encode()
+        msg['Subject'] = Header(email_instance.subject, 'utf-8')
 
         log.logger.debug('TO ADDRESS: {}'.format(email_instance.toaddrs))
 
         # Process direct recipients
-        toaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.toaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
+        toaddrs = [address for address in filter(None, re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.toaddrs)) if len(address) > 0]
         msg['To'] = Header(', '.join(toaddrs))
         allrecips = toaddrs
 
@@ -94,22 +92,21 @@ def send_email(email_instance):
 
         # Process indirect recipients
         if email_instance.ccaddrs:
-            ccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.ccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
+            ccaddrs = [address for address in filter(None, re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.ccaddrs)) if len(address) > 0]
             msg['CC'] = Header(', '.join(ccaddrs))
             allrecips.extend(ccaddrs)
 
         log.logger.debug('BCC ADDRESS: {}'.format(email_instance.bccaddrs))
 
-
         if email_instance.bccaddrs:
-            bccaddrs = re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.bccaddrs.strip(EMAIL_RECIP_SPLIT_REGEX))
+            bccaddrs = [address for address in filter(None, re.split(EMAIL_RECIP_SPLIT_REGEX, email_instance.bccaddrs)) if len(address) > 0]
             # don't add to header, they are blind carbon-copied
             allrecips.extend(bccaddrs)
 
         # Create a section for the body and inline attachments
         msgalternative = MIMEMultipart('related')
         msg.attach(msgalternative)
-        msgalternative.attach(MIMEText(email_instance.content.encode('utf-8'), 'html', 'utf-8'))
+        msgalternative.attach(MIMEText(email_instance.content, 'html', 'utf-8'))
 
         # Add inline attachments
         if email_instance.inlineattachments != None:
@@ -137,6 +134,7 @@ def send_email(email_instance):
                         log.logger.info('Warning: attempted to attach duplicate filename ' + vizref[
                             'filename'] + ', using unique auto-generated name instead.')
 
+
         server = smtplib.SMTP(config.configs['smtp.serv'], config.configs['smtp.port'])
         if config.configs['smtp.ssl']:
             server.ehlo()
@@ -149,7 +147,7 @@ def send_email(email_instance):
         g = Generator(io, False)  # second argument means "should I mangle From?"
         g.flatten(msg)
 
-        server.sendmail(email_instance.fromaddr.encode('utf-8'), [addr.encode('utf-8') for addr in allrecips],
+        server.sendmail(email_instance.fromaddr, [addr for addr in allrecips],
                         io.getvalue())
         server.quit()
     except smtplib.SMTPConnectError as e:
@@ -172,7 +170,7 @@ def send_email(email_instance):
 def addresses_are_invalid(emailaddresses, emptystringok, regex_eval=None):
     """Validates all email addresses found in a given string, optionally that conform to the regex_eval"""
     log.logger.debug('Validating email field value: {}'.format(emailaddresses))
-    address_list = re.split(EMAIL_RECIP_SPLIT_REGEX, emailaddresses.strip(EMAIL_RECIP_SPLIT_REGEX)) # trim separator chars from ends
+    address_list = [address for address in filter(None, re.split(EMAIL_RECIP_SPLIT_REGEX, emailaddresses)) if len(address) > 0]
     for address in address_list:
         log.logger.debug('Validating presumed email address: {}'.format(address))
         if emptystringok and (address == '' or address is None):
@@ -214,7 +212,7 @@ def address_is_invalid(address, regex_eval=None):
 
     # Unicode in addresses not yet supported
     try:
-        address.decode('ascii')
+        address.encode(encoding='ascii', errors='strict')
     except Exception as e:
         errormessage = 'Address must contain only ASCII characers: {}'.format(address)
         log.logger.error(errormessage)

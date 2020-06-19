@@ -1,16 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="6107e266-d2c9-47dc-bdbd-2525af6a826c" name="Default" comment="">
+    <list default="true" id="6107e266-d2c9-47dc-bdbd-2525af6a826c" name="Default" comment="-Support for Python 3.x (Issue #111)&#10;-Fix SMS error handling (Issue #158)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.bat" beforeDir="false" afterPath="$PROJECT_DIR$/build.bat" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tabUtil/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/tabUtil/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/install_guide.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/install_guide.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/version_history.txt" beforeDir="false" afterPath="$PROJECT_DIR$/version_history.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vizalert/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vizalert/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/config.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vizalert/emailaction.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/emailaction.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/vizalert/log.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/log.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vizalert/smsaction.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/smsaction.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vizalert/tabhttp.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/tabhttp.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/vizalert/vizalert.py" beforeDir="false" afterPath="$PROJECT_DIR$/vizalert/vizalert.py" afterDir="false" />
@@ -38,7 +33,7 @@
         <entry file="file://$PROJECT_DIR$/vizalerts.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="85">
-              <caret line="5" column="32" lean-forward="true" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
+              <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -492,14 +487,20 @@
       <option name="project" value="LOCAL" />
       <updated>1548188160503</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="-Support for Python 3.x (Issue #111)&#10;-Fix SMS error handling (Issue #158)">
+      <created>1592242619321</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1592242619321</updated>
+    </task>
+    <option name="localTasksCounter" value="37" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="3456" height="1416" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1928028" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1928028" />
       <window_info id="Structure" order="1" weight="0.19868036" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -512,7 +513,7 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Terminal" order="8" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5015625" side_tool="true" weight="0.36142626" />
-      <window_info anchor="bottom" id="Python Console" order="10" visible="true" weight="0.5074045" />
+      <window_info active="true" anchor="bottom" id="Python Console" order="10" visible="true" weight="0.5074045" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -547,7 +548,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Adding VizAlertsStarter.twbx and removing the VizAlerts.tdsx for Issue # 96" />
     <MESSAGE value="Moved all documentation to \docs&#10;Fixed Issue #112" />
     <MESSAGE value="Fixed Issue #109" />
     <MESSAGE value="Fixed Issue #106" />
@@ -572,7 +572,8 @@
     <MESSAGE value="Revolve issue #131: Error messages when invalid character in filename do not correctly display" />
     <MESSAGE value="Fix for 2019.1 compatibility and a few other minor bugs / doc updates" />
     <MESSAGE value="Updating upgrade instructions" />
-    <option name="LAST_COMMIT_MESSAGE" value="Updating upgrade instructions" />
+    <MESSAGE value="-Support for Python 3.x (Issue #111)&#10;-Fix SMS error handling (Issue #158)" />
+    <option name="LAST_COMMIT_MESSAGE" value="-Support for Python 3.x (Issue #111)&#10;-Fix SMS error handling (Issue #158)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -655,18 +656,18 @@
     <entry file="file://C:/Utility/VizAlerts-1.1.1/vizalerts.py" />
     <entry file="file://C:/Utility/VizAlerts-2.1.1/vizalerts.py" />
     <entry file="file://C:/Egnyte/Private/mcoles/Hackathon-052018/views_test.py" />
-    <entry file="file://$PROJECT_DIR$/vizalert/vizalert.py">
-      <provider selected="true" editor-type-id="text-editor" />
+    <entry file="file://$PROJECT_DIR$/vizalerts.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
+        </state>
+      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/vizalert/tabhttp.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/vizalerts.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="32" lean-forward="true" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/vizalert/vizalert.py">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/version_history.txt">
       <provider selected="true" editor-type-id="text-editor">

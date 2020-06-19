@@ -16,14 +16,14 @@ from . import vizalert
 smsclient = None
 
 # regular expression used to split recipient number strings into separate phone numbers
-SMS_RECIP_SPLIT_REGEX = '[;,]*'
+SMS_RECIP_SPLIT_REGEX = '[;,]'
 
 # appended to the bottom of all SMS messages, unless overidden
 # expecting smsfooter.format(subscriber_email)
 smsfooter = '\r\rThis VizAlert SMS sent on behalf of {}'
 
 
-class SMS:
+class SMS(object):
     """Represents an SMS to be sent"""
 
     def __init__(self, sms_from, sms_to, msgbody=None):
@@ -46,17 +46,6 @@ def get_sms_client():
         # these need to be in the global name space to send SMS messages
         global twilio
         import twilio
-
-        # Monkey patch to allow Twilio to find the cacert.pem file even when compiled into an exe
-        #    See: https://stackoverflow.com/questions/17158529/fixing-ssl-certificate-error-in-exe-compiled-with-py2exe-or-pyinstaller
-        #       and https://github.com/twilio/twilio-python/issues/167
-        ca_cert_path = os.path.join('twilio', 'conf', 'cacert.pem')
-
-        from twilio.http import get_cert_file
-        get_cert_file = lambda: ca_cert_path
-
-        twilio.http.get_cert_file = get_cert_file
-
         global twiliorest
         import twilio.rest as twiliorest
         
@@ -118,19 +107,19 @@ def send_sms(sms_instance):
                             e.code,
                             e.msg)
         log.logger.error(errormessage)
-        return errormessage
+        raise UserWarning(errormessage)
 
     # check for ValueError from try 
     except ValueError as e:
         log.logger.error(e)
-        return e
+        raise UserWarning(errormessage)
 
     except Exception as e:
-        errormessage = 'Could not send SMS message to {} with body {}, error {}, type {}'.format(
+        errormessage = u'Could not send SMS message to {} with body {}, error {}, type {}'.format(
             sms_instance.sms_to,
             sms_instance.msgbody, e, e.__class__.__name__)
         log.logger.error(errormessage)
-        return e
+        raise UserWarning(errormessage)
 
     return None
 
@@ -201,8 +190,8 @@ def smsnumbers_are_invalid(sms_numbers, emptystringok, iso2countrycode, regex_ev
     
     log.logger.debug('Validating SMS field value: {}'.format(sms_numbers))
 
-    sms_number_list = re.split(SMS_RECIP_SPLIT_REGEX, sms_numbers.strip())
-
+    sms_number_list = [sms_number for sms_number in filter(None, re.split(SMS_RECIP_SPLIT_REGEX, sms_numbers)) if len(sms_number) > 0]
+    
     for sms_number in sms_number_list:
         log.logger.debug('Validating presumed sms number: {}'.format(sms_number))
 
