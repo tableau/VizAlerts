@@ -134,43 +134,61 @@ The general flow of a single execution of VizAlerts goes like this:
 Upgrading from VizAlerts 2.1.1<a id="upgrading-from-vizalerts-2_1_1"></a>
 =====================================
 
-**NOTE** The primary change in this version is the shift to Python 3 from Python 2. If you are running VizAlerts with the binary EXE file, there is little reason to upgrade to 2.2.0. However, if you are running it as a Python script, you will first need to upgrade to Python 3. My own experience was that it is best that you first remove Python 2 from your system by uninstalling it, and removing all references to it from your environment variables. Then, you need to [install Python 3](#install-python-required-modules). Please be aware that uninstalling Python 2 will begin a VizAlerts outage, so please TEST on a seperate server first, and plan your deployment accordingly.
+**NOTE** There are two important changes in this release: 
+
+-   A fix to the VizAlertsConfig workbook for Tableau Server 2020.4.1
+
+-   Switch from Python 2 to Python 3
+
+If you are running VizAlerts with the binary EXE file, and are not using Tableau Server 2020.4 or higher, there is little reason to upgrade to 2.2.0.
+If you are running it as a Python script, it is recommended that you upgrade, as Python 2 has been discontinued.
+If you are upgrading to Tableau Server 2020.4 or higher, you can choose to upgrade VizAlerts, or [edit your VizAlertsConfig workbook](https://github.com/tableau/VizAlerts/issues/175) instead (the simpler solution).
+
+Upgrading to VizAlerts 2.2.0 when running as a Python script will require installing Python 3. My own experience was that it is best that you first remove Python 2 from your system by uninstalling it, and removing all references to it from your environment variables. Then, you need to [install Python 3](#install-python-required-modules). Please be aware that uninstalling Python 2 will begin a VizAlerts outage, so please TEST on a separate server first, and plan your deployment accordingly.
 
 1. Backup your current VizAlerts directory to a separate location.
 
 2. Download version 2.2.0 from <https://github.com/tableau/VizAlerts/releases>, and unzip to a *new* folder alongside your existing VizAlerts folder. You should have three folders at this point: The live, current installation, the backup of the current installation, and a new folder you unzipped v2.2.0 into.
 
-3. Copy config files
+3. Merge VizAlertsConfig changes into new workbook
+	- There is a new version of \config\VizAlertsConfig.twb that contains an edit to the _is_valid_schedule_ calc. It's easiest to simply drop this minor change into your existing VizAlertsConfig workbook. To do so, here are the steps:
+		- Download your existing VizAlertsConfig workbook from Tableau Server and open it in Tableau Desktop
+		- Edit the _is_valid_schedule_ calc in your VizAlertsConfig workbook so that the first line is **[subscription_id] < 0** rather than **ISNULL(schedule_id)**
+		- Now re-publish the current VizAlertsConfig workbook to Tableau Server, **making sure** that you are embedding the password in the connection. This will _not_ break v2.1.1 of VizAlerts.
+<br><br>
+
+4. Copy other config files
 	- Copy the \config\vizalerts.yaml file from your *current* VizAlerts folder *over* the same file in the *new* VizAlerts folder
 		- No changes were made to this file, so it will work just fine the way it is
 	- If you're using SSL to connect to Tableau Server, and have a certificate file you're storing in the VizAlerts folder, make sure it's copied to the new location
 	- If you've referenced any other files for passwords or anything else, make sure they're copied as well.
 <br><br>
-4. In Task Scheduler, disable the existing VizAlerts scheduled task.
 
-5. <font color='red'>**VizAlerts outage begins**</font>
+5. In Task Scheduler, disable the existing VizAlerts scheduled task.
 
-6. Uninstall Python 2, and remove references to it from your environmental variables (again, this is optional, but should make things simpler--if you're a power user that knows Python inside and out, feel free to disregard)
+6. <font color='red'>**VizAlerts outage begins**</font>
 
-7. Download and install Python 3 and [required modules](#install-python-required-modules)
+7. Uninstall Python 2, and remove references to it from your environmental variables (again, this is optional, but should make things simpler--if you're a power user that knows Python inside and out, feel free to disregard)
 
-8. If you didn't already publish the updated version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
+8. Download and install Python 3 and [required modules](#install-python-required-modules)
 
-9. Rename folders
+9. If you didn't already publish the updated version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
+
+10. Rename folders
 	- Rename the existing VizAlerts folder with something like "-old" at the end of it
 	- Rename the new VizAlerts folder whatever the old one was called
 <br><br>
-10. Testing
+11. Testing
 	- Open a command prompt, navigate to the VizAlerts folder, and execute VizAlerts one time. Ensure it runs properly, and review the logs if there are any errors.
 	- Test a single alert by adding a test\_alert comment to a viz, and then run it again in the command prompt, again ensuring that no errors are logged.
 <br><br>
-11. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
+12. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
 
-12. In Task Scheduler, enable the VizAlerts task
+13. In Task Scheduler, enable the VizAlerts task
 
-13. <font color='green'>**VizAlerts outage ends**</font>
+14. <font color='green'>**VizAlerts outage ends**</font>
 
-14. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
+15. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
 
 
 Installation Prerequisites <a id="installation-prerequisites"></a>
