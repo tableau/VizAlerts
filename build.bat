@@ -1,5 +1,5 @@
-del .\dist\*.* /F /Q /S
-python .\setup.py py2exe
+rmdir .\dist /Q /S
+pyinstaller vizalerts.py --onefile --clean --workpath .\dist\work
 
 mkdir .\dist\vizalerts
 pushd .\dist\vizalerts

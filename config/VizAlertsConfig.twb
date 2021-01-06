@@ -1261,7 +1261,7 @@
         </desc>
       </column>
       <column caption='is_valid_schedule' datatype='boolean' name='[Calculation_5911012080139041]' role='dimension' type='nominal'>
-        <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(LOWER(schedule_name), LOWER([Parameters].[Parameter 9]))' scope-isolation='false' />
+        <calculation class='tableau' formula='[subscription_id] &lt; 0 // this is a test alert&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(LOWER(schedule_name), LOWER([Parameters].[Parameter 9]))' scope-isolation='false' />
         <desc>
           <formatted-text>
             <run>Determines which Tableau Server subscription schedules are reserved for VizAlerts.&#10;&#10;Note that only </run>
@@ -2286,7 +2286,7 @@
               </desc>
             </column>
             <column caption='is_valid_schedule' datatype='boolean' name='[Calculation_5911012080139041]' role='dimension' type='nominal'>
-              <calculation class='tableau' formula='ISNULL(schedule_id) // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(LOWER(schedule_name), LOWER([Parameters].[Parameter 9]))' scope-isolation='false' />
+              <calculation class='tableau' formula='[subscription_id] &lt; 0 // this is a test alert, so that&apos;s okay&#13;&#10;&#13;&#10;// naming pattern to recognized VizAlerts schedules. feel free to edit. &#13;&#10;// Note that the schedules MUST be set to &quot;disabled&quot; in Tableau Server--this is required by the Custom SQL connection&#13;&#10;//   ... which you should NOT change.&#13;&#10;    OR CONTAINS(LOWER(schedule_name), LOWER([Parameters].[Parameter 9]))' scope-isolation='false' />
               <desc>
                 <formatted-text>
                   <run>Determines which Tableau Server subscription schedules are reserved for VizAlerts.&#10;&#10;Note that only </run>
