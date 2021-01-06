@@ -6,6 +6,7 @@ Version 2.2.0
 =================================
 -Refactor for Python 3 (Issue #111)
 -Fix SMS error handling (Issue #158)
+-Fix for test alerts breaking in 2020.4 (Issue #175)
 =================================
 
 Version 2.1.1
