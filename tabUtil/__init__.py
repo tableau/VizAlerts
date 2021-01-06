@@ -8,8 +8,8 @@ import codecs
 #
 # global (to this module) variables
 #
-time_format     = u"%Y-%m-%d"
-log_time_format = u"%Y-%m-%d %H:%M:%S"
+time_format     = "%Y-%m-%d"
+log_time_format = "%Y-%m-%d %H:%M:%S"
 
 now      = datetime.datetime.now().strftime(log_time_format)
 today    = datetime.datetime.now().strftime(time_format)
@@ -17,9 +17,9 @@ hostname = os.getenv("COMPUTERNAME")
 cwd      = os.getcwd()
 
 # log formatter
-formatter       = u"%(threadName)s - %(asctime)s - [%(levelname)s] - %(funcName)s - %(message)s"
-min_formatter   = u"%(asctime)s - [%(levelname)s] - %(message)s"
-extra_formatter = u"%(threadName)s - %(asctime)s - [%(thread)d] - %(levelname)s - %(module)s.%(funcName)s - %(message)s"
+formatter       = "%(threadName)s - %(asctime)s - [%(levelname)s] - %(funcName)s - %(message)s"
+min_formatter   = "%(asctime)s - [%(levelname)s] - %(message)s"
+extra_formatter = "%(threadName)s - %(asctime)s - [%(thread)d] - %(levelname)s - %(module)s.%(funcName)s - %(message)s"
 
 # file log rotation constants
 max_size    =  20*1024*1024  # in Bytes (5 MB)
@@ -42,8 +42,8 @@ def load_yaml_file(yaml_file):
     # See http://stackoverflow.com/questions/2890146/how-to-force-pyyaml-to-load-strings-as-unicode-objects
 def construct_yaml_str(self, node):
     return self.construct_scalar(node)
-Loader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
-SafeLoader.add_constructor(u'tag:yaml.org,2002:str', construct_yaml_str)
+Loader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
+SafeLoader.add_constructor('tag:yaml.org,2002:str', construct_yaml_str)
 
 
 # Logger
@@ -66,14 +66,14 @@ def Logger(logfile_name, log_level=logging.INFO, time_format=log_time_format, ex
     # check the if any args have been passed in via kw
     #
     # -- logging levels --
-    if kw.has_key("console_level"):
+    if "console_level" in kw:
         console_logging_level = kw["console_level"]
     # -- formatters --
-    if kw.has_key("log_formatter"):
+    if "log_formatter" in kw:
         log_formatter = kw["log_formatter"]
-    if kw.has_key("console_formatter"):
+    if "console_formatter" in kw:
         console_formatter = kw["console_formatter"]
-    if kw.has_key("format"):
+    if "format" in kw:
         log_formatter = kw["format"]
         console_formatter = log_formatter
     # set up the logging instance
@@ -130,7 +130,7 @@ def LoggerQuickSetup(log_file, log_level=logging.INFO, filename_time_format='%Y-
 # Simple wrapper method to handle prompting the user. Return 'True' or 'False' depending on whether the input matches
 #   the 'acceptable' value provided in the second argument.
 def promptUser(msg, accptResp):
-    resp = raw_input(msg)
+    resp = input(msg)
     if resp == accptResp:
         return True
     else:

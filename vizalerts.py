@@ -4,7 +4,7 @@
 
 __author__ = 'Matt Coles'
 __credits__ = 'Jonathan Drummey'
-__version__ = '2.1.1'
+__version__ = '2.2.0'
 
 # generic modules
 import logging
@@ -16,7 +16,7 @@ import time
 import fileinput
 import codecs
 import re
-from Queue import Queue
+from queue import Queue
 import threading
 from operator import attrgetter
 import argparse
@@ -31,7 +31,7 @@ from vizalert import smsaction
 from vizalert import vizalert
 
 # name of the file used for maintaining subscriptions state in schedule.state.dir
-SCHEDULE_STATE_FILENAME = u'vizalerts.state'
+SCHEDULE_STATE_FILENAME = 'vizalerts.state'
 
 
 class VizAlertWorker(threading.Thread):
@@ -49,8 +49,8 @@ class VizAlertWorker(threading.Thread):
                 # Get the work from the queue and expand the tuple
                 alert = self.queue.get()
 
-                log.logger.debug(u'Thread {} is processing subscription_id {}, view_id {}, '
-                                 u'site_name {}, customized_view_id {}, '
+                log.logger.debug('Thread {} is processing subscription_id {}, view_id {}, '
+                                 'site_name {}, customized_view_id {}, '
                                  'view_name {}'.format(
                                     self.threadname,
                                     alert.subscription_id,
@@ -63,9 +63,9 @@ class VizAlertWorker(threading.Thread):
                 try:
                     alert.execute_alert()
                 except Exception as e:
-                    errormessage = u'Unable to process alert {} as {}, error: {}'.format(alert.view_name,
+                    errormessage = 'Unable to process alert {} as {}, error: {}'.format(alert.view_name,
                                                                                          tabhttp.Format.CSV,
-                                                                                         e.message)
+                                                                                         e.args[0])
                     log.logger.error(errormessage)
                     alert.error_list.append(errormessage)
                     alert.alert_failure()
@@ -81,7 +81,7 @@ def main():
         args = parser.parse_args()
 
         # validate and load configs from yaml file
-        configfile = u'.\\config\\vizalerts.yaml'
+        configfile = '.\\config\\vizalerts.yaml'
         if args.configpath is not None:
             configfile = args.configpath
 
@@ -92,22 +92,22 @@ def main():
         if not len(log.logger.handlers):
             log.logger = log.LoggerQuickSetup(config.configs['log.dir'] + 'vizalerts.log', log_level=config.configs['log.level'])
     except Exception as e:
-        print(u'Could not initialize configuration file due to an unknown error: {}'.format(e.message))
+        print('Could not initialize configuration file due to an unknown error: {}'.format(e.args[0]))
 
     # we have our logger, so start writing
-    log.logger.info(u'VizAlerts v{} is starting'.format(__version__))
+    log.logger.info('VizAlerts v{} is starting'.format(__version__))
 
     # cleanup old temp files
     try:
         cleanup_dir(config.configs['temp.dir'], config.configs['temp.dir.file_retention_seconds'])
     except OSError as e:
         # Send mail to the admin informing them of the problem, but don't quit
-        errormessage = u'OSError: Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
+        errormessage = 'OSError: Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
         log.logger.error(errormessage)
         email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
         emailaction.send_email(email_instance)
     except Exception as e:
-        errormessage = u'Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
+        errormessage = 'Unable to cleanup temp directory {}, error: {}'.format(config.configs['temp.dir'], e)
         log.logger.error(errormessage)
         email_instance = emailaction.Email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
         emailaction.send_email(email_instance)
@@ -117,11 +117,11 @@ def main():
         cleanup_dir(config.configs['log.dir'], config.configs['log.dir.file_retention_seconds'])
     except OSError as e:
         # Send mail to the admin informing them of the problem, but don't quit
-        errormessage = u'OSError: Unable to cleanup log directory {}, error: {}'.format(config.configs['log.dir'], e)
+        errormessage = 'OSError: Unable to cleanup log directory {}, error: {}'.format(config.configs['log.dir'], e)
         log.logger.error(errormessage)
         emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
     except Exception as e:
-        errormessage = u'Unable to cleanup log directory {}, error: {}'.format(config.configs['log.dir'], e)
+        errormessage = 'Unable to cleanup log directory {}, error: {}'.format(config.configs['log.dir'], e)
         log.logger.error(errormessage)
         emailaction.send_email(config.configs['smtp.address.from'], config.configs['smtp.address.to'], config.configs['smtp.subject'], errormessage)
 
@@ -132,18 +132,18 @@ def main():
     if config.configs['smsaction.enable']:
         try:
             smsaction.smsclient = smsaction.get_sms_client()
-            log.logger.info(u'SMS Actions are enabled')
+            log.logger.info('SMS Actions are enabled')
         except Exception as e:
-            errormessage = u'Unable to get SMS client, error: {}'.format(e.message)
+            errormessage = 'Unable to get SMS client, error: {}'.format(e.args[0])
             log.logger.error(errormessage)
             quit_script(errormessage)
 
     # get the alerts to process
     try:
         alerts = get_alerts()
-        log.logger.info(u'Processing a total of {} alerts'.format(len(alerts)))
+        log.logger.info('Processing a total of {} alerts'.format(len(alerts)))
     except Exception as e:
-        errormessage = u'Unable to get alerts to process, error: {}'.format(e.message)
+        errormessage = 'Unable to get alerts to process, error: {}'.format(e.args[0])
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -181,7 +181,7 @@ def trusted_ticket_test():
     else:
         clientip = None
 
-    log.logger.debug(u'testing trusted ticket: {}, {}, {}, {}'.format(
+    log.logger.debug('testing trusted ticket: {}, {}, {}, {}'.format(
         config.configs['server'],
         config.configs['server.user'],
         config.configs['server.user.domain'],
@@ -198,9 +198,9 @@ def trusted_ticket_test():
             config.configs['server.certfile'],
             config.configs['server.user.domain'],
             clientip)
-        log.logger.debug(u'Generated test trusted ticket. Value is: {}'.format(test_ticket))
+        log.logger.debug('Generated test trusted ticket. Value is: {}'.format(test_ticket))
     except Exception as e:
-        errormessage = e.message
+        errormessage = e.args[0]
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -225,7 +225,6 @@ def get_alerts():
         source_viz.download_trigger_data()
         if len(source_viz.error_list) > 0:
             raise UserWarning(''.join(source_viz.error_list))
-
         results = source_viz.read_trigger_data()
         if len(source_viz.error_list) > 0:
             raise UserWarning(''.join(source_viz.error_list))
@@ -233,14 +232,13 @@ def get_alerts():
     except Exception as e:
         quit_script('Could not process source viz data from {} for the following reasons:<br/><br/>{}'.format(
 			config.configs['vizalerts.source.viz'],
-            e.message))
+            e.args[0]))
 
     # test for regex invalidity
     try:
         fieldlist = ('allowed_from_address','allowed_recipient_addresses','allowed_recipient_numbers')
         currentfield = ''
         currentfieldvalue = ''
-
         for line in results:
             for field in fieldlist:
                 currentfield = field
@@ -252,7 +250,7 @@ def get_alerts():
                 config.configs['vizalerts.source.viz'],
                 currentfieldvalue,
                 currentfield,
-                e.message))
+                e.args[0]))
 
     # retrieve schedule data from the last run and compare to current
     statefile = config.configs['schedule.state.dir'] + SCHEDULE_STATE_FILENAME
@@ -270,7 +268,7 @@ def get_alerts():
             f = codecs.open(statefile, encoding='utf-8', mode='w+')
             f.close()
     except IOError as e:
-        errormessage = u'Invalid schedule state file: {}'.format(e.message)
+        errormessage = 'Invalid schedule state file: {}'.format(e.args[0])
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -375,7 +373,7 @@ def get_alerts():
             # all done, now add it to the master list
             alerts.append(alert)
     except Exception as e:
-        errormessage = u'Error instantiating alerts from list obtained from server: {}'.format(e)
+        errormessage = 'Error instantiating alerts from list obtained from server: {}'.format(e)
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -453,11 +451,11 @@ def get_alerts():
                                                                alert.ran_last_at, alert.run_next_at,
                                                                alert.schedule_id))
     except IOError as e:
-        errormessage = u'IOError accessing {} while getting views to process: {}'.format(e.filename, e.message)
+        errormessage = 'IOError accessing {} while getting views to process: {}'.format(e.filename, e.args[0])
         log.logger.error(errormessage)
         quit_script(errormessage)
     except Exception as e:
-        errormessage = u'Error accessing {} while getting views to process: {}'.format(statefile, e)
+        errormessage = 'Error accessing {} while getting views to process: {}'.format(statefile, e)
         log.logger.error(errormessage)
         quit_script(errormessage)
 
@@ -470,7 +468,7 @@ def quit_script(message):
                                config.configs['smtp.subject'], message)
         emailaction.send_email(email_instance)
     except Exception as e:
-        log.logger.error(u'Unknown error-sending exception alert email: {}'.format(e.message))
+        log.logger.error('Unknown error-sending exception alert email: {}'.format(e.args[0]))
     sys.exit(1)
 
 def cleanup_dir(path, expiry_s):
@@ -488,7 +486,7 @@ if __name__ == "__main__":
         main()
         exitcode = 0
     except:
-        log.logger.exception(u'An unhandled exception occurred: %s' % traceback.format_exc(sys.exc_info()))
+        log.logger.exception('An unhandled exception occurred: %s' % traceback.format_exc(sys.exc_info()))
         exitcode = 1
     finally:
         sys.exit(exitcode)

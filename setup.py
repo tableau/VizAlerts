@@ -3,7 +3,7 @@ import py2exe
 import os
 
 includes = []
-includefiles = os.listdir('D:\\Python27\\Lib\\site-packages\\phonenumbers\\data')
+includefiles = os.listdir('C:\\Python38\\Lib\\site-packages\\phonenumbers\\data')
 for file in includefiles:
     if file.endswith('.py'):
         includes.append('phonenumbers.data.' + file.replace('.py', ''))

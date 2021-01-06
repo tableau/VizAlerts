@@ -4,7 +4,7 @@ Tableau – VizAlerts Installation Guide
 -  [What is VizAlerts?](#what-is-vizalerts)
 -  [What does it do?](#what-does-it-do)
 -  [How does it work?](#how-does-it-work)
--  [Upgrading from VizAlerts 2.1.0](#upgrading-from-vizalerts-2_1_0)
+-  [Upgrading from VizAlerts 2.1.1](#upgrading-from-vizalerts-2_1_1)
 -  [Installation Prerequisites](#installation-prerequisites)
 	- [Tableau Server](#tableau-server)
 	- [Tableau Desktop](#tableau-desktop)
@@ -131,50 +131,46 @@ The general flow of a single execution of VizAlerts goes like this:
             instructed by the data itself.
 
 
-Upgrading from VizAlerts 2.1.0<a id="upgrading-from-vizalerts-2_1_0"></a>
+Upgrading from VizAlerts 2.1.1<a id="upgrading-from-vizalerts-2_1_1"></a>
 =====================================
+
+**NOTE** The primary change in this version is the shift to Python 3 from Python 2. If you are running VizAlerts with the binary EXE file, there is little reason to upgrade to 2.2.0. However, if you are running it as a Python script, you will first need to upgrade to Python 3. My own experience was that it is best that you first remove Python 2 from your system by uninstalling it, and removing all references to it from your environment variables. Then, you need to [install Python 3](#install-python-required-modules). Please be aware that uninstalling Python 2 will begin a VizAlerts outage, so please TEST on a seperate server first, and plan your deployment accordingly.
 
 1. Backup your current VizAlerts directory to a separate location.
 
-2. Download version 2.1.1 from <https://github.com/tableau/VizAlerts/releases>, and unzip to a *new* folder alongside your existing VizAlerts folder. You should have three folders at this point: The live, current installation, the backup of the current installation, and a new folder you unzipped v2.1.1 into.
+2. Download version 2.2.0 from <https://github.com/tableau/VizAlerts/releases>, and unzip to a *new* folder alongside your existing VizAlerts folder. You should have three folders at this point: The live, current installation, the backup of the current installation, and a new folder you unzipped v2.2.0 into.
 
-3. Merge VizAlertsConfig changes into new workbook
-	- There is a new version of \config\VizAlertsConfig.twb that contains a new Custom SQL query. It's easiest to simply drop this into your existing VizAlertsConfig workbook. To do so, here are the steps:
-		- Download your existing VizAlertsConfig workbook from Tableau Server and open it in Tableau Desktop
-		- Locate the *new* VizAlertsConfig workbook from the new VizAlerts folder, in the config subfolder, and open it in Tableau Desktop (you'll need to edit the connection to point to your Tableau Server postgreSQL database)
-		- Edit the connection in the new VizAlertsConfig workbook, then edit the one table in the connection pane. This will open the Custom SQL dialog.
-		- Copy the Custom SQL Query.  
-		- Carefully update your *current* VizAlertsConfig workbook with the new Custom SQL query.
-		- Now re-publish the current VizAlertsConfig workbook to Tableau Server, **making sure** that you are embedding the password in the connection. This will not break v2.1.0 of VizAlerts.
-<br><br>
-
-4. Copy config files
+3. Copy config files
 	- Copy the \config\vizalerts.yaml file from your *current* VizAlerts folder *over* the same file in the *new* VizAlerts folder
 		- No changes were made to this file, so it will work just fine the way it is
 	- If you're using SSL to connect to Tableau Server, and have a certificate file you're storing in the VizAlerts folder, make sure it's copied to the new location
 	- If you've referenced any other files for passwords or anything else, make sure they're copied as well.
 <br><br>
-5. In Task Scheduler, disable the existing VizAlerts scheduled task.
+4. In Task Scheduler, disable the existing VizAlerts scheduled task.
 
-6. <font color='red'>**VizAlerts outage begins**</font>
+5. <font color='red'>**VizAlerts outage begins**</font>
 
-7. If you didn't already publish the updated version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
+6. Uninstall Python 2, and remove references to it from your environmental variables (again, this is optional, but should make things simpler--if you're a power user that knows Python inside and out, feel free to disregard)
 
-8. Rename folders
+7. Download and install Python 3 and [required modules](#install-python-required-modules)
+
+8. If you didn't already publish the updated version of VizAlertsConfig, publish it now, ensuring that you embed the password when you publish it!
+
+9. Rename folders
 	- Rename the existing VizAlerts folder with something like "-old" at the end of it
 	- Rename the new VizAlerts folder whatever the old one was called
 <br><br>
-9. Testing
+10. Testing
 	- Open a command prompt, navigate to the VizAlerts folder, and execute VizAlerts one time. Ensure it runs properly, and review the logs if there are any errors.
 	- Test a single alert by adding a test\_alert comment to a viz, and then run it again in the command prompt, again ensuring that no errors are logged.
 <br><br>
-10. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
+11. **Optional**: If you want to ensure that no alerts were skipped during the upgrade, copy the \ops\vizalerts.state file from the -old VizAlerts folder to the current one.
 
-11. In Task Scheduler, enable the VizAlerts task
+12. In Task Scheduler, enable the VizAlerts task
 
-12. <font color='green'>**VizAlerts outage ends**</font>
+13. <font color='green'>**VizAlerts outage ends**</font>
 
-13. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
+14. Remove the -old VizAlerts folder and any backups you made, whenever you feel comfortable
 
 
 Installation Prerequisites <a id="installation-prerequisites"></a>
@@ -806,26 +802,16 @@ Here’s how to publish the workbook:
 Optional: Install Python & Required Modules <a id="install-python-required-modules"></a>
 -----------------------------------
 
-If you wish to run VizAlerts as a Python script rather than a binary executable, you will need to follow these steps. Otherwise, you can skip this section. Note that the rest of the documentation assumes that you are running the binary executable, so whenever you see instructions to run vizalerts.exe, know that you'll need to use *python .\vizalerts.py* instead.
+If you wish to run VizAlerts as a Python script rather than a binary executable, you will need to follow these steps. Otherwise, you can skip this section. Note that the rest of the documentation assumes that you are running the binary executable, so whenever you see instructions to run vizalerts.exe, know that you'll need to use *python .\vizalerts.py* instead. Additionally, please note that while these instructions are specific to Windows, VizAlerts can also be run on Linux.
 
-1.  On the Windows host you want to run VizAlerts from, download and install Python 2.7. This can be done in multiple ways, but we suggest this MSI installer: <https://www.python.org/ftp/python/2.7.13/python-2.7.13.msi>
+1.  On the host you want to run VizAlerts from, download and install Python 3.7 or higher. This can be done in multiple ways, but we suggest the MSI installer from: <https://www.python.org/downloads/>. While it's possible to run two separate versions of Python, VizAlerts is only compatible with 3.7 and above, and it can be very confusing to sort out issues when both versions are installed on your machine.
 
-2.  Add ";C:\\Python27\\;C:\\Python27\\Scripts\\" to your Path environment variable (assuming you chose the installation defaults when installing Python)
+2.  It's recommended that you ensure that Python is added to your environmental PATH variable, when given that option in the installer.
 
-3.  Install the following Python modules:
+3.  Install the necessary Python modules by running the following commands:
 
-    1.  [PyYAML](http://pyyaml.org/) (recommended: <http://pyyaml.org/download/pyyaml/PyYAML-3.11.win32-py2.7.exe> )
-
-    2.  The final five modules,
-        [requests](http://docs.python-requests.org/en/latest/user/install/#install),
-        [requests\_ntlm](https://github.com/requests/requests-ntlm/),
-        [pypdf2](https://github.com/mstamy2/PyPDF2),
-        [twilio](https://pypi.python.org/pypi/twilio), and
-        [phonenumberslite](https://pypi.python.org/pypi/phonenumberslite),
-        are best installed by opening a *new* command prompt and running
-        the following commands:  
-          
-        pip install requests  
+        pip install pyyaml
+        pip install requests
         pip install requests\_ntlm  
         pip install pypdf2  
         pip install twilio  
@@ -834,18 +820,18 @@ If you wish to run VizAlerts as a Python script rather than a binary executable,
         *  If your computer does not have access to the Internet, see
         [Appendix A](#_Appendix_A).<br><br>
 
-    3.  **Note**: Despite the requirement to install the last two
-        modules, deciding whether to *enable* the Twilio SMS integration
-        feature is up to you—either at the environment level, or at more
-        flexible sub-levels. Enabling the Twilio SMS integration
-        requires a Twilio account (free accounts are available).  
-          
-        Also, please also note that it’s possible to send SMS messages
-        *without* Twilio, as short email messages to subscribers who’s
-        mobile network providers have an email-to-SMS gateway available.
-        For example, <xxxxxxxxxx@txt.att.net> works in the USA. See the
-        SMS Actions section of the VizAlerts User Guide for
-        more details.
+    **Note**: Despite the requirement to install the last two
+    modules, deciding whether to *enable* the Twilio SMS integration
+    feature is up to you—either at the environment level, or at more
+    flexible sub-levels. Enabling the Twilio SMS integration
+    requires a Twilio account (free accounts are available).  
+      
+    Also, please also note that it’s possible to send SMS messages
+    *without* Twilio, as short email messages to subscribers who’s
+    mobile network providers have an email-to-SMS gateway available.
+    For example, <xxxxxxxxxx@txt.att.net> works in the USA. See the
+    SMS Actions section of the VizAlerts User Guide for
+    more details.
 
 Configure VizAlerts <a id="configure-vizalerts"></a>
 -------------------
@@ -1413,6 +1399,8 @@ you’ll be running VizAlerts from.
     path they download to). These function as basically offline package
     repositories:
 
+    *pip install --download c:\\mypythonpackages pyyaml*
+
     *pip install --download c:\\mypythonpackages requests*
 
     *pip install --download c:\\mypythonpackages requests\_ntlm*
@@ -1429,6 +1417,9 @@ you’ll be running VizAlerts from.
 
 4.  On your offline machine, install the package from the newly copied
     folder:
+
+    *pip install --no-index --find-links file:c:\\mypythonpackages
+    pyyaml*
 
     *pip install --no-index --find-links file:c:\\mypythonpackages
     requests*
