@@ -940,9 +940,9 @@ Carlos as records and I want the monthly productivity dashboard PDF to
 have a name like “Alice Productivity Feb 2016.pdf” then I could build
 the content reference to be:
 
-> “VIZ\_PDF(Productivity/Dashboard?Employee=” + \[Employee\] +
-> “|filename=” + \[Employee\] + “ Productivity “ +
-> LEFT(DATENAME(‘month’,TODAY()),3) + “ “ + DATENAME(‘year’,TODAY())”
+> "VIZ\_PDF(Productivity/Dashboard?Employee=" + \[Employee\] + "|filename=" + 
+> \[Employee\] + " Productivity " + LEFT(DATENAME('month',TODAY()),3) + 
+> " " + DATENAME('year',TODAY()) + ")"
 
 ### Hyperlink Text References: VIZ\_LINK()
 <a id='hyperlink_text_references__viz_link__'></a>
