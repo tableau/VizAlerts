@@ -1415,8 +1415,9 @@ class VizAlert(object):
 
                     # this might be able to be more efficient code
                     if 'VIZ_IMAGE' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
-                        or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
-                            results.extend(re.findall("VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", \
+                        or 'VIZ_LINK' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item) \
+						or 'VIZ_CSV' in self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item):
+                            results.extend(re.findall("VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)|VIZ_CSV\(.*?\)", \
                                 self.action_field_dict[EMAIL_BODY_FIELDKEY].get_value_from_dict(item)))
 
                     if email_header_fieldname:
@@ -1747,7 +1748,7 @@ class VizAlert(object):
         # find all distinct content references in the email body list
         # so we can replace each with an inline image or hyperlink text
         log.logger.debug('Finding all content refs')
-        foundcontent = re.findall("VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)", ' '.join(body))
+        foundcontent = re.findall("VIZ_IMAGE\(.*?\)|VIZ_LINK\(.*?\)|VIZ_CSV\(.*?\)", ' '.join(body))
         foundcontentset = set(foundcontent)
         vizrefs = list(foundcontentset)
 
@@ -1792,14 +1793,67 @@ class VizAlert(object):
                         else:
                             replacestring = '<a href="' + self.get_view_url(vizcompleterefs[vizref]['view_url_suffix']) + '">' + \
                                             vizcompleterefs[vizref]['view_url_suffix'] + '</a>'
-
+                            replaceresult = replace_in_list(body, vizref, replacestring)
+                            if replaceresult['foundstring']:
+                                body = replaceresult['outlist']
+                # we're replacing #VIZ_LINK text
+                elif vizcompleterefs[vizref]['formatstring'] == 'CSV':
+                    log.logger.debug('Entering CSV part')
+                    log.logger.debug('vizcompleterefs[vizref][vizref] ' + vizcompleterefs[vizref].get('vizref'))
+                    log.logger.debug('vizcompleterefs[vizref][view_url_suffix] ' + vizcompleterefs[vizref].get('view_url_suffix'))
+                    log.logger.debug('vizcompleterefs[vizref][formatstring] ' + vizcompleterefs[vizref].get('formatstring'))
+                    log.logger.debug('vizcompleterefs[vizref][imagepath] ' + vizcompleterefs[vizref].get('imagepath'))
+                    #Let's build an html table
+                    replacestring = self.transform_csv_to_html_table(vizcompleterefs[vizref]['imagepath'])
                     replaceresult = replace_in_list(body, vizref, replacestring)
 
                     if replaceresult['foundstring']:
-                        body = replaceresult['outlist']\
+                        body = replaceresult['outlist']
+                        
+            replaceresult = replace_in_list(body, vizref, replacestring)
+
+            if replaceresult['foundstring']:
+                body = replaceresult['outlist']\
 
         return body, inlineattachments
 
+    def transform_csv_to_html_table(self, filepath):
+        log.logger.debug('Start transforming csv file to table, filepath = ' + filepath)
+        # Open the CSV file for reading
+        reader = csv.reader(open(filepath))
+        # Create the HTML file for output
+        resultString = ''
+        # initialize rownum variable
+        rownum = 0
+        # write <table> tag
+        resultString +='<table style="border: solid 1px #DDEEEE;border-collapse: collapse;border-spacing: 0;font: normal 13px Arial, sans-serif;">'
+        # generate table contents
+        for row in reader: # Read a single row from the CSV file
+        # write header row. assumes first row in csv contains header
+            if rownum == 0:
+                resultString += '<tr style="background: #9ca2af; padding: 10px; text-align: left;">' # write <tr> tag
+                for column in row:
+                   resultString += '<th style="border: solid 1px #000000;">' + column + '</th>'
+                resultString += '</tr>'
+            #write all other rows 
+            else:
+                if rownum %2 == 0:
+                    rowStyleBackground = "background: #aeb0ba;"
+                else:
+                    rowStyleBackground = "background: #ffffff;"
+                resultString += '<tr style=" ' + rowStyleBackground + '" border: solid 1px #000000; padding: 10px; text-align: left;">'
+                for column in row:
+                    resultString += '<td style="border: solid 1px #000000;">' + column + '</td>'
+                resultString += '</tr>'
+
+            #increment row count 
+            rownum += 1
+
+        # write </table> tag
+        resultString += '</table>'        
+        log.logger.debug('End transforming csv file to table ')
+        return resultString
+        
     def alert_failure(self):
         """Alert the Admin, and optionally the Subscriber, to a failure to process their alert"""
 
