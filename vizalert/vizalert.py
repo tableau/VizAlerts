@@ -1641,8 +1641,16 @@ class VizAlert(object):
                     newitem[self.action_field_dict[action_field].field_name] = \
                         item[self.action_field_dict[action_field].field_name]
 
-            # add the new trimmed row to our list
-            preplist.append(newitem)
+            # add the new trimmed row to our list, filtering out inactionable fields
+            if action_type == EMAIL_ACTION_TYPE:
+                email_action_fieldname = self.action_field_dict[EMAIL_ACTION_FIELDKEY].field_name
+                if item[email_action_fieldname] == '1':
+                    preplist.append(newitem)
+
+            if action_type == SMS_ACTION_TYPE:
+                sms_action_fieldname = self.action_field_dict[SMS_ACTION_FIELDKEY].field_name
+                if item[sms_action_fieldname] == '1':
+                    preplist.append(newitem)
 
         log.logger.debug('Removing duplicates')
 
