@@ -940,9 +940,9 @@ Carlos as records and I want the monthly productivity dashboard PDF to
 have a name like “Alice Productivity Feb 2016.pdf” then I could build
 the content reference to be:
 
-> “VIZ\_PDF(Productivity/Dashboard?Employee=” + \[Employee\] +
-> “|filename=” + \[Employee\] + “ Productivity “ +
-> LEFT(DATENAME(‘month’,TODAY()),3) + “ “ + DATENAME(‘year’,TODAY())”
+> "VIZ\_PDF(Productivity/Dashboard?Employee=" + \[Employee\] + "|filename=" + 
+> \[Employee\] + " Productivity " + LEFT(DATENAME('month',TODAY()),3) + 
+> " " + DATENAME('year',TODAY()) + ")"
 
 ### Hyperlink Text References: VIZ\_LINK()
 <a id='hyperlink_text_references__viz_link__'></a>
@@ -1313,7 +1313,7 @@ Advanced Alert Use Cases <a id='advanced_alert_use_cases'></a>
 
 Here’s a link to a thread of a number of ways to use VizAlerts for
 monitoring Tableau Server:
-<https://community.tableau.com/message/383607#383607>
+<https://community.tableau.com/s/question/0D54T00000C5Mm1SAF/alerts-youve-created-alerts-that-you-want>
 
 ### 
 
@@ -1321,7 +1321,7 @@ monitoring Tableau Server:
 <a id='extract_failure_to_refresh_notifications'></a>
 There are multiple ways to set up automated notifications for failure to
 refresh extracts (the above link has one), here’s another:
-<https://community.tableau.com/message/465996#465996>
+<https://community.tableau.com/s/question/0D54T00000C5N8qSAF/example-email-users-whose-extracts-fail-to-refresh>
 
 ### Bulk Mailing
 <a id='bulk_mailing'></a>
