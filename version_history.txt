@@ -6,6 +6,7 @@ Version 2.2.1
 =================================
 -Fixed issue where mixed action flag values used with consolidate lines can cause no emails to send (Issue #198)
 -Fixed unsafe yaml.load call (Issue #195)
+-Updated config workbook to use new projects_contents mapping table (Issue #203)
 =================================
 
 Version 2.2.0
