@@ -31,7 +31,7 @@ def load_yaml_file(yaml_file):
     logger = logging.getLogger()
     try:
         f = codecs.open(yaml_file, encoding='utf-8')
-        yaml_opts = yaml.load(f)
+        yaml_opts = yaml.safe_load(f)
         f.close()
         return yaml_opts
     except:

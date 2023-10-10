@@ -8,7 +8,7 @@ import copy
 import threading
 import datetime
 import time
-from PyPDF2 import PdfFileReader, PdfFileMerger
+from PyPDF2 import PdfReader, PdfMerger
 from collections import OrderedDict
 from os.path import abspath, basename, expanduser
 from operator import itemgetter
@@ -1927,14 +1927,18 @@ def merge_pdf_attachments(appendattachments):
                         # we know all attachments in a given list have the same filename due to the loop above
                         # so we can just pull the first one
 
-                        merger = PdfFileMerger()
+                        try:
+                            merger = PdfMerger()
+                        except Exception as e:
+                            log.logger.error('Could not instantiate PdfMerger class. May indicate an issue with module incompatibility: {}'.format(mergedfilename, e))
+                            raise e
 
                         i = 0
                         for attachment in mergedfilenames[listtomerge]:
                             if i == 0:
                                 mergedfilename = mergedfilenames[listtomerge][attachment]['filename']
 
-                            merger.append(PdfFileReader(mergedfilenames[listtomerge][attachment]['imagepath'], "rb"))
+                            merger.append(PdfReader(mergedfilenames[listtomerge][attachment]['imagepath'], "rb"))
                             i = i + 1
 
                         # make the temp filename for the merged pdf
